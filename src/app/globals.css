@@ -16,10 +16,12 @@
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background: white;
   font-family: 'Rubik', sans-serif;
+  scrollbar-gutter: stable;
 }
 
 body, p, div, span {
   color: #2D383D;
 }
+
