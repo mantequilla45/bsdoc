@@ -67,12 +67,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           <div className="bg-[#9ED8D2] w-full h-full rounded-[30px] overflow-hidden relative">
             <div className="absolute inset-0 flex justify-between">
 
-              <button
-                onClick={onClose}
-                className="absolute top-4 right-5 text-gray-500 hover:text-gray-700 duration-300"
-              >
-                <IoIosCloseCircle className="w-[40px] h-[40px]" />
-              </button>
               <div className="w-[60%] relative">
                 <Image
                   alt="Login Background"
@@ -112,17 +106,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <Image
                   alt="Login"
                   src="/graphics/login.svg"
-                  className="absolute object-cover w-[100%] h-[100%] z-0"
+                  className="absolute object-cover w-[100%] h-[90%] z-0"
                   width={0}
                   height={0}
                 />
                 <motion.div
-                  className="flex justify-center items-center z-50 relative"
+                  className="flex justify-center h-full items-center z-50 relative"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <div className="relative w-[800px] h-[600px] overflow-hidden">
+                  <div className="relative w-[800px] h-[100%] overflow-hidden">
+
+                    <button
+                      onClick={onClose}
+                      className="absolute top-4 right-5 z-10 text-gray-500 hover:text-gray-700 duration-300"
+                    >
+                      <IoIosCloseCircle className="w-[40px] h-[40px]" />
+                    </button>
                     <AnimatePresence custom={isLogin ? 1 : -1}>
                       {isLogin ? (
                         <motion.div
@@ -132,14 +133,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                           initial="initial"
                           animate="animate"
                           exit="exit"
-                          className="absolute w-full h-full flex flex-col justify-center items-center p-12 bg-white/90 gap-6"
+                          className="absolute w-full h-full    flex flex-col justify-center items-center p-12 px-16 bg-white/90 gap-6"
                         >
                           <h2 className="text-3xl mb-3">Welcome Back!</h2>
                           <button className="py-3 w-full border-[1px] bg-white rounded-full font-light flex justify-center items-center gap-6 active:scale-95 duration-300">
                             <FcGoogle className="w-[25px] h-[25px]" />Login with Google
                           </button>
                           <div className="w-full border-t border-gray-300" />
-                          <div className="space-y-4">
+                          <div className="space-y-4 w-full">
                             <input
                               placeholder="Email"
                               className="py-3 px-5 w-full border-[1px] rounded-full font-light focus:outline-none focus:ring-2 focus:ring-[#62B6B8] focus:border-transparent"
@@ -152,12 +153,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                           </div>
 
                           <button
-                            className="py-3 px-5 w-full rounded-full bg-[#9ED8D2] text-white hover:bg-[#8DE3DA] active:bg-[#7CD1C8] active:scale-95 duration-300 "
+                            className="py-3 px-5 w-full rounded-full bg-[#78DDD3] text-white hover:bg-[#82C2BC] active:bg-[#7CD1C8] active:scale-95 duration-300"
                           >
                             Login
                           </button>
                           <p
-                            className="text-center mt-4 cursor-pointer text-[#2D383D] flex flex-row items-center gap-3"
+                            className="text-center mt-4 cursor-pointer text-[#2D383D] flex flex-row items-center gap-3 hover:underline"
                             onClick={() => setIsLogin(false)}
                           >
                             Create an account
@@ -172,36 +173,39 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                           initial="initial"
                           animate="animate"
                           exit="exit"
-                          className="absolute w-full h-full flex flex-col justify-center p-12 bg-white"
+                          className="absolute w-full h-full flex flex-col justify-center items-center p-12 px-16 bg-white/90 gap-6"
                         >
-                          <h2 className="text-2xl mb-6">Sign Up</h2>
-                          <input
-                            placeholder="Full Name"
-                            className="w-full p-3 mb-4 border rounded"
-                          />
-                          <input
-                            placeholder="Email"
-                            className="w-full p-3 mb-4 border rounded"
-                          />
-                          <input
-                            placeholder="Password"
-                            type="password"
-                            className="w-full p-3 mb-4 border rounded"
-                          />
-                          <input
-                            placeholder="Confirm Password"
-                            type="password"
-                            className="w-full p-3 mb-4 border rounded"
-                          />
+                          <h2 className="text-3xl mb-3">Create an Account</h2>
+                          <button className="py-3 w-full border-[1px] bg-white rounded-full font-light flex justify-center items-center gap-6 active:scale-95 duration-300">
+                            <FcGoogle className="w-[25px] h-[25px]" />Sign up with Google
+                          </button>
+                          <div className="w-full border-t border-gray-300" />
+                          <div className="space-y-4 w-full">
+                            <input
+                              placeholder="Email"
+                              className="py-3 px-5 w-full border-[1px] rounded-full font-light focus:outline-none focus:ring-2 focus:ring-[#62B6B8] focus:border-transparent"
+                            />
+                            <input
+                              placeholder="Password"
+                              type="password"
+                              className="py-3 px-5 w-full border-[1px] rounded-full font-light focus:outline-none focus:ring-2 focus:ring-[#62B6B8] focus:border-transparent"
+                            />
+                            <input
+                              placeholder="Confirm Password"
+                              type="password"
+                              className="py-3 px-5 w-full border-[1px] rounded-full font-light focus:outline-none focus:ring-2 focus:ring-[#62B6B8] focus:border-transparent"
+                            />
+                          </div>
                           <button
-                            className="w-full p-3 bg-blue-500 text-white rounded"
+                            className="py-3 px-5 w-full rounded-full bg-[#78DDD3] text-white hover:bg-[#82C2BC] active:bg-[#7CD1C8] active:scale-95 duration-300"
                           >
                             Sign Up
                           </button>
                           <p
-                            className="text-center mt-4 cursor-pointer text-blue-500"
+                            className="text-center mt-4 cursor-pointer text-[#2D383D] flex flex-row items-center gap-3 hover:underline"
                             onClick={() => setIsLogin(true)}
                           >
+                            <FaArrowRightLong className="rotate-180"/>
                             Already have an account?
                           </p>
                         </motion.div>

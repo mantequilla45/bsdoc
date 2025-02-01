@@ -6,7 +6,6 @@ import Image from "next/image"
 
 const SearchSymptomsPage = () => {
     const [isAdvancedSearchEnabled, setIsAdvancedSearchEnabled] = useState(false);
-
     const [inputValue, setInputValue] = useState("");
     return (
         <div className="bg-white h-[100vh] px-[15%] pt-[10%]">
@@ -53,14 +52,14 @@ const SearchSymptomsPage = () => {
                         <span
                             className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full transform transition-transform duration-300 ease-in-out
                                 ${isAdvancedSearchEnabled ? 'translate-x-1 bg-white' : '-translate-x-5 bg-[#777777]'}`}
-                        ></span>
+                        />
                     </button>
                 </div>
                 <div className="space-y-3">
                     <div className="relative py-4 pl-10 shadow-md border-[1px] rounded-xl px-6 bg-white text-gray-500 text-[35px] flex items-center">
                         <input
                             type="text"
-                            placeholder="Search..."
+                            placeholder="Search Symptoms..."
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)} // Track input value
                             className={`w-full border-none outline-none text-xl ${inputValue ? 'text-[#2D383D] font-normal' : 'text-gray-500 font-light'}`} // Conditional color change
