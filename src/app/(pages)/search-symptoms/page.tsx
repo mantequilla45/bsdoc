@@ -19,7 +19,6 @@ const SearchSymptomsPage = () => {
         const handleScroll = () => {
             if (footerRef.current && containerRef.current) {
                 const footerTop = footerRef.current.getBoundingClientRect().top;
-                const containerBottom = containerRef.current.getBoundingClientRect().bottom;
                 const windowHeight = window.innerHeight;
 
                 // If footer is in view, make images absolute
