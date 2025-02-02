@@ -5,11 +5,11 @@ import { FaGithub } from "react-icons/fa";
 const Footer = () => {
   return (
     <footer className="bg-gradient-to-b from-[#018487] to-[#014C4E] py-16 px-[10%] flex flex-col">
-      <div className="flex flex-col gap-6">
-        <h3 className="text-5xl text-white font-bold">
+      <div className="flex flex-col gap-6 text-white">
+        <h3 className="text-5xl font-bold">
           Not a common ailment?
         </h3>
-        <h3 className="text-5xl text-white font-bold">
+        <h3 className="text-5xl font-bold">
           Book a doctor&apos;s appointment!
         </h3>
       </div>
@@ -18,7 +18,7 @@ const Footer = () => {
           BOOK
         </a>
       </div>
-      <a href="/about-us" className=" my-10">
+      <a href="/about-us" className="my-10 text-white">
         About Us
       </a>
       <div className="flex flex-row gap-5 text-white">
@@ -26,7 +26,7 @@ const Footer = () => {
         <FaGithub className="w-[30px] h-[30px]" />
       </div>
 
-      <p className="font-light mt-5">
+      <p className="font-light mt-5 text-white">
         Disclaimer: This service is for informational purposes only. Consult a doctor for persistent or worsening symptoms.
       </p>
     </footer>

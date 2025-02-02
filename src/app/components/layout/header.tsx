@@ -23,7 +23,7 @@ const Header = () => {
     return (
         <header
             className={`text-[#222726] py-5 px-[5%] z-50 fixed top-0 left-0 right-0 transition duration-300 ${
-                scrolled ? "bg-black/70" : "bg-transparent"
+                scrolled && pathname === "/" ? "bg-black/70" : "bg-transparent"
             }`}
         >
             <title>BSDOC</title>
