@@ -57,7 +57,6 @@ const SearchSymptomsPage = () => {
                     {/* Fixed images for scrolled state */}
                     {isSticky && isScrolled && (
                         <div className="fixed inset-0">
-                            <title>1</title>
                             <Image
                                 alt="Search Page"
                                 className="h-[800px] w-[1500px] right-0 bottom-0"
@@ -161,7 +160,7 @@ const SearchSymptomsPage = () => {
                             <motion.div
                                 key="advanced-search"
                                 initial={{ height: "50vh", opacity: 0 }}
-                                animate={{ height: "200vh", opacity: 1 }}
+                                animate={{ height: "auto", opacity: 1 }}
                                 exit={{ height: "50vh", opacity: 0 }}
                                 transition={{
                                     duration: 0.6,
