@@ -1,9 +1,9 @@
-import Header from "@/app/components/layout/header";
+import Header from "@/app/layout/header";
 
 const AboutUs = () => {
     return (
         <div className="h-[100vh] bg-white">
-            <Header />
+            <Header background="white" title="About Us"/>
             <title> About Us</title>
             <div className="flex flex-row h-full items-center">
                 <div className="flex flex-col gap-3 w-1/2">

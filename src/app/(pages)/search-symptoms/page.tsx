@@ -1,9 +1,8 @@
 "use client";
-import Header from "@/app/components/layout/header";
+import Header from "@/app/layout/header";
 import React, { useState, useEffect, useRef } from 'react';
 import { IoSearch } from "react-icons/io5";
-import Image from "next/image";
-import Footer from "@/app/components/layout/footer";
+import Footer from "@/app/layout/footer";
 import { motion, AnimatePresence } from "framer-motion";
 import AdvancedSearchForm from "@/app/components/search-symptoms/adv-search-form";
 import ImageContainer from "@/app/components/search-symptoms/background";
@@ -48,10 +47,9 @@ const SearchSymptomsPage = () => {
         <div className="min-h-screen flex flex-col">
             <div
                 ref={containerRef}
-                className={`bg-white flex-grow relative ${isAdvancedSearchEnabled ? 'h-full' : 'h-[100vh]'} px-[15%] pt-[10%]`}
+                className={`bg-[#EEFFFE] flex-grow relative ${isAdvancedSearchEnabled ? 'h-full' : 'h-[100vh]'} px-[15%] pt-[10%]`}
             >
-                <Header />
-                <title>Search Symptoms</title>
+                <Header background="transparent" title="Search Symptoms"/>
 
                 {/* Container for images */}
                 <ImageContainer
@@ -63,7 +61,7 @@ const SearchSymptomsPage = () => {
 
                 <div className="flex z-10 flex-col gap-5 mt-16 relative">
                     <h1 className="text-7xl">
-                        Welcome to <span className="text-[#64B5B7]">BSDOC</span>
+                        Welcome to <span className="text-[#519496]">BSDOC</span>
                     </h1>
                     <div className="flex items-center gap-4">
                         <p className="pl-7">Advanced Search</p>
@@ -88,7 +86,7 @@ const SearchSymptomsPage = () => {
                                     duration: 0.6,
                                     ease: "easeInOut"
                                 }}
-                                className="w-[100%] bg-gray-100 rounded-xl mb-[100px]"
+                                className="w-[100%] bg-white rounded-xl mb-[100px] shadow-md border-[1px]"
                             >
                                 <AdvancedSearchForm />
 
@@ -118,7 +116,7 @@ const SearchSymptomsPage = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <p className="text-gray-500 mt-4">
+                                <p className="text-gray-600 mt-4">
                                     Introducing a new way to diagnose your sickness.
                                 </p>
                             </motion.div>
