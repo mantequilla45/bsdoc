@@ -1,11 +1,11 @@
 "use client";
-import Header from "@/app/components/layout/header";
+import Header from "@/app/layout/header";
 import React, { useState, useEffect, useRef } from 'react';
 import { IoSearch } from "react-icons/io5";
-import Image from "next/image";
-import Footer from "@/app/components/layout/footer";
+import Footer from "@/app/layout/footer";
 import { motion, AnimatePresence } from "framer-motion";
 import AdvancedSearchForm from "@/app/components/search-symptoms/adv-search-form";
+import ImageContainer from "@/app/components/search-symptoms/background";
 
 const SearchSymptomsPage = () => {
     const [isAdvancedSearchEnabled, setIsAdvancedSearchEnabled] = useState(false);
@@ -47,101 +47,21 @@ const SearchSymptomsPage = () => {
         <div className="min-h-screen flex flex-col">
             <div
                 ref={containerRef}
-                className={`bg-white flex-grow relative ${isAdvancedSearchEnabled ? 'h-full' : 'h-[100vh]'} px-[15%] pt-[10%]`}
+                className={`bg-[#EEFFFE] flex-grow relative ${isAdvancedSearchEnabled ? 'h-full' : 'h-[100vh]'} px-[15%] pt-[10%]`}
             >
-                <Header />
-                <title>Search Symptoms</title>
+                <Header background="transparent" title="Search Symptoms"/>
 
                 {/* Container for images */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    {/* Fixed images for scrolled state */}
-                    {isSticky && isScrolled && (
-                        <div className="fixed inset-0">
-                            <Image
-                                alt="Search Page"
-                                className="h-[800px] w-[1500px] right-0 bottom-0"
-                                style={{
-                                    position: 'fixed',
-                                    color: 'transparent'
-                                }}
-                                src="/graphics/searchpage.svg"
-                                width={0}
-                                height={0}
-                            />
-                            <Image
-                                alt="Search Page"
-                                className="h-[700px] w-[1350px] right-0 bottom-5"
-                                style={{
-                                    position: 'fixed',
-                                    color: 'transparent'
-                                }}
-                                src="/graphics/searchpageicon.svg"
-                                width={0}
-                                height={0}
-                            />
-                        </div>
-                    )}
-
-                    {/* Absolute images for non-scrolled or footer state */}
-                    {(!isSticky || !isScrolled) && (
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                            <div className="sticky top-0 w-full h-full">
-                                <Image
-                                    alt="Search Page"
-                                    className="absolute h-[800px] w-[1500px] right-0 bottom-0"
-                                    style={{
-                                        color: 'transparent'
-                                    }}
-                                    src="/graphics/searchpage.svg"
-                                    width={0}
-                                    height={0}
-                                />
-                                <Image
-                                    alt="Search Page"
-                                    className="absolute h-[700px] w-[1350px] right-0 bottom-5"
-                                    style={{
-                                        color: 'transparent',
-                                    }}
-                                    src="/graphics/searchpageicon.svg"
-                                    width={0}
-                                    height={0}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {!isScrolled && (
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                            <div className="sticky top-0 w-full h-full">
-                                <Image
-                                    alt="Search Page"
-                                    className="fixed h-[800px] w-[1500px] right-0 bottom-0"
-                                    style={{
-                                        color: 'transparent'
-                                    }}
-                                    src="/graphics/searchpage.svg"
-                                    width={0}
-                                    height={0}
-                                />
-                                <Image
-                                    alt="Search Page"
-                                    className="fixed h-[700px] w-[1350px] right-0 bottom-5"
-                                    style={{
-                                        color: 'transparent',
-                                    }}
-                                    src="/graphics/searchpageicon.svg"
-                                    width={0}
-                                    height={0}
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <ImageContainer
+                    isSticky={isSticky}
+                    isScrolled={isScrolled}
+                    isAdvancedSearchEnabled={isAdvancedSearchEnabled}
+                />
 
 
                 <div className="flex z-10 flex-col gap-5 mt-16 relative">
                     <h1 className="text-7xl">
-                        Welcome to <span className="text-[#64B5B7]">BSDOC</span>
+                        Welcome to <span className="text-[#519496]">BSDOC</span>
                     </h1>
                     <div className="flex items-center gap-4">
                         <p className="pl-7">Advanced Search</p>
@@ -166,7 +86,7 @@ const SearchSymptomsPage = () => {
                                     duration: 0.6,
                                     ease: "easeInOut"
                                 }}
-                                className="w-[100%] bg-gray-100 rounded-xl mb-[100px]"
+                                className="w-[100%] bg-white rounded-xl mb-[100px] shadow-md border-[1px]"
                             >
                                 <AdvancedSearchForm />
 
@@ -196,7 +116,7 @@ const SearchSymptomsPage = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <p className="text-gray-500 mt-4">
+                                <p className="text-gray-600 mt-4">
                                     Introducing a new way to diagnose your sickness.
                                 </p>
                             </motion.div>

@@ -1,83 +1,7 @@
-import { useState } from 'react';
-
+import { CheckBox, Gender, TextBox } from './elements';
 
 
 const AdvancedSearchForm = () => {
-    const TextBox = ({ title }: { title: string }) => {
-        return (
-            <div className="flex flex-col gap-3 w-full">
-                <p className="text-2xl">{title}</p>
-                <input
-                    placeholder="Your Answer"
-                    className="mb-2 py-3 px-6 rounded-xl placeholder:font-light border-[1px] 
-                    border-gray-300 w-[80%] 
-                    focus:border-gray-400 focus:outline-none"
-                />
-            </div>
-        );
-    }
-
-    const CircleCheckbox = ({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) => {
-        return (
-            <input
-                type="checkbox"
-                checked={checked}
-                onChange={(e) => onChange(e.target.checked)}
-                className="w-6 h-6 appearance-none border-2 border-gray-300 rounded-full cursor-pointer bg-white
-                      checked:bg-blue-500 checked:border-blue-600 
-                      hover:border-indigo-400
-                      transition-all duration-200 ease-in-out
-                      relative
-                      after:content-[''] after:absolute after:top-1/2 after:left-1/2
-                      after:w-[10px] after:h-[10px] after:rounded-full
-                      after:bg-white after:-translate-x-1/2 after:-translate-y-1/2
-                      checked:after:block after:hidden"
-            />
-        );
-    };
-
-    const CheckBox = () => {
-        return (
-            <input
-                type="checkbox"
-                className="w-5 h-5 appearance-none border-2 border-gray-300 rounded-md cursor-pointer
-                            checked:bg-blue-500 checked:border-blue-500 
-                            hover:border-blue-600 hover:shadow-sm
-                            transition-all duration-200 ease-in-out
-                            relative
-                            after:content-[''] after:absolute after:top-[2px] after:left-[5px]
-                            after:w-[6px] after:h-[10px] after:border-r-2 after:border-b-2
-                            after:border-white after:rotate-45
-                            checked:after:block after:hidden"
-            />
-        );
-    }
-
-    const Gender = () => {
-        const [selectedGender, setSelectedGender] = useState<'male' | 'female' | null>(null);
-        return (
-            <div className="flex flex-col w-full">
-                <p className="text-2xl mb-6">Gender</p>
-                <div className="flex flex-row gap-6">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <CircleCheckbox
-                            checked={selectedGender === 'male'}
-                            onChange={() => setSelectedGender('male')}
-                        />
-                        <p>Male</p>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <CircleCheckbox
-                            checked={selectedGender === 'female'}
-                            onChange={() => setSelectedGender('female')}
-                        />
-                        <p>Female</p>
-                    </label>
-                </div>
-            </div>
-        );
-    };
-
     enum Category {
         Respiratory = 'Respiratory',
         PainAndDiscomfort = 'Pain & Discomfort',
@@ -158,7 +82,6 @@ const AdvancedSearchForm = () => {
 
 
     const conditions: SymptomCondition[] = [
-
         // Cardiovascular Conditions
         { name: 'Hypertension', category: Category.Cardiovascular },
         { name: 'Coronary Artery Disease', category: Category.Cardiovascular },
@@ -168,20 +91,20 @@ const AdvancedSearchForm = () => {
         { name: 'Peripheral Artery Disease', category: Category.Cardiovascular },
 
         // Endocrine and Metabolic Conditions
-        { name: 'Diabetes Mellitus (Type 1 and Type 2)', category: Category.EndocrineMetabolic },
         { name: 'Hypothyroidism', category: Category.EndocrineMetabolic },
         { name: 'Hyperthyroidism', category: Category.EndocrineMetabolic },
-        { name: 'Polycystic Ovary Syndrome (PCOS)', category: Category.EndocrineMetabolic },
         { name: 'Obesity', category: Category.EndocrineMetabolic },
         { name: 'Cushing\'s Syndrome', category: Category.EndocrineMetabolic },
+        { name: 'Diabetes Mellitus (Type 1 and Type 2)', category: Category.EndocrineMetabolic },
+        { name: 'Polycystic Ovary Syndrome (PCOS)', category: Category.EndocrineMetabolic },
 
         // Autoimmune Conditions
         { name: 'Rheumatoid Arthritis', category: Category.Autoimmune },
-        { name: 'Systemic Lupus Erythematosus (SLE)', category: Category.Autoimmune },
         { name: 'Psoriasis', category: Category.Autoimmune },
         { name: 'Hashimoto\'s Thyroiditis', category: Category.Autoimmune },
         { name: 'Multiple Sclerosis', category: Category.Autoimmune },
         { name: 'Graves\' Disease', category: Category.Autoimmune },
+        { name: 'Systemic Lupus Erythematosus (SLE)', category: Category.Autoimmune },
 
         // Kidney and Renal Conditions
         { name: 'Chronic Kidney Disease', category: Category.KidneyRenal },
@@ -226,9 +149,8 @@ const AdvancedSearchForm = () => {
                             </p>
                             <div className={`grid grid-cols-2 gap-4 font-light`}>
                                 {items.map((item, index) => (
-                                    <div key={index} className="flex flex-row items-center gap-4">
-                                        <CheckBox />
-                                        <p>{item}</p>
+                                    <div key={index}>
+                                        <CheckBox item={item} />
                                     </div>
                                 ))}
                             </div>
@@ -243,7 +165,7 @@ const AdvancedSearchForm = () => {
     return (
         <div className="flex flex-col w-full h-full p-16">
             <div>
-                <p className="text-4xl">
+                <p className="text-4xl mb-2">
                     BSDOC Advanced Symptoms Search
                 </p>
                 <p>
@@ -262,8 +184,8 @@ const AdvancedSearchForm = () => {
             </div>
             <div className="flex flex-row justify-end items-center gap-6 w-full">
                 <div className="flex flex-row gap-3">
-                    <CheckBox />
-                    <p>Add Record</p>
+                    <CheckBox item={"Add Record"} />
+                     
                 </div>
                 <div className="cursor-pointer px-6 p-3 rounded-md bg-[#A3E7EA] hover:bg-[#9AE0E3] active:bg-[#91D7DA] duration-300 active:scale-95">
                     Assess

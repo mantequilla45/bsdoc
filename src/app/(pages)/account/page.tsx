@@ -1,0 +1,45 @@
+import Header from "@/app/layout/header";
+import Image from "next/image";
+const AccountPage = () => {
+    const basicdetails = ["Joma", "Lina", "jomazlina@gmail.com", "09696969696"];
+    const basicdetaiilsform = ["FIRST NAME", "LAST NAME", "EMAIL", "PHONE"]
+    return (
+        <div className="">
+            <Header background="white" title="Account" />
+            <div className="bg-[#62B6B8] p-10  mt-[80px] h-[91.6vh]">
+                <div className="flex flex-row bg-white w-full h-full pr-10 py-[50px] rounded-xl">
+                    <div className="w-[25%] px-[50px] border-r-[1px] border-[#00909A]/60">
+                        <div className="py-[50px] flex flex-col gap-8 items-start ">
+                            <div className="w-full aspect-square rounded-2xl overflow-hidden border border-gray-300">
+                                <Image
+                                    alt="Profile Picture"
+                                    src="/Images/profile/profile1.png"
+                                    width={500}
+                                    height={500}
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div className="flex flex-col font-light text-sm w-full ">
+                                <div className="flex flex-col gap-2">
+                                    {basicdetails.map((detail, index) => (
+                                        <div key={index} className="flex flex-row">
+                                            <p className="w-1/2">{basicdetaiilsform[index]}</p>
+                                            <p className="w-1/2">{detail}</p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div className="[w-75%]">
+                    </div>
+                </div>
+
+            </div>
+        </div >
+    );
+}
+
+export default AccountPage;
