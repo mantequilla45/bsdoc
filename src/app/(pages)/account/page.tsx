@@ -1,12 +1,21 @@
+"use client";
+
 import Header from "@/app/layout/header";
 import Image from "next/image";
+import { useState } from "react";
 const AccountPage = () => {
-    const basicdetails = ["Joma", "Lina", "jomazlina@gmail.com", "09696969696"];
-    const basicdetaiilsform = ["FIRST NAME", "LAST NAME", "EMAIL", "PHONE"]
+    const basicDetails = ["Joma", "Lina", "jomazlina@gmail.com", "09696969696"];
+    const basicDetaiilsForm = ["FIRST NAME", "LAST NAME", "EMAIL", "PHONE"];
+    const personalDetails = ["B", "170cm", "50kg", "25"];
+
+    const [activeButton, setActiveButton] = useState(0);
+    const handleButtonClick = (index: number) => {
+        setActiveButton(index);
+    }
     const Records = () => {
         return (
             <div className="w-full py-10 px-[100px] space-y-3">
-                <p className="text-2xl">Records</p>
+                <p className="text-2xl">BSDOC Records</p>
                 <table style={{ border: "1px solid black", borderCollapse: "collapse" }}>
                     <thead>
                         <tr>
@@ -28,9 +37,31 @@ const AccountPage = () => {
                     </tbody>
                 </table>
             </div>
-
         );
+    }
 
+    const MedicalDetails = () => {
+        return (
+            <div className="w-full py-10 px-[100px] space-y-3 flex flex-col">
+                <div className="flex flex-col gap-4">
+                    <p className="text-2xl">Personal Details</p>
+                    <div className="flex flex-col text-sm gap-2">
+
+                        {["Blood Type", "Height", "Weight", "Age"].map((label, index) => (
+                            <div className="flex flex-row gap-16"
+                                key={index}>
+                                <p className="w-[100px]">
+                                    {label}
+                                </p>
+                                <p className="">
+                                    {personalDetails[index]}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
     }
     return (
         <div className="">
@@ -50,9 +81,9 @@ const AccountPage = () => {
                             </div>
                             <div className="flex flex-col font-light text-sm w-full ">
                                 <div className="flex flex-col gap-2">
-                                    {basicdetails.map((detail, index) => (
+                                    {basicDetails.map((detail, index) => (
                                         <div key={index} className="flex flex-row">
-                                            <p className="w-1/2">{basicdetaiilsform[index]}</p>
+                                            <p className="w-1/2">{basicDetaiilsForm[index]}</p>
                                             <p className="w-1/2">{detail}</p>
                                         </div>
                                     ))}
@@ -64,18 +95,22 @@ const AccountPage = () => {
                     </div>
                     <div className="w-full flex flex-col">
                         <div className="flex flex-row justify-end w-full">
-                            <button className="w-full py-3">
-                                MEDICAL DETAILS
-                            </button>
-                            <button className="w-full py-3">
-                                RECORDS
-                            </button>
-                            <button className="w-full py-3">
-                                ACCOUNT DETAILS
-                            </button>
+                            {["MEDICAL DETAILS", "RECORDS", "ACCOUNT DETAILS"].map((label, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleButtonClick(index)}
+                                    style={{
+                                        backgroundColor: activeButton === index ? "#00909A" : "white",
+                                        color: activeButton === index ? "white" : "#2D383D",
+                                    }}
+                                    className="w-full py-3 duration-300 text-sm">
+                                    {label}
+                                </button>
+                            ))}
                         </div>
                         <div className="">
-                            <Records />
+                            {activeButton === 0 && <MedicalDetails />}
+                            {activeButton === 1 && <Records />}
                         </div>
                     </div>
                 </div>
