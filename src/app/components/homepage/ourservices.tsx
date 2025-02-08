@@ -27,7 +27,7 @@ const OurServicesSection: React.FC = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-b from-[#FFFFFF] to-[#89DAF3] flex items-center flex-col px-[15%] py-[5%] pb-[15%]">
+    <div className="bg-white flex items-center flex-col px-[15%] py-[3%] pb-[5%]">
       <h2 className="text-5xl font-bold text-[#043CAA]">
         Our Services
       </h2>
@@ -35,7 +35,7 @@ const OurServicesSection: React.FC = () => {
         {services.map((service, index) => (
           <div
             key={index}
-            className="flex flex-col items-center gap-[60px] w-1/3 bg-white rounded-[30px] px-[50px] py-[70px] shadow-md"
+            className="flex flex-col items-center gap-[40px] w-1/3 bg-white rounded-[30px] px-[50px]"
           >
             <div className="w-[200px] h-[200px]">
               <Image
@@ -51,7 +51,7 @@ const OurServicesSection: React.FC = () => {
               <h3 className="text-xl text-[#043CAA] font-semibold">
                 {service.title}
               </h3>
-              <p className="text-base mt-3 text-justify font-light">
+              <p className="text-base mt-3 text-center font-light">
                 {service.description}
               </p>
             </div>

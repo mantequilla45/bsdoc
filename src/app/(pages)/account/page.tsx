@@ -5,8 +5,30 @@ const AccountPage = () => {
     const basicdetaiilsform = ["FIRST NAME", "LAST NAME", "EMAIL", "PHONE"]
     const Records = () => {
         return (
-            <>
-            </>
+            <div className="w-full py-10 px-[100px] space-y-3">
+                <p className="text-2xl">Records</p>
+                <table style={{ border: "1px solid black", borderCollapse: "collapse" }}>
+                    <thead>
+                        <tr>
+                            <th style={{ border: "1px solid black", padding: "8px" }}>Record ID</th>
+                            <th style={{ border: "1px solid black", padding: "8px" }}>Date</th>
+                            <th style={{ border: "1px solid black", padding: "8px" }}>Weight</th>
+                            <th style={{ border: "1px solid black", padding: "8px" }}>Symptoms</th>
+                            <th style={{ border: "1px solid black", padding: "8px" }}>Health Conditions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>1</td>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>20/07/2024</td>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>70kg</td>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>Headache</td>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>High blood pressure, Asthma</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
         );
 
     }
