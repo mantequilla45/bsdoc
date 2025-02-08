@@ -3,6 +3,13 @@ import Image from "next/image";
 const AccountPage = () => {
     const basicdetails = ["Joma", "Lina", "jomazlina@gmail.com", "09696969696"];
     const basicdetaiilsform = ["FIRST NAME", "LAST NAME", "EMAIL", "PHONE"]
+    const Records = () => {
+        return (
+            <>
+            </>
+        );
+
+    }
     return (
         <div className="">
             <Header background="white" title="Account" />
@@ -33,7 +40,21 @@ const AccountPage = () => {
                         </div>
 
                     </div>
-                    <div className="[w-75%]">
+                    <div className="w-full flex flex-col">
+                        <div className="flex flex-row justify-end w-full">
+                            <button className="w-full py-3">
+                                MEDICAL DETAILS
+                            </button>
+                            <button className="w-full py-3">
+                                RECORDS
+                            </button>
+                            <button className="w-full py-3">
+                                ACCOUNT DETAILS
+                            </button>
+                        </div>
+                        <div className="">
+                            <Records />
+                        </div>
                     </div>
                 </div>
 
