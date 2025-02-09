@@ -14,7 +14,7 @@ const ImageContainer: React.FC<ImageContainerProps> = ({
 }) => {
 
     return (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none md:block hidden">
             {/* Fixed images for scrolled state */}
             {isSticky && isScrolled && (
                 <div className="fixed inset-0">

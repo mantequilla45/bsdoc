@@ -47,7 +47,7 @@ const SearchSymptomsPage = () => {
         <div className="min-h-screen flex flex-col">
             <div
                 ref={containerRef}
-                className={`bg-[#EEFFFE] flex-grow relative ${isAdvancedSearchEnabled ? 'h-full' : 'h-[100vh]'} px-[15%] pt-[10%]`}
+                className={`bg-[#EEFFFE] flex-grow relative ${isAdvancedSearchEnabled ? 'h-full' : 'h-[100vh]'} md:px-[15%] px-[30px] md:pt-[10%] pt-[20%]`}
             >
                 <Header background="transparent" title="Search Symptoms"/>
 
@@ -60,7 +60,7 @@ const SearchSymptomsPage = () => {
 
 
                 <div className="flex z-10 flex-col gap-5 mt-16 relative">
-                    <h1 className="text-7xl">
+                    <h1 className="md:text-7xl text-4xl">
                         Welcome to <span className="text-[#519496]">BSDOC</span>
                     </h1>
                     <div className="flex items-center gap-4">

@@ -4,36 +4,54 @@ import Header from "@/app/layout/header";
 import Image from "next/image";
 import { useState } from "react";
 const AccountPage = () => {
+
     const basicDetails = ["Joma", "Lina", "jomazlina@gmail.com", "09696969696"];
-    const basicDetaiilsForm = ["FIRST NAME", "LAST NAME", "EMAIL", "PHONE"];
     const personalDetails = ["B", "170cm", "50kg", "25"];
+    const medicalHistory = ["Hypertension, Asthma", "Penicillin, Pollen", "Lisinopril 10mg daily, Albuterol as needed", "Appendectomy (2015), Knee Surgery (2020)"];
+    const userRecords = [
+        ["1", "20/07/2024", "70kg", "Headache", "High blood pressure, Asthma"],
+        ["2", "21/07/2024", "72kg", "Fever", "Flu"],
+        ["3", "22/07/2024", "68kg", "Cough", "Bronchitis"],
+        ["4", "23/07/2024", "75kg", "Fatigue", "Diabetes"],
+    ];
+
 
     const [activeButton, setActiveButton] = useState(0);
     const handleButtonClick = (index: number) => {
         setActiveButton(index);
     }
+
     const Records = () => {
         return (
             <div className="w-full py-10 px-[100px] space-y-3">
                 <p className="text-2xl">BSDOC Records</p>
-                <table style={{ border: "1px solid black", borderCollapse: "collapse" }}>
+                <table style={{ borderCollapse: "collapse", width: "100%"  }}>
                     <thead>
                         <tr>
-                            <th style={{ border: "1px solid black", padding: "8px" }}>Record ID</th>
-                            <th style={{ border: "1px solid black", padding: "8px" }}>Date</th>
-                            <th style={{ border: "1px solid black", padding: "8px" }}>Weight</th>
-                            <th style={{ border: "1px solid black", padding: "8px" }}>Symptoms</th>
-                            <th style={{ border: "1px solid black", padding: "8px" }}>Health Conditions</th>
+                            {["Record ID", "Date", "Weight", "Symptoms", "Health Conditions"].map((label, index) => (
+                                <th key={index} style={{ padding: "8px", fontWeight: "500", textAlign: "left" }}>
+                                    {label}
+                                </th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td style={{ border: "1px solid black", padding: "8px" }}>1</td>
-                            <td style={{ border: "1px solid black", padding: "8px" }}>20/07/2024</td>
-                            <td style={{ border: "1px solid black", padding: "8px" }}>70kg</td>
-                            <td style={{ border: "1px solid black", padding: "8px" }}>Headache</td>
-                            <td style={{ border: "1px solid black", padding: "8px" }}>High blood pressure, Asthma</td>
-                        </tr>
+                        {userRecords.map((record, rowIndex) => (
+                            <tr key={rowIndex}>
+                                {record.map((data, colIndex) => (
+                                    <td key={colIndex} style={{
+                                        borderTop: "1px solid gray",
+                                        borderLeft: "none",
+                                        borderRight: "none",
+                                        borderBottom: "none",
+                                        padding: "5px",
+                                        fontWeight: "300"
+                                    }}>
+                                        {data}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -42,13 +60,12 @@ const AccountPage = () => {
 
     const MedicalDetails = () => {
         return (
-            <div className="w-full py-10 px-[100px] space-y-3 flex flex-col">
-                <div className="flex flex-col gap-4">
+            <div className="w-full py-10 px-[100px] flex flex-col gap-10">
+                <div className="flex flex-col gap-2">
                     <p className="text-2xl">Personal Details</p>
-                    <div className="flex flex-col text-sm gap-2">
-
+                    <div className="flex flex-col text-sm">
                         {["Blood Type", "Height", "Weight", "Age"].map((label, index) => (
-                            <div className="flex flex-row gap-16"
+                            <div className="flex flex-row h-8 items-center gap-16 border-black border-b-[1px] w-1/2"
                                 key={index}>
                                 <p className="w-[100px]">
                                     {label}
@@ -59,6 +76,24 @@ const AccountPage = () => {
                             </div>
                         ))}
                     </div>
+
+                </div>
+                <div className="flex flex-col gap-2">
+                    <p className="text-2xl">Medical History</p>
+                    <div className="flex flex-col text-sm">
+                        {["Blood Type", "Height", "Weight", "Age"].map((label, index) => (
+                            <div className="flex flex-row h-8 items-center gap-16 border-black border-b-[1px] w-1/2"
+                                key={index}>
+                                <p className="w-[100px]">
+                                    {label}
+                                </p>
+                                <p className="">
+                                    {medicalHistory[index]}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+
                 </div>
             </div>
         );
@@ -83,7 +118,7 @@ const AccountPage = () => {
                                 <div className="flex flex-col gap-2">
                                     {basicDetails.map((detail, index) => (
                                         <div key={index} className="flex flex-row">
-                                            <p className="w-1/2">{basicDetaiilsForm[index]}</p>
+                                            <p className="w-1/2">{["FIRST NAME", "LAST NAME", "EMAIL", "PHONE"][index]}</p>
                                             <p className="w-1/2">{detail}</p>
                                         </div>
                                     ))}

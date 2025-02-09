@@ -5,18 +5,20 @@ import AuthModal from "@/app/components/modals/userAuth";
 import Link from "next/link";
 
 const Header = ({ background, title }: { background: string; title: string }) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [scrolled, setScrolled] = useState(false);
+    const [, setScrolled] = useState(false);
     const [isLoginOpen, setIsLoginOpen] = useState(false);
     const [pathname, setPathname] = useState("");
-    const [loggedIn, setLoggedIn] = useState(true); // Simulated login state
-    const [menuOpen, setMenuOpen] = useState(false); // Profile menu state
+    const [loggedIn, setLoggedIn] = useState(true);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const buttonRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node) && !buttonRef.current?.contains(event.target as Node)) {
+            if (containerRef.current && 
+                !containerRef.current.contains(event.target as Node) && 
+                !buttonRef.current?.contains(event.target as Node)) {
                 setMenuOpen(false);
             }
         }
@@ -26,7 +28,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                 document.removeEventListener('mousedown', handleClickOutside);
             };
         }
-    }, [menuOpen]); // Add menuOpen to dependencies
+    }, [menuOpen]);
 
     useEffect(() => {
         setPathname(window.location.pathname);
@@ -39,22 +41,30 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
     return (
         <header
-            className={`text-[#222726] py-5 px-[5%] z-50 fixed top-0 left-0 right-0 transition duration-300 bg-${background}
-                }`}
+            className={`text-[#222726] py-3 md:py-5 px-4 md:px-[5%] z-50 fixed top-0 left-0 right-0 transition duration-300 bg-${background}`}
         >
             <title>{title}</title>
-            <nav>
-                <ul className="flex flex-row items-center gap-5 justify-end text-sm relative">
-                    <li
-                        className={`hover:underline cursor-pointer ${pathname === "/" ? "text-white" : "text-[#2D383D]"
-                            } text-md`}
-                    >
+            <nav className="relative">
+                {/* Mobile Menu Button */}
+                <div 
+                    className="md:hidden absolute right-0 top-0 cursor-pointer"
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                >
+                    <div className="space-y-2">
+                        <span className={`block w-8 h-0.5 bg-current transform transition duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2.5' : ''}`}></span>
+                        <span className={`block w-8 h-0.5 bg-current transition duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                        <span className={`block w-8 h-0.5 bg-current transform transition duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2.5' : ''}`}></span>
+                    </div>
+                </div>
+
+                {/* Desktop Menu */}
+                <ul className="hidden md:flex flex-row items-center gap-5 justify-end text-sm relative">
+                    <li className={`hover:underline cursor-pointer ${pathname === "/" ? "text-white" : "text-[#2D383D]"} text-md`}>
                         Schedule an Appointment
                     </li>
 
                     {loggedIn ? (
                         <div className="relative">
-                            {/* Profile Button */}
                             <div
                                 ref={buttonRef}
                                 onClick={() => setMenuOpen(!menuOpen)}
@@ -63,22 +73,20 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                 <span className="text-lg text-white">👤</span>
                             </div>
 
-                            {/* Dropdown Menu */}
                             <AnimatePresence>
                                 {menuOpen && (
                                     <motion.div
                                         initial={{ height: 0, opacity: 0, y: 0 }}
                                         animate={{ height: "auto", opacity: 1, y: 0 }}
                                         exit={{ height: 0, opacity: 0, y: 0 }}
-                                        transition={{ duration: 0.2 }} // Add explicit transition
+                                        transition={{ duration: 0.2 }}
                                         className="absolute right-0 mt-2 w-40 bg-white shadow-md rounded-lg overflow-hidden border-[1px]"
-                                        ref={containerRef}>
+                                        ref={containerRef}
+                                    >
                                         <ul className="text-gray-700">
-
                                             <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                                                 <Link href="/account" className="block w-full h-full">Account</Link>
                                             </li>
-
                                             <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                                                 Settings
                                             </li>
@@ -105,13 +113,64 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                         </div>
                     )}
                 </ul>
+
+                {/* Mobile Menu */}
+                <AnimatePresence>
+                    {mobileMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute top-12 right-0 w-full bg-white shadow-lg rounded-lg md:hidden"
+                        >
+                            <ul className="py-2">
+                                <li className="px-4 py-3 hover:bg-gray-100">
+                                    <Link href="/schedule" className="block">
+                                        Schedule an Appointment
+                                    </Link>
+                                </li>
+                                {loggedIn ? (
+                                    <>
+                                        <li className="px-4 py-3 hover:bg-gray-100">
+                                            <Link href="/account" className="block">Account</Link>
+                                        </li>
+                                        <li className="px-4 py-3 hover:bg-gray-100">
+                                            <Link href="/settings" className="block">Settings</Link>
+                                        </li>
+                                        <li
+                                            onClick={() => {
+                                                setLoggedIn(false);
+                                                setMobileMenuOpen(false);
+                                            }}
+                                            className="px-4 py-3 hover:bg-red-100 text-red-500"
+                                        >
+                                            Logout
+                                        </li>
+                                    </>
+                                ) : (
+                                    <li
+                                        onClick={() => {
+                                            setIsLoginOpen(true);
+                                            setMobileMenuOpen(false);
+                                        }}
+                                        className="px-4 py-3 hover:bg-gray-100"
+                                    >
+                                        Sign in
+                                    </li>
+                                )}
+                            </ul>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </nav>
+
             <AnimatePresence>
                 <AuthModal
                     isOpen={isLoginOpen}
                     onClose={() => {
                         setIsLoginOpen(false);
-                        setLoggedIn(true); // Simulating successful login
+                        setLoggedIn(true);
                     }}
                     initialTab="login"
                 />
