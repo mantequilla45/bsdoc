@@ -1,6 +1,6 @@
 "use client";
 import Header from "@/app/layout/header";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { IoSearch } from "react-icons/io5";
 import Footer from "@/app/layout/footer";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,61 +10,34 @@ import ImageContainer from "@/app/components/search-symptoms/background";
 const SearchSymptomsPage = () => {
     const [isAdvancedSearchEnabled, setIsAdvancedSearchEnabled] = useState(false);
     const [inputValue, setInputValue] = useState("");
-    const [isSticky, setIsSticky] = useState(true);
-    const footerRef = useRef<HTMLDivElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [isScrolled, setIsScrolled] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (footerRef.current && containerRef.current) {
-                const footerTop = footerRef.current.getBoundingClientRect().top;
-                const windowHeight = window.innerHeight;
-
-                // If footer is in view, make images absolute
-                if (footerTop <= windowHeight) {
-                    setIsSticky(false);
-                } else {
-                    setIsSticky(true);
-                }
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 0); // Set to true if scrolled
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <div
-                ref={containerRef}
-                className={`bg-[#EEFFFE] flex-grow relative ${isAdvancedSearchEnabled ? 'h-full' : 'h-[100vh]'} md:px-[15%] px-[30px] md:pt-[10%] pt-[20%]`}
+        <div className="min-h-screen flex flex-col relative">
+            <motion.div
+                className="bg-[#EEFFFE] flex-grow relative"
+                animate={{ height: isAdvancedSearchEnabled ? '100%' : '100vh' }}
+                transition={{
+                    duration: 0.5,
+                    ease: "easeInOut"
+                }}
             >
-                <Header background="transparent" title="Search Symptoms"/>
+                <Header background="transparent" title="Search Symptoms" />
 
-                {/* Container for images */}
-                <ImageContainer
-                    isSticky={isSticky}
-                    isScrolled={isScrolled}
-                    isAdvancedSearchEnabled={isAdvancedSearchEnabled}
-                />
+                {/* Image container with sticky positioning */}
+                <div className="absolute inset-0">
+                    <div className="sticky top-0 h-screen">
+                        <ImageContainer />
+                    </div>
+                </div>
 
-
-                <div className="flex z-10 flex-col gap-5 mt-16 relative">
+                {/* Main content */}
+                <div className="md:h-[30vh] h-[20%]" />
+                <div className={`flex z-10 flex-col gap-5 relative md:px-[15%] px-[30px]`}>
                     <h1 className="md:text-7xl text-4xl">
                         Welcome to <span className="text-[#519496]">BSDOC</span>
                     </h1>
                     <div className="flex items-center gap-4">
-                        <p className="pl-7">Advanced Search</p>
+                        <p className="md:pl-7 pl-4">Advanced Search</p>
                         <button
                             onClick={() => setIsAdvancedSearchEnabled(!isAdvancedSearchEnabled)}
                             className={`w-12 h-6 rounded-full transition duration-300 border-[1px] ${isAdvancedSearchEnabled ? 'bg-blue-500 border-blue-800' : 'bg-gray-300 border-[#777777]'} relative`}
@@ -79,22 +52,21 @@ const SearchSymptomsPage = () => {
                         {isAdvancedSearchEnabled ? (
                             <motion.div
                                 key="advanced-search"
-                                initial={{ height: "50vh", opacity: 0 }}
+                                initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: "auto", opacity: 1 }}
                                 exit={{ height: "50vh", opacity: 0 }}
                                 transition={{
                                     duration: 0.6,
                                     ease: "easeInOut"
                                 }}
-                                className="w-[100%] bg-white rounded-xl mb-[100px] shadow-md border-[1px]"
+                                className="w-[100%] bg-white shadow-md rounded-xl border-[1px]"
                             >
                                 <AdvancedSearchForm />
-
                             </motion.div>
                         ) : (
                             <motion.div
                                 key="basic-search"
-                                initial={{ height: "59vh", opacity: 0, y: 20 }}
+                                initial={{ height: "full", opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{
@@ -103,16 +75,17 @@ const SearchSymptomsPage = () => {
                                 }}
                             >
                                 <div className="space-y-3">
-                                    <div className="relative py-4 pl-10 shadow-md border-[1px] rounded-xl px-6 bg-white text-gray-500 text-[35px] flex items-center">
+                                    <div className="relative md:py-4 py-1 md:pl-10 shadow-md border-[1px] rounded-xl px-6 bg-white text-gray-500 text-[35px] flex items-center">
                                         <input
                                             type="text"
                                             placeholder="Search Symptoms..."
                                             value={inputValue}
                                             onChange={(e) => setInputValue(e.target.value)}
-                                            className={`w-full border-none outline-none text-xl ${inputValue ? 'text-[#2D383D] font-normal' : 'text-gray-500 font-light'}`}
+                                            className={`w-full h-12 border-none placeholder:text-base md:placeholder:text-xl outline-none text-lg flex items-center ${inputValue ? 'text-[#2D383D] font-normal' : 'text-gray-500 font-light'}`}
+                                            style={{ lineHeight: "2rem" }}
                                         />
-                                        <button className="">
-                                            <IoSearch className="text-gray-500 hover:scale-110 active:scale-90 transition duration-300" />
+                                        <button>
+                                            <IoSearch className="text-gray-500 hover:scale-110 active:scale-90 transition duration-300 md:scale-100 scale-[.80]" />
                                         </button>
                                     </div>
                                 </div>
@@ -123,8 +96,10 @@ const SearchSymptomsPage = () => {
                         )}
                     </AnimatePresence>
                 </div>
-            </div>
-            <div ref={footerRef}>
+            </motion.div>
+
+            {/* Footer with higher z-index to ensure it's above the floating background */}
+            <div className="z-20">
                 <Footer />
             </div>
         </div>
