@@ -140,14 +140,14 @@ const AdvancedSearchForm = () => {
         const groupedSymptoms = groupSymptomsByCategory(title === "Symptoms" ? symptoms : conditions);
         return (
             <div className="flex flex-col gap-3 w-full gap-5 border-t-[1px] border-black py-7">
-                <p className="text-2xl">{title}</p>
-                <div className="flex flex-row grid grid-cols-2 gap-10">
+                <p className="md:text-2xl text-lg">{title}</p>
+                <div className="flex flex-row grid md:grid-cols-2 grid-cols-1 gap-10">
                     {Object.entries(groupedSymptoms).map(([category, items]) => (
-                        <div key={category} className="px-5 space-y-3">
-                            <p className="text-xl font-regular">
+                        <div key={category} className="md:px-5 px-0 space-y-3">
+                            <p className="md:text-xl text-base font-regular">
                                 {category}
                             </p>
-                            <div className={`grid grid-cols-2 gap-4 font-light`}>
+                            <div className={`grid md:grid-cols-2 grid-cols-2 gap-4 font-light`}>
                                 {items.map((item, index) => (
                                     <div key={index}>
                                         <CheckBox item={item} />
@@ -163,16 +163,16 @@ const AdvancedSearchForm = () => {
     };
 
     return (
-        <div className="flex flex-col w-full h-full p-16">
+        <div className="flex flex-col w-full h-full md:p-16 p-6">
             <div>
-                <p className="text-4xl mb-2">
+                <p className="md:text-4xl text-2xl mb-2">
                     BSDOC Advanced Symptoms Search
                 </p>
-                <p>
+                <p className="md:text-base text-sm">
                     Please fill the following form with the symptoms you are feeling.
                 </p>
             </div>
-            <div className="flex flex-row justify-between my-10">
+            <div className="flex md:flex-row flex-col justify-between md:my-10 my-4">
                 <TextBox title="Name" />
                 <TextBox title="Age" />
                 <TextBox title="Weight" />
