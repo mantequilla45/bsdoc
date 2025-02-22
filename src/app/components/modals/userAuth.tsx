@@ -202,12 +202,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                             Sign Up
                           </button>
                           <p
-                            className="text-center mt-4 cursor-pointer text-[#2D383D] flex flex-row items-center gap-3 hover:underline"
+                            className="text-center mt-4 font-light cursor-pointer text-[#2D383D] flex flex-row items-center gap-3 hover:underline"
                             onClick={() => setIsLogin(true)}
                           >
                             <FaArrowRightLong className="rotate-180"/>
                             Already have an account?
                           </p>
+
+                          <a className="font-light hover:underline" href="/doctor-registration">
+                            Sign up as Doctor
+                          </a>
                         </motion.div>
                       )}
                     </AnimatePresence>

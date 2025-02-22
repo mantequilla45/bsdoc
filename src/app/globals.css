@@ -25,3 +25,38 @@ body, p, div, span {
   color: #243035;
 }
 
+.input-container {
+  position: relative;
+  width: 100%;
+}
+
+.input-container label {
+  position: absolute;
+  left: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #645F5F;
+  font-weight: 300;
+  transition: all 0.3s ease;
+  pointer-events: none; /* Prevents clicking on label */
+}
+
+input {
+  padding: 15px 25px;
+  background-color: #F0F0F0;
+  border-radius: 30px;
+  border: none;
+  outline: none;
+  width: 100%;
+  color: #645F5F;
+  font-weight: 400;
+  font-size: 16px;
+}
+
+input:focus + label,
+input:not(:placeholder-shown) + label {
+  top: 10px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #333;
+}
