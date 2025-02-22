@@ -141,15 +141,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                           </button>
                           <div className="w-full border-t border-gray-300" />
                           <div className="space-y-4 w-full">
-                            <input
-                              placeholder="Email"
-                              className="py-3 px-5 w-full border-[1px] rounded-full font-light focus:outline-none focus:ring-2 focus:ring-[#62B6B8] focus:border-transparent"
-                            />
-                            <input
-                              placeholder="Password"
-                              type="password"
-                              className="py-3 px-5 w-full border-[1px] rounded-full font-light focus:outline-none focus:ring-2 focus:ring-[#62B6B8] focus:border-transparent"
-                            />
+
+                            {["Email", "Password"].map((label, index) => (
+                              <div key={index} className="input-container mt-[25px]">
+                                <input type="text" id={`${label}`} placeholder=" " required />
+                                <label htmlFor={`${label}`}>{`${label}`}</label>
+                              </div>
+                            ))}
                           </div>
 
                           <button
@@ -181,20 +179,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                           </button>
                           <div className="w-full border-t border-gray-300" />
                           <div className="space-y-4 w-full">
-                            <input
-                              placeholder="Email"
-                              className="py-3 px-5 w-full border-[1px] rounded-full font-light focus:outline-none focus:ring-2 focus:ring-[#62B6B8] focus:border-transparent"
-                            />
-                            <input
-                              placeholder="Password"
-                              type="password"
-                              className="py-3 px-5 w-full border-[1px] rounded-full font-light focus:outline-none focus:ring-2 focus:ring-[#62B6B8] focus:border-transparent"
-                            />
-                            <input
-                              placeholder="Confirm Password"
-                              type="password"
-                              className="py-3 px-5 w-full border-[1px] rounded-full font-light focus:outline-none focus:ring-2 focus:ring-[#62B6B8] focus:border-transparent"
-                            />
+                            <div className="w-full flex flex-col">
+                              {["Email", "Password", "Confirm Password"].map((label, index) => (
+                                <div key={index} className="input-container mt-[25px]">
+                                  <input type="text" id={`${label}`} placeholder=" " required />
+                                  <label htmlFor={`${label}`}>{`${label}`}</label>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                           <button
                             className="py-3 px-5 w-full rounded-full bg-[#78DDD3] text-white hover:bg-[#82C2BC] active:bg-[#7CD1C8] active:scale-95 duration-300"
@@ -205,7 +197,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                             className="text-center mt-4 font-light cursor-pointer text-[#2D383D] flex flex-row items-center gap-3 hover:underline"
                             onClick={() => setIsLogin(true)}
                           >
-                            <FaArrowRightLong className="rotate-180"/>
+                            <FaArrowRightLong className="rotate-180" />
                             Already have an account?
                           </p>
 
