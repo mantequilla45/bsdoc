@@ -21,7 +21,7 @@ const SearchSymptomsPage = () => {
                     ease: "easeInOut"
                 }}
             >
-                <Header background="transparent" title="Search Symptoms" />
+                <Header background="[#EEFFFE]" title="Search Symptoms" />
 
                 {/* Image container with sticky positioning */}
                 <div className="absolute inset-0">
