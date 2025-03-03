@@ -5,7 +5,7 @@ import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { IoIosCloseCircle } from "react-icons/io";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "../../../lib/supabaseClient";
 
 interface AuthModalProps {
   isOpen: boolean;
