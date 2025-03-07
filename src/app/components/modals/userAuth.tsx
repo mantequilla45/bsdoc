@@ -5,7 +5,12 @@ import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { IoIosCloseCircle } from "react-icons/io";
-import { supabase } from "../../../lib/supabaseClient";
+import { 
+  signUpWithEmail, 
+  signInWithGoogle, 
+  singInWithEmail, 
+  //signOut 
+} from "@/services/Auth/auth";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -16,12 +21,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     setIsLogin(true);
     setErrorMessage("");
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
   }, [isOpen]);
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -29,31 +38,58 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
     setErrorMessage("");
 
-    if (isLogin) {
-      // Login user
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        setErrorMessage(error.message);
-      } else {
+    try {
+      if (isLogin) {
+        // Login user
+        await singInWithEmail(email, password);
         onClose(); // Close modal after successful login
-      }
-    } else {
-      // Signup user
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        setErrorMessage(error.message);
       } else {
-        onClose(); // Close modal after successful signup
+        if (password !== confirmPassword) {
+          setErrorMessage("Passwords do not match!");
+          setLoading(false);
+          return;
+        }
+        await signUpWithEmail(email, password);
+        onClose();
       }
     }
-    setLoading(false);
+    catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+      }
+      else {
+        setErrorMessage('An unknown error has occurred.');
+      }
+    }
+    finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
-    if (error) setErrorMessage(error.message);
-    setLoading(false);
+    try {
+      await signInWithGoogle();
+      onClose();
+    }
+    catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+      }
+      else {
+        setErrorMessage('An unknown error has occurred with Google sign in.');
+      }
+    }
+    finally {
+      setLoading(false);
+    }
+  };
+
+  const getButtonText = () => {
+    if (loading) {
+      return "Processing...";
+    }
+    return isLogin ? "Login" : "Sign Up";
   };
 
   const slideVariants = {
@@ -97,7 +133,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     <button onClick={onClose} className="absolute top-4 right-5 z-10 text-gray-500 hover:text-gray-700 duration-300">
                       <IoIosCloseCircle className="w-[40px] h-[40px]" />
                     </button>
-
                     <AnimatePresence custom={isLogin ? 1 : -1}>
                       <motion.div
                         key={isLogin ? "login" : "signup"}
@@ -138,20 +173,25 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                             <input
                               type="password"
                               placeholder="Confirm Password"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
                               className="py-3 px-5 w-full border-[1px] rounded-full font-light focus:ring-2 focus:ring-[#62B6B8]"
                               required
                             />
                           )}
                           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-                          <button type="submit" className="py-3 px-5 w-full rounded-full bg-[#78DDD3] text-white hover:bg-[#82C2BC] active:scale-95 duration-300">
-                            {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
+                          <button 
+                            type="submit" 
+                            className="py-3 px-5 w-full rounded-full bg-[#78DDD3] text-white hover:bg-[#82C2BC] active:scale-95 duration-300"
+                            aria-label={getButtonText()}
+                          >
                           </button>
                         </form>
 
-                        <p className="text-center mt-4 cursor-pointer text-[#2D383D] flex flex-row items-center gap-3 hover:underline" onClick={() => setIsLogin(!isLogin)}>
+                        <button className="text-center mt-4 cursor-pointer text-[#2D383D] flex flex-row items-center gap-3 hover:underline" onClick={() => setIsLogin(!isLogin)}>
                           <FaArrowRightLong className={isLogin ? "rotate-180" : ""} />
                           {isLogin ? "Create an account" : "Already have an account?"}
-                        </p>
+                        </button>
                       </motion.div>
                     </AnimatePresence>
                   </div>

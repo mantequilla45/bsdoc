@@ -172,7 +172,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                         setIsLoginOpen(false);
                         setLoggedIn(true);
                     }}
-                    initialTab="login"
+                    //initialTab="login"
                 />
             </AnimatePresence>
         </header>
