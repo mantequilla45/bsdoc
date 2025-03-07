@@ -1,5 +1,9 @@
 import { supabase } from "@/lib/supabaseClient";
 
+const redirectTo = process.env.NODE_ENV === 'production'
+    ? 'https://bsdoc-project.vercel.app/auth/callback'
+    : 'https://localhost:3000/auth/callback'
+
 export async function signUpWithEmail(email:string, password: string) {
     const { data, error } = await supabase.auth.signUp({
         email,
@@ -23,6 +27,7 @@ export async function singInWithEmail(email: string, password: string) {
 export async function signInWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google', 
+        options: { redirectTo }
     });
 
     if (error) throw error;
