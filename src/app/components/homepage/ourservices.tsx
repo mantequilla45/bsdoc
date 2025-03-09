@@ -27,7 +27,7 @@ const OurServicesSection: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white flex items-center flex-col px-4 md:px-[15%] py-8 md:py-[3%] md:pb-[5%]">
+    <div className="flex items-center flex-col md:mt-0 mt-[100px]">
       <h2 className="text-3xl md:text-5xl font-bold text-[#043CAA] text-center">
         Our Services
       </h2>
