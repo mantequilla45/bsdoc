@@ -41,10 +41,10 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
     return (
         <header
-            className={`text-[#222726] z-50 top-0 sticky transition duration-300 bg-${background} h-20 flex items-center`}
+            className={`text-[#222726] z-50 sticky top-0 transition duration-300 bg-${background} min-h-[10vh] flex items-center max-w-[1300px] min-w-[100vw]`}
         >
             <title>{title}</title>  
-            <nav className="relative max-w-[1300px] px-16 mx-auto flex justify-between items-center px-16 w-full h-full">
+            <nav className="relative max-w-[1300px] mx-auto flex justify-end items-center md:px-16 px-6 w-full h-full">
                 {/* Mobile Menu Button */}
                 <div
                     className="md:hidden cursor-pointer"
