@@ -24,3 +24,9 @@ body {
 body, p, div, span {
   color: #243035;
 }
+
+header {
+  min-width: 1300px;
+  min-height: 64px;
+  overflow: auto;
+ }

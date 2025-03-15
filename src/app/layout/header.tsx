@@ -8,7 +8,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
     const [, setScrolled] = useState(false);
     const [isLoginOpen, setIsLoginOpen] = useState(false);
     const [pathname, setPathname] = useState("");
-    const [loggedIn, setLoggedIn] = useState(true);
+    const [loggedIn, setLoggedIn] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -16,8 +16,8 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (containerRef.current && 
-                !containerRef.current.contains(event.target as Node) && 
+            if (containerRef.current &&
+                !containerRef.current.contains(event.target as Node) &&
                 !buttonRef.current?.contains(event.target as Node)) {
                 setMenuOpen(false);
             }
@@ -41,24 +41,24 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
     return (
         <header
-            className={`text-[#222726] py-3 md:py-5 px-4 md:px-[5%] z-50 fixed top-0 left-0 right-0 transition duration-300 bg-${background}`}
+            className={`text-[#222726] z-50 sticky top-0 transition duration-300 bg-${background} min-h-[10vh] flex items-center max-w-[1300px] min-w-[100vw]`}
         >
-            <title>{title}</title>
-            <nav className="relative">
+            <title>{title}</title>  
+            <nav className="relative max-w-[1300px] mx-auto flex justify-end items-center md:px-16 px-6 w-full h-full">
                 {/* Mobile Menu Button */}
-                <div 
-                    className="md:hidden absolute right-0 top-0 cursor-pointer"
+                <div
+                    className="md:hidden cursor-pointer"
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 >
                     <div className="space-y-2">
-                        <span className={`block w-8 h-0.5 bg-current transform transition duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2.5' : ''}`}></span>
-                        <span className={`block w-8 h-0.5 bg-current transition duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
-                        <span className={`block w-8 h-0.5 bg-current transform transition duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2.5' : ''}`}></span>
+                        <span className={`block w-8 h-0.5 bg-white transform transition duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2.5' : ''}`}></span>
+                        <span className={`block w-8 h-0.5 bg-white transition duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                        <span className={`block w-8 h-0.5 bg-white transform transition duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2.5' : ''}`}></span>
                     </div>
                 </div>
 
                 {/* Desktop Menu */}
-                <ul className="hidden md:flex flex-row items-center gap-5 justify-end text-sm relative">
+                <ul className="hidden md:flex flex-row items-center gap-5 text-sm relative">
                     <li className={`hover:underline cursor-pointer ${pathname === "/" ? "text-white" : "text-[#2D383D]"} text-md`}>
                         Schedule an Appointment
                     </li>
@@ -122,7 +122,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute top-12 right-0 w-full bg-white shadow-lg rounded-lg md:hidden"
+                            className="fixed top-12 right-0 w-full bg-white shadow-lg rounded-lg md:hidden" 
                         >
                             <ul className="py-2">
                                 <li className="px-4 py-3 hover:bg-gray-100">
@@ -172,7 +172,6 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                         setIsLoginOpen(false);
                         setLoggedIn(true);
                     }}
-                    //initialTab="login"
                 />
             </AnimatePresence>
         </header>
