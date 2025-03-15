@@ -5,12 +5,8 @@ import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { IoIosCloseCircle } from "react-icons/io";
-import { 
-  signUpWithEmail, 
-  signInWithGoogle, 
-  singInWithEmail, 
-  //signOut 
-} from "@/services/Auth/auth";
+import { login, signup } from "@/services/Auth/serverauth";
+import { signInWithGoogle } from "@/services/Auth/auth";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -41,7 +37,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     try {
       if (isLogin) {
         // Login user
-        await singInWithEmail(email, password);
+        await login(email, password);
         onClose(); // Close modal after successful login
       } else {
         if (password !== confirmPassword) {
@@ -49,12 +45,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           setLoading(false);
           return;
         }
-        await signUpWithEmail(email, password);
+        await signup(email, password);
         onClose();
       }
     }
     catch (error) {
       if (error instanceof Error) {
+        console.log('Error: ', error);
         setErrorMessage(error.message);
       }
       else {

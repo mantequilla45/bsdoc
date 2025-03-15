@@ -1,3 +1,5 @@
+'use client';
+
 import Header from "@/app/layout/header";
 
 const AboutUs = () => {

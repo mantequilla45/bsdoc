@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthModal from "@/app/components/modals/userAuth";
 import Link from "next/link";
+import { signOut } from "@/services/Auth/auth";
 
 const Header = ({ background, title }: { background: string; title: string }) => {
     const [, setScrolled] = useState(false);
@@ -94,6 +95,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                                 onClick={() => {
                                                     setLoggedIn(false);
                                                     setMenuOpen(false);
+                                                    signOut();
                                                 }}
                                                 className="px-4 py-2 hover:bg-red-100 cursor-pointer text-red-500"
                                             >
