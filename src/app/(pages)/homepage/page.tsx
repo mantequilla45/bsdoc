@@ -13,7 +13,7 @@ const HomePage = () => {
         />
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-black/30 z-0 max-w-[1300px] min-w-[100%] mx-auto" />
       </div>
-      <div className="flex flex-col md:flex-row md:px-16 px-6 gap-10 justify-center pb-[10%]">
+      <div className="flex flex-col md:flex-row md:px-16 px-6 gap-10 justify-center pb-[10%] w-full">
         <div className="flex flex-col md:w-[60%] justify-center w-full gap-8 md:gap-[70px] z-10">
           <div className="space-y-4 md:space-y-6">
             <h1 className="text-3xl md:text-6xl font-bold text-white text-left">

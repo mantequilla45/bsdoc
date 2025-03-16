@@ -40,6 +40,16 @@ const Header = ({ background, title }: { background: string; title: string }) =>
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    const handleAuthSuccess = () => {
+        setIsLoginOpen(false);
+        setLoggedIn(true);
+    };
+
+    const handleModalClose = () => {
+        setIsLoginOpen(false);
+        // Don't set loggedIn state here
+    };
+
     return (
         <header
             className={`text-[#222726] overflow-visible z-50 sticky top-0 transition duration-300 bg-${background} md:h-[10vh] h-auto flex items-center max-w-[1300px] min-w-[100%]`}
@@ -170,10 +180,8 @@ const Header = ({ background, title }: { background: string; title: string }) =>
             <AnimatePresence>
                 <AuthModal
                     isOpen={isLoginOpen}
-                    onClose={() => {
-                        setIsLoginOpen(false);
-                        setLoggedIn(true);
-                    }}
+                    onClose={handleModalClose}
+                    onAuthSuccess={handleAuthSuccess}
                 />
             </AnimatePresence>
         </header>
