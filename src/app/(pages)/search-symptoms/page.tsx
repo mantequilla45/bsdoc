@@ -32,7 +32,7 @@ const SearchSymptomsPage = () => {
 
                 {/* Main content */}
                 <div className="md:h-[30vh] h-[20%]" />
-                <div className={`flex z-10 flex-col gap-5 relative md:px-[15%] px-[30px]`}>
+                <div className={`flex z-10 flex-col gap-5 relative md:px-[15%] px-[30px] mb-20`}>
                     <h1 className="md:text-7xl text-4xl">
                         Welcome to <span className="text-[#519496]">BSDOC</span>
                     </h1>

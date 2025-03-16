@@ -42,10 +42,10 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
     return (
         <header
-            className={`text-[#222726] z-50 sticky top-0 transition duration-300 bg-${background} min-h-[10vh] flex items-center max-w-[1300px] min-w-[100vw]`}
+            className={`text-[#222726] overflow-visible z-50 sticky top-0 transition duration-300 bg-${background} md:h-[10vh] h-auto flex items-center max-w-[1300px] min-w-[100%]`}
         >
-            <title>{title}</title>  
-            <nav className="relative max-w-[1800px] mx-auto flex justify-end items-center md:px-16 px-6 w-full h-full">
+            <title>{title}</title>
+            <nav className="relative mx-auto flex justify-end items-center md:px-16 px-6 w-full h-full">
                 {/* Mobile Menu Button */}
                 <div
                     className="md:hidden cursor-pointer"
@@ -81,7 +81,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                         animate={{ height: "auto", opacity: 1, y: 0 }}
                                         exit={{ height: 0, opacity: 0, y: 0 }}
                                         transition={{ duration: 0.2 }}
-                                        className="absolute right-0 mt-2 w-40 bg-white shadow-md rounded-lg border-[1px] z-100"
+                                        className="absolute right-0 mt-2 w-40 bg-white shadow-md rounded-lg border-[1px]"
                                         ref={containerRef}
                                     >
                                         <ul className="text-gray-700">
@@ -124,7 +124,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.2 }}
-                            className="fixed top-12 right-0 w-full bg-white shadow-lg rounded-lg md:hidden" 
+                            className="absolute top-12 right-0 w-full bg-white shadow-lg rounded-lg md:hidden"
                         >
                             <ul className="py-2">
                                 <li className="px-4 py-3 hover:bg-gray-100">
