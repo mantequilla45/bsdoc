@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AuthModal from "@/app/components/modals/userAuth";
 import Link from "next/link";
 import { signOut } from "@/services/Auth/auth";
+import { supabase } from "@/lib/supabaseClient";
 
 const Header = ({ background, title }: { background: string; title: string }) => {
     const [, setScrolled] = useState(false);
@@ -31,6 +32,33 @@ const Header = ({ background, title }: { background: string; title: string }) =>
         }
     }, [menuOpen]);
 
+    useEffect(() => {
+      // Check if user is logged in when component mounts
+      const checkAuthStatus = async () => {
+        try {
+          // Get the current session from Supabase
+          const { data: { session } } = await supabase.auth.getSession();
+          setLoggedIn(!!session); // Set to true if session exists, false otherwise
+        } catch (error) {
+          console.error('Error checking authentication status:', error);
+          setLoggedIn(false);
+        }
+      };
+      
+      checkAuthStatus();
+      
+      // Optional: Subscribe to auth state changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          setLoggedIn(!!session);
+        }
+      );
+      
+      // Clean up subscription when component unmounts
+      return () => {
+        subscription?.unsubscribe();
+      };
+    }, []);
     useEffect(() => {
         setPathname(window.location.pathname);
         const handleScroll = () => {
