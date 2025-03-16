@@ -1,33 +1,17 @@
 import { supabase } from "@/lib/supabaseClient";
 
-// const getDomain = () => {
-//     // When running in the browser
-//     if (typeof window !== 'undefined') {
-//       return window.location.origin;
-//     }
-//     // Server-side fallback (this won't be perfect but helps)
-//     return process.env.NODE_ENV === 'production'
-//       ? 'https://bsdoc-project.vercel.app'
-//       : 'https://localhost:3000';
-//   };
-  
-//   // Notice HTTP not HTTPS for localhost (matching your error)
-//   const getRedirectTo = () => {
-//     const domain = getDomain();
-//     return `${domain}/auth/callback`;
-//   };
-
-export async function signUpWithEmail(email:string, password: string) {
+export async function signUpWithEmail(email: string, password: string) {
     const { data, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
     });
-    
+
     if (error) throw error;
+
     return data.user;
 }
 
-export async function singInWithEmail(email: string, password: string) {
+export async function signInWithEmail(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -38,13 +22,57 @@ export async function singInWithEmail(email: string, password: string) {
 }
 
 export async function signInWithGoogle() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google', 
-        //options: { redirectTo: getRedirectTo() }
-    });
+    try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { 
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent'
+                }, 
+            },
+        });
 
-    if (error) throw error;
-    return data.provider;
+        if (error) {
+            console.error("Error signing in with Google:", error);
+            throw error;
+        }
+
+        // Get the session to ensure we have the user and user_metadata
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !sessionData?.session?.user) {
+            console.error("Error getting session after Google sign-in:", sessionError);
+            // Consider a more user-friendly error handling here
+            throw new Error("Failed to retrieve user session.");
+        }
+
+        const user = sessionData.session.user;
+        const firstName = user.user_metadata?.first_name|| '';
+        const lastName = user.user_metadata?.last_name || '';
+        const id = user.id;
+
+        // Update profiles table with Google-specific data
+        const { error: profileUpdateError } = await supabase
+            .from('profiles')
+            .update({
+                first_name: firstName,
+                last_name: lastName,
+            })
+            .eq('id', id);
+
+        if (profileUpdateError) {
+            console.error("Error updating profile:", profileUpdateError);
+            throw profileUpdateError;
+        }
+        return data.provider; // Or a success message if needed
+
+    } catch (error) {
+        // Centralized error handling
+        console.error("Error during Google Sign-In and profile handling:", error);
+        // Always rethrow or return a consistent error format
+        throw error;
+    }
 }
 
 export async function getUser() {
