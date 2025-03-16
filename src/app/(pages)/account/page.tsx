@@ -2,7 +2,6 @@
 
 import Header from "@/app/layout/header";
 import Image from "next/image";
-import { useState } from "react";
 const AccountPage = () => {
 
     const basicDetails = ["Joma", "Lina", "jomazlina@gmail.com", "09696969696"];
@@ -16,16 +15,11 @@ const AccountPage = () => {
     ];
 
 
-    const [activeButton, setActiveButton] = useState(0);
-    const handleButtonClick = (index: number) => {
-        setActiveButton(index);
-    }
-
     const Records = () => {
         return (
-            <div className="w-full py-10 px-[100px] space-y-3">
+            <div className="w-full space-y-3">
                 <p className="text-2xl">BSDOC Records</p>
-                <table style={{ borderCollapse: "collapse", width: "100%"  }}>
+                <table style={{ borderCollapse: "collapse", width: "100%" }}>
                     <thead>
                         <tr>
                             {["Record ID", "Date", "Weight", "Symptoms", "Health Conditions"].map((label, index) => (
@@ -40,7 +34,7 @@ const AccountPage = () => {
                             <tr key={rowIndex}>
                                 {record.map((data, colIndex) => (
                                     <td key={colIndex} style={{
-                                        borderTop: "1px solid gray",
+                                        borderTop: "1px solid black",
                                         borderLeft: "none",
                                         borderRight: "none",
                                         borderBottom: "none",
@@ -60,48 +54,53 @@ const AccountPage = () => {
 
     const MedicalDetails = () => {
         return (
-            <div className="w-full py-10 px-[100px] flex flex-col gap-10">
-                <div className="flex flex-col gap-2">
-                    <p className="text-2xl">Personal Details</p>
-                    <div className="flex flex-col text-sm">
-                        {["Blood Type", "Height", "Weight", "Age"].map((label, index) => (
-                            <div className="flex flex-row h-8 items-center gap-16 border-black border-b-[1px] w-1/2"
-                                key={index}>
-                                <p className="w-[100px]">
-                                    {label}
-                                </p>
-                                <p className="">
-                                    {personalDetails[index]}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
+            <div className="">
+                <div className="w-full py-10 px-[100px] flex flex-row gap-10 justify-between">
+                    <div className="flex flex-col gap-2 w-1/2">
+                        <p className="text-2xl">Personal Details</p>
+                        <div className="flex flex-col text-sm">
+                            {["Blood Type", "Height", "Weight", "Age"].map((label, index) => (
+                                <div className="flex flex-row h-8 items-center gap-16 border-black border-b-[1px]"
+                                    key={index}>
+                                    <p className="w-[100px]">
+                                        {label}
+                                    </p>
+                                    <p className="">
+                                        {personalDetails[index]}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
 
+                    </div>
+                    <div className="flex flex-col gap-2 w-1/2">
+                        <p className="text-2xl">Medical History</p>
+                        <div className="flex flex-col text-sm">
+                            {["Blood Type", "Height", "Weight", "Age"].map((label, index) => (
+                                <div className="flex flex-row h-8 items-center gap-16 border-black border-b-[1px]"
+                                    key={index}>
+                                    <p className="w-[100px]">
+                                        {label}
+                                    </p>
+                                    <p className="">
+                                        {medicalHistory[index]}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                    <p className="text-2xl">Medical History</p>
-                    <div className="flex flex-col text-sm">
-                        {["Blood Type", "Height", "Weight", "Age"].map((label, index) => (
-                            <div className="flex flex-row h-8 items-center gap-16 border-black border-b-[1px] w-1/2"
-                                key={index}>
-                                <p className="w-[100px]">
-                                    {label}
-                                </p>
-                                <p className="">
-                                    {medicalHistory[index]}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-
+                <div className="w-full py-10 px-[100px] ">
+                    {Records()}
                 </div>
             </div>
+
         );
     }
     return (
-        <div className="">
+        <div className="bg-[#62B6B8]">
             <Header background="white" title="Account" />
-            <div className="bg-[#62B6B8] p-10  mt-[80px] h-[91.6vh]">
+            <div className="p-10">
                 <div className="flex flex-row bg-white w-full h-full pr-10 py-[50px] rounded-xl">
                     <div className="w-[25%] px-[50px] border-r-[1px] border-[#00909A]/60">
                         <div className="py-[50px] flex flex-col gap-8 items-start ">
@@ -130,22 +129,18 @@ const AccountPage = () => {
                     </div>
                     <div className="w-full flex flex-col">
                         <div className="flex flex-row justify-end w-full">
-                            {["MEDICAL DETAILS", "RECORDS", "ACCOUNT DETAILS"].map((label, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => handleButtonClick(index)}
-                                    style={{
-                                        backgroundColor: activeButton === index ? "#00909A" : "white",
-                                        color: activeButton === index ? "white" : "#2D383D",
-                                    }}
-                                    className="w-full py-3 duration-300 text-sm">
-                                    {label}
-                                </button>
-                            ))}
+                            <button
+                                style={{
+                                    backgroundColor: "#00909A",
+                                    color: "white",
+                                }}
+                                className="w-full py-3 duration-300 text-sm">
+                                MEDICAL DETAILS
+                            </button>
                         </div>
                         <div className="">
-                            {activeButton === 0 && <MedicalDetails />}
-                            {activeButton === 1 && <Records />}
+                            <MedicalDetails />
+
                         </div>
                     </div>
                 </div>

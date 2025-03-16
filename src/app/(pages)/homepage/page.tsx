@@ -9,7 +9,7 @@ const HomePage = () => {
           fill
           style={{ objectFit: 'cover', objectPosition: 'center' }}
           quality={100}
-          className="min-h-[100vh]"
+          className=""
         />
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-black/30 z-0 max-w-[1300px] min-w-[100vw] mx-auto" />
       </div>

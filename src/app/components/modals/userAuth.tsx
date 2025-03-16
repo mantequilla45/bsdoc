@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
-import { FaArrowRightLong } from "react-icons/fa6";
+import { FaArrowRightLong, FaArrowLeftLong } from "react-icons/fa6";
 import { IoIosCloseCircle } from "react-icons/io";
 import { 
   signUpWithEmail, 
@@ -183,14 +183,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                           <button 
                             type="submit" 
                             className="py-3 px-5 w-full rounded-full bg-[#78DDD3] text-white hover:bg-[#82C2BC] active:scale-95 duration-300"
-                            aria-label={getButtonText()}
                           >
+                            {getButtonText()}
                           </button>
                         </form>
 
                         <button className="text-center mt-4 cursor-pointer text-[#2D383D] flex flex-row items-center gap-3 hover:underline" onClick={() => setIsLogin(!isLogin)}>
-                          <FaArrowRightLong className={isLogin ? "rotate-180" : ""} />
+                          <FaArrowLeftLong className={isLogin ? "hidden" : ""} />
                           {isLogin ? "Create an account" : "Already have an account?"}
+                          <FaArrowRightLong className={!isLogin ? "hidden" : ""} />
                         </button>
                       </motion.div>
                     </AnimatePresence>
