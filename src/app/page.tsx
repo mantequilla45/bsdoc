@@ -5,7 +5,7 @@ import OurServicesSection from "@/app/components/homepage/ourservices"
 
 const Landing = () => {
   return (
-    <div className="w-screen overflow-x-hidden">
+    <div className="overflow-x-hidden">
       <Header background="[#000000]" title="BSDOC" />
       <HomePage />
       <OurServicesSection />

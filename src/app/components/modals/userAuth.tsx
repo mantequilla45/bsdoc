@@ -11,9 +11,10 @@ import { signInWithGoogle } from "@/services/Auth/auth";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAuthSuccess: () => void; // New prop
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,7 +39,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       if (isLogin) {
         // Login user
         await login(email, password);
-        onClose(); // Close modal after successful login
+        onAuthSuccess(); // Call onAuthSuccess instead of onClose
       } else {
         if (password !== confirmPassword) {
           setErrorMessage("Passwords do not match!");
@@ -46,7 +47,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           return;
         }
         await signup(email, password);
-        onClose();
+        onAuthSuccess(); // Call onAuthSuccess instead of onClose
       }
     }
     catch (error) {
@@ -67,7 +68,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
     try {
       await signInWithGoogle();
-      onClose();
+      onAuthSuccess(); // Call onAuthSuccess instead of onClose
     }
     catch (error) {
       if (error instanceof Error) {
@@ -177,8 +178,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                             />
                           )}
                           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-                          <button 
-                            type="submit" 
+                          <button
+                            type="submit"
                             className="py-3 px-5 w-full rounded-full bg-[#78DDD3] text-white hover:bg-[#82C2BC] active:scale-95 duration-300"
                           >
                             {getButtonText()}
