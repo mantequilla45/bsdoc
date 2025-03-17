@@ -121,7 +121,7 @@ const DetailSection = ({ title, labels, details }: { title: string; labels: stri
         <div className="flex flex-col text-sm font-light">
             {labels.map((label, index) => (
                 <div className="flex flex-row h-8 items-center gap-16 border-b-[1px] border-[#D1D5DB]" key={index}>
-                    <p className="w-[100px]">{label}</p>
+                    <p className="font-[400] w-[100px]">{label}</p>
                     <p>{details[index] || '-'}</p>
                 </div>
             ))}
@@ -168,27 +168,22 @@ const Records = ({ userId }: { userId: string }) => {
             {loading ? (
                 <p>Loading records...</p>
             ) : (
-                <table style={{ borderCollapse: "collapse", width: "100%" }}>
-                    <thead>
-                        <tr>
-                            {["Date", "Weight", "Symptoms", "Health Conditions"].map((label, index) => (
-                                <th key={index} style={{ padding: "8px", fontWeight: "500", textAlign: "left" }}>
-                                    {label}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {userRecords.map((record, rowIndex) => (
-                            <tr key={rowIndex}>
-                                <td>{formatDate(record.date)}</td>
-                                <td>{record.weight} kg</td>
-                                <td>{record.symptoms.join(', ')}</td>
-                                <td>{record.health_conditions.join(', ')}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <div className="flex flex-col text-sm font-light">
+                    <div className="flex flex-row font-[400] h-8 items-center gap-16 border-b-[1px] border-[#D1D5DB]">
+                        <p className="w-[100px]">Date</p>
+                        <p className="w-[100px]">Weight</p>
+                        <p className="w-[100px]">Symptoms</p>
+                        <p>Health Conditions</p>
+                    </div>
+                    {userRecords.map((record, index) => (
+                        <div className="flex flex-row h-8 items-center gap-16 border-b-[1px] border-[#D1D5DB]" key={index}>
+                            <p className="w-[100px]">{formatDate(record.date)}</p>
+                            <p className="w-[100px]">{record.weight} kg</p>
+                            <p className="w-[100px]">{record.symptoms.join(', ')}</p>
+                            <p>{record.health_conditions.join(', ')}</p>
+                        </div>
+                    ))}
+                </div>
             )}
         </div>
     );
