@@ -1,8 +1,6 @@
 "use client";
 import Header from "@/app/components/layout/header";
 import Footer from "@/app/components/layout/footer-about";
-import React, { useState } from 'react';
-import { IoSearch } from "react-icons/io5";
 import Image from "next/image"
 
 const AboutUs = () => {
@@ -100,7 +98,7 @@ const AboutUs = () => {
                         Special thanks go to our partners and advisors for their unwavering guidance and expertise. Your insights and collaboration have been invaluable in navigating the challenges and opportunities in the healthcare technology landscape.
                     </p>
                     <p>
-                        Our deepest gratitde to Jhana Marie for for motivating, inspiring, being the root of this project, and for being the most beautiful girl in the world. BSDOC wouldn't exist without you.
+                        Our deepest gratitde to Jhana Marie for for motivating, inspiring, being the root of this project, and for being the most beautiful girl in the world. BSDOC wouldn&apos;t exist without you.
                     </p>
                     <p>
                         Lastly, we acknowledge the support of our families and friends. Your encouragement and understanding have been the foundation of our perseverance and success.
