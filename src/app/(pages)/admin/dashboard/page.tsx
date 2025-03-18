@@ -32,7 +32,7 @@ const AdminDashboardPage = () => {
                 console.error("No session found:", sessionError);
                 setError("Not authenticated");
                 // Redirect to login page
-                router.push('/login'); // Adjust the login route as needed
+                router.push('/'); // Adjust the login route as needed
                 return;
             }
 
@@ -78,7 +78,7 @@ const AdminDashboardPage = () => {
         
         if (!session) {
             setError("Not authenticated");
-            router.push('/login');
+            router.push('/');
             return;
         }
         
