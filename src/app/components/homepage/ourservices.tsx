@@ -7,7 +7,7 @@ interface ServiceItem {
   description: string;
 }
 
-const OurServicesSection: React.FC = () => {
+const   OurServicesSection: React.FC = () => {
   const services: ServiceItem[] = [
     {
       icon: "/graphics/symptom-checker-icon.svg",
@@ -27,31 +27,32 @@ const OurServicesSection: React.FC = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-b from-[#FFFFFF] to-[#89DAF3] flex items-center flex-col px-[15%] py-[5%] pb-[15%]">
-      <h2 className="text-5xl font-bold text-[#043CAA]">
+    <div className="max-w-[1300px] mx-auto flex items-center flex-col py-16 px-6">
+      <h2 className="text-3xl md:text-5xl font-bold text-[#043CAA] text-center">
         Our Services
       </h2>
-      <div className="flex flex-row gap-[50px] mt-[60px]">
+      <div className="flex flex-col items-center md:flex-row gap-8 md:gap-[50px] mt-8 md:mt-[60px] w-full">
         {services.map((service, index) => (
           <div
             key={index}
-            className="flex flex-col items-center gap-[60px] w-1/3 bg-white rounded-[30px] px-[50px] py-[70px] shadow-md"
+            className="flex flex-col items-center max-w-[400px] gap-6 md:gap-[40px] w-full md:w-1/3 bg-white rounded-[30px] px-4 md:px-[50px] py-6 md:py-0 shadow-md md:shadow-none"
           >
-            <div className="w-[200px] h-[200px]">
+            <div className="w-[120px] h-[120px] md:w-[200px] md:h-[200px]">
               <Image
                 src={service.icon}
                 alt={`${service.title} icon`}
                 width={200}
                 height={200}
-                style={{ objectFit: 'cover' }}
+                style={{ objectFit: 'contain' }}
                 quality={100}
+                className="w-full h-full"
               />
             </div>
             <div className="flex flex-col text-xl text-black items-center">
-              <h3 className="text-xl text-[#043CAA] font-semibold">
+              <h3 className="text-lg md:text-xl text-[#043CAA] font-semibold text-center">
                 {service.title}
               </h3>
-              <p className="text-base mt-3 text-justify font-light">
+              <p className="text-sm md:text-base mt-2 md:mt-3 text-center font-light">
                 {service.description}
               </p>
             </div>

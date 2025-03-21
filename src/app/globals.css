@@ -16,10 +16,17 @@
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background: white;
   font-family: 'Rubik', sans-serif;
+  scrollbar-gutter: stable;
 }
 
 body, p, div, span {
-  color: #2D383D;
+  color: #243035;
 }
+
+header {
+  min-width: 1300px;
+  min-height: 64px;
+  overflow: auto;
+ }

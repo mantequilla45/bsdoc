@@ -1,81 +1,109 @@
 "use client";
-import Header from "@/app/components/layout/header";
+import Header from "@/app/layout/header";
 import React, { useState } from 'react';
 import { IoSearch } from "react-icons/io5";
-import Image from "next/image"
+import Footer from "@/app/layout/footer";
+import { motion, AnimatePresence } from "framer-motion";
+import AdvancedSearchForm from "@/app/components/search-symptoms/adv-search-form";
+import ImageContainer from "@/app/components/search-symptoms/background";
 
 const SearchSymptomsPage = () => {
     const [isAdvancedSearchEnabled, setIsAdvancedSearchEnabled] = useState(false);
-
     const [inputValue, setInputValue] = useState("");
+
     return (
-        <div className="bg-white h-[100vh] px-[15%] pt-[10%]">
-            <Header />
-            <title>Search Symptoms</title>
-            <Image
-                alt="Search Page"
-                style={{
-                    position: 'absolute',
-                    height: '80%',
-                    width: '80%',
-                    right: '0',
-                    bottom: '0',
-                    color: 'transparent'
+        <div className="min-h-screen flex flex-col relative">
+            <motion.div
+                className="bg-[#EEFFFE] flex-grow relative"
+                animate={{ height: isAdvancedSearchEnabled ? '100%' : '100vh' }}
+                transition={{
+                    duration: 0.5,
+                    ease: "easeInOut"
                 }}
-                src="/graphics/searchpage.svg"
-                width={0}
-                height={0}
-            />
-            <Image
-            alt="Search Page"
-            style={{
-                position: 'absolute',
-                height: '70%',
-                width: '70%',
-                right: '0',
-                bottom: '5',
-                color: 'transparent'
-            }}
-            src="/graphics/searchpageicon.svg"
-            width={0}
-            height={0}
-            />
-            <div className="flex z-10 flex-col gap-5 mt-16">
-                <h1 className="text-7xl">
-                    Welcome to <span className="text-[#64B5B7]">BSDOC</span> 
-                </h1>
-                <div className="flex items-center gap-4">
-                    <p className="pl-7">Advanced Search</p>
-                    <button
-                        onClick={() => setIsAdvancedSearchEnabled(!isAdvancedSearchEnabled)}
-                        className={`w-12 h-6 rounded-full transition duration-300 border-[1px] ${isAdvancedSearchEnabled ? 'bg-blue-500 border-blue-800' : 'bg-gray-300 border-[#777777]'} relative`}
-                    >
-                        <span
-                            className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full transform transition-transform duration-300 ease-in-out
-                                ${isAdvancedSearchEnabled ? 'translate-x-1 bg-white' : '-translate-x-5 bg-[#777777]'}`}
-                        ></span>
-                    </button>
+            >
+                <Header background="[#EEFFFE]" title="Search Symptoms" />
+
+                {/* Image container with sticky positioning */}
+                <div className="absolute inset-0">
+                    <div className="sticky top-0 h-screen">
+                        <ImageContainer />
+                    </div>
                 </div>
-                <div className="space-y-3">
-                    <div className="relative py-4 pl-10 shadow-md border-[1px] rounded-xl px-6 bg-white text-gray-500 text-[35px] flex items-center">
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)} // Track input value
-                            className={`w-full border-none outline-none text-xl ${inputValue ? 'text-[#2D383D] font-normal' : 'text-gray-500 font-light'}`} // Conditional color change
-                        />
-                        <button className="">
-                            <IoSearch className="text-gray-500 hover:scale-110 active:scale-90 transition duration-300" />
+
+                {/* Main content */}
+                <div className="md:h-[30vh] h-[20%]" />
+                <div className={`flex z-10 flex-col gap-5 relative md:px-[15%] px-[30px] mb-20`}>
+                    <h1 className="md:text-7xl text-4xl">
+                        Welcome to <span className="text-[#519496]">BSDOC</span>
+                    </h1>
+                    <div className="flex items-center gap-4">
+                        <p className="md:pl-7 pl-4">Advanced Search</p>
+                        <button
+                            onClick={() => setIsAdvancedSearchEnabled(!isAdvancedSearchEnabled)}
+                            className={`w-12 h-6 rounded-full transition duration-300 border-[1px] ${isAdvancedSearchEnabled ? 'bg-blue-500 border-blue-800' : 'bg-gray-300 border-[#777777]'} relative`}
+                        >
+                            <span
+                                className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full transform transition-transform duration-300 ease-in-out
+                                ${isAdvancedSearchEnabled ? 'translate-x-1 bg-white' : '-translate-x-5 bg-[#777777]'}`}
+                            />
                         </button>
                     </div>
-                    <p className="text-gray-500">
-                        Introducing a new way to diagnose your sickness.
-                    </p>
+                    <AnimatePresence mode="wait">
+                        {isAdvancedSearchEnabled ? (
+                            <motion.div
+                                key="advanced-search"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: "50vh", opacity: 0 }}
+                                transition={{
+                                    duration: 0.6,
+                                    ease: "easeInOut"
+                                }}
+                                className="w-[100%] bg-white shadow-md rounded-xl border-[1px]"
+                            >
+                                <AdvancedSearchForm />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="basic-search"
+                                initial={{ height: "full", opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{
+                                    duration: 0.4,
+                                    ease: "easeInOut"
+                                }}
+                            >
+                                <div className="space-y-3">
+                                    <div className="relative md:py-4 py-1 md:pl-10 shadow-md border-[1px] rounded-xl px-6 bg-white text-gray-500 text-[35px] flex items-center">
+                                        <input
+                                            type="text"
+                                            placeholder="Search Symptoms..."
+                                            value={inputValue}
+                                            onChange={(e) => setInputValue(e.target.value)}
+                                            className={`w-full h-12 border-none placeholder:text-base md:placeholder:text-xl outline-none text-lg flex items-center ${inputValue ? 'text-[#2D383D] font-normal' : 'text-gray-500 font-light'}`}
+                                            style={{ lineHeight: "2rem" }}
+                                        />
+                                        <button>
+                                            <IoSearch className="text-gray-500 hover:scale-110 active:scale-90 transition duration-300 md:scale-100 scale-[.80]" />
+                                        </button>
+                                    </div>
+                                </div>
+                                <p className="text-gray-600 mt-4">
+                                    Introducing a new way to diagnose your sickness.
+                                </p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
+            </motion.div>
+
+            {/* Footer with higher z-index to ensure it's above the floating background */}
+            <div className="z-20">
+                <Footer />
             </div>
         </div>
     );
-}
+};
 
 export default SearchSymptomsPage;
