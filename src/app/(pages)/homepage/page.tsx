@@ -31,7 +31,7 @@ const HomePage = () => {
             </a>
           </div>
           <div className="flex items-center justify-center">
-            <div className="md:w-[500px] w-full max-w-[500px] max-h-[600px] relative rounded-full bg-white/20 backdrop-blur-lg overflow-hidden flex justify-center border border-gray-500 border-[1px] pt-8 md:pt-16">
+            <div className="md:w-[500px] w-full  max-w-[500px] max-h-[600px] relative rounded-full bg-white/20 backdrop-blur-lg overflow-hidden flex justify-center border border-gray-500 border-[1px] pt-8 md:pt-16">
               <Image
                 src="/Images/background/doctor.png"
                 alt="Hero"
