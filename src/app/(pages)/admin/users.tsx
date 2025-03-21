@@ -55,6 +55,7 @@ export default function AdminUsersPage() {
     };
     
     checkAdmin();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, router]);
 
   const fetchUsers = async () => {
