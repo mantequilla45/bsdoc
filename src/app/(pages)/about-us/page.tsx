@@ -1,13 +1,12 @@
 
 "use client";
-import Header from "@/app/components/layout/header";
+import Header from "@/app/layout/header";
 import Footer from "@/app/components/layout/footer-about";
-import Image from "next/image"
-
+import Image from "next/image";
 const AboutUs = () => {
     return (
         <div className="min-h-screen bg-white py-[1%]">
-            <Header />
+            <Header background="[#000000]" title="BSDOC"  />
             <title> About Us</title>
             <div className="flex flex-col md:flex-row h-full items-center mt-[8%] ml-[5%] mr-[5%]">
                 <div className="flex flex-col gap-3 w-full md:w-1/2">
