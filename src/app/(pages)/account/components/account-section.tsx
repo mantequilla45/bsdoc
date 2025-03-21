@@ -48,14 +48,14 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
 
     const handleSave = async () => {
         if (!formData) return;
-        
+
         setIsSaving(true);
-        
+
         const { error } = await supabase
             .from('profiles')
             .update(formData)
             .eq('id', userId);
-            
+
         if (error) {
             console.error('Error updating profile:', error);
             alert('Failed to update profile. Please try again.');
@@ -63,7 +63,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
             setProfile(formData as Profile);
             setIsEditing(false);
         }
-        
+
         setIsSaving(false);
     };
 
@@ -74,7 +74,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
 
     return (
         <div className="flex flex-col w-[40%]">
-            <p className="bg-[#00909A] rounded-md text-white text-center w-full py-3 duration-300 text-sm">
+            <p className="bg-[#62B6B8] rounded-md text-white text-center w-full py-3 duration-300 text-sm">
                 ACCOUNT DETAILS
             </p>
             <div className="flex flex-col gap-10 px-4 py-8">
@@ -159,27 +159,27 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
             <div className="h-full w-full flex items-end justify-end gap-2">
                 {isEditing ? (
                     <>
-                        <button 
+                        <button
                             onClick={handleCancel}
-                            className="py-3 px-5 rounded-xl border border-1px bg-gray-300 text-gray-700 flex items-center gap-1"
+                            className="py-3 pr-5 pl-4 text-sm rounded-xl border border-1px bg-gray-300 text-gray-700 flex items-center gap-2"
                             disabled={isSaving}
                         >
-                            <MdCancel /> Cancel
+                            <MdCancel className="text-xs" /> Cancel
                         </button>
-                        <button 
+                        <button
                             onClick={handleSave}
-                            className="py-3 px-5 rounded-xl border border-1px bg-[#00909A] text-white flex items-center gap-1"
+                            className="py-3 pr-5 pl-4 text-sm rounded-xl border border-1px bg-[#62B6B8] text-white flex items-center gap-2"
                             disabled={isSaving}
                         >
-                            {isSaving ? 'Saving...' : <><MdSave /> Save</>}
+                            {isSaving ? 'Saving...' : <><MdSave className="text-xs" /> Save</>}
                         </button>
                     </>
                 ) : (
-                    <button 
+                    <button
                         onClick={() => setIsEditing(true)}
                         className="py-3 pr-5 pl-4 text-sm rounded-xl border border-1px bg-[#62B6B8] text-white flex items-center gap-2"
                     >
-                        <MdEdit className="text-xs"/> Edit
+                        <MdEdit className="text-xs" /> Edit
                     </button>
                 )}
             </div>
