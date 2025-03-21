@@ -179,72 +179,72 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
         if (!formData) return null;
 
         return (
-            <div className="flex flex-col gap-8 px-4">
+            <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4">
-                    <h3 className="font-medium text-lg">Personal Information</h3>
+                    <h3 className="text-2xl">Personal Information</h3>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Blood Type</label>
+                            <label className="block text-sm text-gray-700">Blood Type</label>
                             <input
                                 type="text"
                                 value={formData.blood_type || ''}
                                 onChange={(e) => handleInputChange(e, 'blood_type')}
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Height (cm)</label>
+                            <label className="block text-sm text-gray-700">Height (cm)</label>
                             <input
                                 type="number"
                                 value={formData.height || ''}
                                 onChange={(e) => handleInputChange(e, 'height')}
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                            />
+
+                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Weight (kg)</label>
+                            <label className="block text-sm text-gray-700">Weight (kg)</label>
                             <input
                                 type="number"
                                 value={formData.weight || ''}
                                 onChange={(e) => handleInputChange(e, 'weight')}
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                            />
+
+                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Age</label>
+                            <label className="block text-sm text-gray-700">Age</label>
                             <input
                                 type="number"
                                 value={formData.age || ''}
                                 onChange={(e) => handleInputChange(e, 'age')}
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                            />
+
+                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
                         </div>
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-4">
-                    <h3 className="font-medium text-lg">Medical History</h3>
+                    <h3 className="text-2xl">Medical History</h3>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Conditions (comma separated)</label>
+                        <label className="block text-sm text-gray-700">Conditions (comma separated)</label>
                         <textarea
                             value={formData.conditions ? formData.conditions.join(', ') : ''}
                             onChange={(e) => handleInputChange(e, 'conditions')}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                            className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
                             rows={2}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Allergies (comma separated)</label>
+                        <label className="block text-sm text-gray-700">Allergies (comma separated)</label>
                         <textarea
                             value={formData.allergies ? formData.allergies.join(', ') : ''}
                             onChange={(e) => handleInputChange(e, 'allergies')}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                            rows={2}
+
+                            className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" rows={2}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Medications</label>
+                        <label className="block text-sm text-gray-700">Medications</label>
                         {formData.medications && formData.medications.map((med, index) => (
                             <div key={index} className="flex gap-2 mt-2">
                                 <input
@@ -252,21 +252,21 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                                     value={med.name}
                                     onChange={(e) => handleMedicationChange(index, 'name', e.target.value)}
                                     placeholder="Medication name"
-                                    className="block w-2/3 border border-gray-300 rounded-md px-3 py-2"
-                                />
+
+                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
                                 <input
                                     type="text"
                                     value={med.dose}
                                     onChange={(e) => handleMedicationChange(index, 'dose', e.target.value)}
                                     placeholder="Dose"
-                                    className="block w-1/3 border border-gray-300 rounded-md px-3 py-2"
-                                />
+
+                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
                             </div>
                         ))}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Surgeries</label>
+                        <label className="block text-sm text-gray-700">Surgeries</label>
                         {formData.surgeries && formData.surgeries.map((surgery, index) => (
                             <div key={index} className="flex gap-2 mt-2">
                                 <input
@@ -274,15 +274,15 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                                     value={surgery.name}
                                     onChange={(e) => handleSurgeryChange(index, 'name', e.target.value)}
                                     placeholder="Surgery name"
-                                    className="block w-2/3 border border-gray-300 rounded-md px-3 py-2"
-                                />
+
+                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
                                 <input
                                     type="number"
                                     value={surgery.year}
                                     onChange={(e) => handleSurgeryChange(index, 'year', e.target.value)}
                                     placeholder="Year"
-                                    className="block w-1/3 border border-gray-300 rounded-md px-3 py-2"
-                                />
+
+                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
                             </div>
                         ))}
                     </div>
@@ -293,16 +293,24 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
 
     return (
         <div className="w-full pl-10 border-l-[1px] border-[#00909A]/60">
-            <div className="relative flex justify-center items-center bg-[#00909A] rounded-md text-white w-full py-3 px-4">
+            <div className="relative flex justify-center items-center bg-[#62B6B8] rounded-md text-white w-full py-3 px-4">
                 <p className="text-center text-white text-sm">MEDICAL DETAILS</p>
-                {!isEditing && (
+                {!isEditing ? (
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="absolute right-3 py-1 px-3 rounded-md bg-white text-[#00909A] text-sm flex items-center gap-1"
+                        className="absolute right-0 py-3 pl-3 pr-4 rounded-r-md text-white hover:bg-[#00909A] text-sm flex items-center gap-1 transition duration-300"
                     >
                         <MdEdit size={16} /> Edit
                     </button>
-                )}
+
+                ) : (
+                    <button
+                        onClick={handleCancel}
+                        className="absolute right-0 py-3 pl-3 pr-4 rounded-r-md text-white hover:bg-[#00909A] transition duration-300 text-sm flex items-center gap-1"
+                        disabled={isSaving}
+                    >
+                        <MdCancel /> Cancel
+                    </button>)}
             </div>
 
 
@@ -313,17 +321,17 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                         <div className="flex justify-end gap-2 mt-4">
                             <button
                                 onClick={handleCancel}
-                                className="py-2 px-4 rounded-xl border border-1px bg-gray-300 text-gray-700 flex items-center gap-1"
+                                className="py-3 pr-5 pl-4 text-sm rounded-xl border border-1px hover:bg-[#C8CCD2] transition duration-300 bg-gray-300 text-gray-700 flex items-center gap-2"
                                 disabled={isSaving}
                             >
-                                <MdCancel /> Cancel
+                                <MdCancel className="text-sm" /> Cancel
                             </button>
                             <button
                                 onClick={handleSave}
-                                className="py-2 px-4 rounded-xl border border-1px bg-[#00909A] text-white flex items-center gap-1"
+                                className="py-3 pr-5 pl-4 text-sm rounded-xl border border-1px hover:bg-[#529E9F] transition duration-300  bg-[#62B6B8] text-white flex items-center gap-2 hover:bg"
                                 disabled={isSaving}
                             >
-                                {isSaving ? 'Saving...' : <><MdSave /> Save</>}
+                                {isSaving ? 'Saving...' : <><MdSave className="text-sm" /> Save</>}
                             </button>
                         </div>
                         <Records userId={userId} />
