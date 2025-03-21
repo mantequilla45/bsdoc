@@ -98,9 +98,9 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
                 {/* Desktop Menu */}
                 <ul className="hidden md:flex flex-row items-center gap-5 text-sm relative">
-                    <li className={`hover:underline cursor-pointer ${pathname === "/" ? "text-white" : "text-[#2D383D]"} text-md`}>
+                    <a href="/appointment-page" className={`hover:underline cursor-pointer ${pathname === "/" ? "text-white" : "text-[#2D383D]"} text-md`}>
                         Schedule an Appointment
-                    </li>
+                    </a>
 
                     {loggedIn ? (
                         <div className="relative">
