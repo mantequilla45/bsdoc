@@ -6,7 +6,7 @@ import Image from "next/image";
 const AboutUs = () => {
     return (
         <div className="min-h-screen bg-white py-[1%]">
-            <Header background="[#000000]" title="BSDOC"  />
+            <Header background="white" title="About Us"/>
             <title> About Us</title>
             <div className="flex flex-col md:flex-row h-full items-center mt-[8%] ml-[5%] mr-[5%]">
                 <div className="flex flex-col gap-3 w-full md:w-1/2">
