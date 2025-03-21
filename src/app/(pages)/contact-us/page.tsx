@@ -7,9 +7,9 @@ const ContactUs = () => {
             <Header background="white" title="Account" />
 
             {/* Background Image */}
-            <div className="absolute inset-0 z-0 h-full w-full">
+            <div className="absolute inset-0 -left-[360px] top-0 z-0 h-full w-full">
                 <Image
-                    src="/graphics/loginbg.svg"
+                    src="/graphics/doc-register.svg"
                     alt="background"
                     layout="fill"
                     objectFit="fill"
@@ -32,7 +32,7 @@ const ContactUs = () => {
                     </div>
 
                     {/* Contact Form */}
-                    <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-[500px]">
+                    <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-[600px]">
                         <div className="flex flex-col items-center gap-6">
                             <div className="flex items-center gap-3">
                                 <h1 className="text-4xl font-bold">Contact Us</h1>
