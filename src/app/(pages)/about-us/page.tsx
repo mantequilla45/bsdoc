@@ -2,8 +2,7 @@
 "use client";
 import Header from "@/app/layout/header";
 import Footer from "@/app/components/layout/footer-about";
-import Image from "next/image"
-
+import Image from "next/image";
 const AboutUs = () => {
     return (
         <div className="min-h-screen bg-white py-[1%]">
