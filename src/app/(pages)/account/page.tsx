@@ -41,7 +41,7 @@ const AccountPage = () => {
     return (
         <div className="bg-[#62B6B8]">
             <Header background="white" title="Account" />
-            <div className="py-5" style={{ minHeight: 'calc(100vh - var(--header-height))' }}>
+            <div className="py-5 px-10" style={{ minHeight: 'calc(100vh - var(--header-height))' }}>
                 <div className="max-w-[1300px] mx-auto gap-10 flex h-full flex-row bg-white p-10 rounded-xl">
                     {authLoading ? (
                         <div className="w-full flex justify-center items-center p-10">

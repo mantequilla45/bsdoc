@@ -70,10 +70,13 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
         fetchDetails();
     }, [userId]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: string) => {
+    const handleInputChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+        field: string
+    ) => {
         const { value } = e.target;
 
-        setFormData(prev => {
+        setFormData((prev) => {
             if (!prev) return prev;
 
             if (field === 'blood_type' || field === 'height' || field === 'weight' || field === 'age') {
@@ -92,6 +95,7 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
             return prev;
         });
     };
+
 
     const handleMedicationChange = (index: number, field: 'name' | 'dose', value: string) => {
         setFormData(prev => {
@@ -185,13 +189,18 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm text-gray-700">Blood Type</label>
-                            <input
-                                type="text"
+                            <select
                                 value={formData.blood_type || ''}
                                 onChange={(e) => handleInputChange(e, 'blood_type')}
                                 className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
-                            />
+                            >
+                                <option value="" disabled>Select Blood Type</option>
+                                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((type) => (
+                                    <option className="font-light " key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
                         </div>
+
                         <div>
                             <label className="block text-sm text-gray-700">Height (cm)</label>
                             <input
@@ -266,7 +275,7 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm text-gray-700">Surgeries</label>
+                        <label className="block text-sm text-gray-700">Past Surgeries</label>
                         {formData.surgeries && formData.surgeries.map((surgery, index) => (
                             <div key={index} className="flex gap-2 mt-2">
                                 <input
