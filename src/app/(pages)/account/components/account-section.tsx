@@ -177,7 +177,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                 ) : (
                     <button 
                         onClick={() => setIsEditing(true)}
-                        className="py-3 px-6 text-sm rounded-xl border border-1px bg-[#62B6B8] text-white flex items-center gap-2"
+                        className="py-3 pr-5 pl-4 text-sm rounded-xl border border-1px bg-[#62B6B8] text-white flex items-center gap-2"
                     >
                         <MdEdit className="text-xs"/> Edit
                     </button>
