@@ -16,7 +16,7 @@ const ContactUs = () => {
                 />
             </div>
 
-            {/* Content */}
+            
             <div className="relative z-10 flex justify-center items-center min-h-screen">
                 <div className="flex flex-row items-center max-w-[1850px] w-full">
 
