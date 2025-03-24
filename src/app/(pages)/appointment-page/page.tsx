@@ -1,7 +1,13 @@
+"use client";  
+
 import Image from 'next/image';
 import Header from "@/app/layout/header";
+import { useState } from 'react';
 
 const AppointmentPage = () => {
+    const [date, setDate] = useState('');
+    const [time, setTime] = useState('');
+
     return (
         <div className="bg-[#C3EFEB] min-h-screen">
             <Header background="white" title="Account" />
@@ -26,7 +32,7 @@ const AppointmentPage = () => {
                                 <h1 className="text-6xl my-[10px] mr-[100px] font-regular">
                                     Find A <span className="text-[#64B5B7]">Doctor</span> And
                                 </h1>
-                                
+
                                 {/* Curve under "Book an Appointment" */}
                                 <div className="relative inline-block">
                                     <h1 className='text-6xl font-regular'>Book an Appointment</h1>
@@ -49,21 +55,34 @@ const AppointmentPage = () => {
                                 <h2 className="text-lg font-semibold mb-4">Book your appointment</h2>
 
                                 <div className="flex flex-row items-center justify-between gap-4">
-                                    {/* Dropdowns */}
-                                    <select className="border rounded-md p-3 w-1/4">
-                                        <option>Date & Time</option>
-                                    </select>
+                                    {/* Calendar & Time Picker */}
+                                    <input
+                                        type="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        className="border rounded-md p-3 w-1/4 focus:ring-2 focus:ring-[#62B6B8]"
+                                    />
 
-                                    <select className="border rounded-md p-3 w-1/4">
+                                    <input
+                                        type="time"
+                                        value={time}
+                                        onChange={(e) => setTime(e.target.value)}
+                                        className="border rounded-md p-3 w-1/34 focus:ring-2 focus:ring-[#62B6B8]"
+                                    />
+
+                                    {/* Dropdowns */}
+                                    <select className="border rounded-md p-3 w-1/34">
                                         <option>Name of Doctor</option>
                                     </select>
 
-                                    <select className="border rounded-md p-5 w-1/4">
+                                    <select className="border rounded-md p-3 w-1/34">
                                         <option>Mode of Meeting</option>
                                     </select>
 
                                     {/* Submit Button */}
-                                    <button className="bg-[#62B6B8] text-white px-6 py-3 rounded-md">Submit</button>
+                                    <button className="bg-[#62B6B8] text-white px-6 py-3 rounded-md">
+                                        Submit
+                                    </button>
                                 </div>
                             </div>
                         </div>
