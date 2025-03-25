@@ -57,7 +57,7 @@ const SearchSymptomsPage = () => {
 
       <div className="md:h-[30vh] h-[20%]" />
       <div className="flex z-10 flex-col gap-6 relative md:px-[15%] px-[30px] mb-20">
-        <h1 className="md:text-7xl text-4xl">
+        <h1 className="md:text-7xl text-4xl font-bold">
           Welcome to <span className="text-[#519496]">BSDOC</span>
         </h1>
         <p className="text-gray-600 text-lg">
@@ -85,46 +85,59 @@ const SearchSymptomsPage = () => {
         {error && <p className="text-red-500 mt-4">{error}</p>}
 
         {result && (
-          <div className="bg-white shadow-md p-6 mt-8 rounded-xl border-[1px]">
-            <h2 className="text-2xl font-semibold mb-4">
-              Likely Common Conditions:
-            </h2>
-            {result.likely_common_conditions.map((condition, index) => (
-              <div key={index} className="mb-6 border-b pb-4">
-                <h3 className="text-xl font-bold mb-2">{condition.disease}</h3>
-                <p className="mb-1">Commonality: {condition.commonality}</p>
-                <p>Medications: {condition.informational_medications}</p>
-                <div className="mt-2">
-                  <p className="font-semibold mb-1">Precautions:</p>
-                  <ul className="list-disc list-inside text-gray-700">
-                    {condition.precautions.map((precaution, i) => (
-                      <li key={i}>{precaution}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
+          <div className="bg-white shadow-lg p-8 mt-8 rounded-xl border-[1px] space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">Search Results</h2>
+            <p className="text-gray-600">{result.recommendation_note}</p>
 
-            <h2 className="text-2xl font-semibold mt-8 mb-4">
-              Other Possible Conditions:
-            </h2>
-            {result.other_possible_conditions.map((condition, index) => (
-              <div key={index} className="mb-6 border-b pb-4">
-                <h3 className="text-xl font-bold mb-2">{condition.disease}</h3>
-                <p className="mb-1">Commonality: {condition.commonality}</p>
-                <p>Medications: {condition.informational_medications}</p>
-                <div className="mt-2">
-                  <p className="font-semibold mb-1">Precautions:</p>
-                  <ul className="list-disc list-inside text-gray-700">
-                    {condition.precautions.map((precaution, i) => (
-                      <li key={i}>{precaution}</li>
-                    ))}
-                  </ul>
-                </div>
+            {/* Likely Common Conditions */}
+            <div>
+              <h3 className="text-xl font-semibold text-green-700 border-b-2 pb-2">
+                🏥 Most Likely Conditions
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                {result.likely_common_conditions.map((condition, index) => (
+                  <div key={index} className="bg-gray-100 p-4 rounded-lg shadow-md">
+                    <h4 className="text-lg font-bold text-blue-700">{condition.disease}</h4>
+                    <p className="text-sm text-gray-600">Commonality: {condition.commonality}</p>
+                    <p className="text-sm font-semibold mt-2">💊 Medications:</p>
+                    <p className="text-sm text-gray-700">{condition.informational_medications}</p>
+                    <p className="text-sm font-semibold mt-2">🛑 Precautions:</p>
+                    <ul className="list-disc list-inside text-sm text-gray-700">
+                      {condition.precautions.map((precaution, i) => (
+                        <li key={i}>{precaution}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
 
-            <p className="text-gray-500 text-sm mt-6">{result.note}</p>
+            {/* Other Possible Conditions */}
+            <div>
+              <h3 className="text-xl font-semibold text-yellow-700 border-b-2 pb-2">
+                🤔 Other Possible Conditions
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                {result.other_possible_conditions.map((condition, index) => (
+                  <div key={index} className="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <h4 className="text-lg font-bold text-orange-700">{condition.disease}</h4>
+                    <p className="text-sm text-gray-600">Commonality: {condition.commonality}</p>
+                    <p className="text-sm font-semibold mt-2">💊 Medications:</p>
+                    <p className="text-sm text-gray-700">{condition.informational_medications}</p>
+                    <p className="text-sm font-semibold mt-2">🛑 Precautions:</p>
+                    <ul className="list-disc list-inside text-sm text-gray-700">
+                      {condition.precautions.map((precaution, i) => (
+                        <li key={i}>{precaution}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-gray-500 text-sm mt-6 italic">
+              {result.note}
+            </p>
           </div>
         )}
       </div>
