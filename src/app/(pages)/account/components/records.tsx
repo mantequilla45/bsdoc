@@ -99,17 +99,17 @@ const Records = ({ userId }: RecordsProps) => {
                         userRecords.map((record, index) => (
                             <div key={index} className="bg-white shadow rounded-lg p-4 mb-4">
                                 <div className="grid grid-cols-2 gap-2">
-                                    <div className="font-semibold">Date</div>
-                                    <div>{formatDate(record.date)}</div>
+                                    <div className="text-sm">Date</div>
+                                    <div className="text-sm font-light">{formatDate(record.date)}</div>
 
-                                    <div className="font-semibold">Weight</div>
-                                    <div>{record.weight} kg</div>
+                                    <div className="text-sm">Weight</div>
+                                    <div className="text-sm font-light">{record.weight} kg</div>
 
-                                    <div className="font-semibold">Symptoms</div>
-                                    <div>{record.symptoms.join(', ')}</div>
+                                    <div className="text-sm">Symptoms</div>
+                                    <div className="text-sm font-light">{record.symptoms.join(', ')}</div>
 
-                                    <div className="font-semibold">Health Conditions</div>
-                                    <div>{record.health_conditions.join(', ')}</div>
+                                    <div className="text-sm">Health Conditions</div>
+                                    <div className="text-sm font-light">{record.health_conditions.join(', ')}</div>
                                 </div>
                             </div>
                         ))

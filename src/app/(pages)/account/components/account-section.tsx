@@ -136,7 +136,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
     return (
         <div className="bg-white shadow-lg md:w-[40%] md:min-w-[300px] w-full overflow-hidden">
             <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white py-4 px-4 flex items-center justify-between">
-                <h2 className="text-lg pl-4 font-semibold">Account Details</h2>
+                <h2 className="md:text-lg pl-4 text-md font-semibold">Account Details</h2>
                 {isEditing ? (
                     <button
                         onClick={handleCancel}
@@ -154,7 +154,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                 )}
             </div>
 
-            <div className="p-6">
+            <div className="p-6 py-16">
                 <div className="flex flex-col items-center mb-6">
                     <ProfileImageUpload
                         imagePreview={imagePreview}
@@ -165,7 +165,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                         isSaving={isSaving}
                     />
                     {!isEditing && profile && (
-                        <h3 className="mt-4 text-xl font-bold text-gray-800">
+                        <h3 className="md:mt-4 mt-6 text-xl font-bold text-gray-800">
                             {profile.first_name} {profile.last_name}
                         </h3>
                     )}

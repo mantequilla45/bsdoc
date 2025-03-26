@@ -304,7 +304,7 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
     return (
         <div className="w-full border-[#00909A]/60">
             <div className="bg-gradient-to-r md:border-l border-l-1 border-teal-600 from-teal-500 to-teal-600 text-white py-4 px-4 flex items-center justify-between">
-                <p className="text-lg pl-4 text-white font-semibold">Medical Details</p>
+                <p className="md:text-lg text-md pl-4 text-white font-semibold">Medical Details</p>
                 {!isEditing ? (
                     <button
                         onClick={() => setIsEditing(true)}
@@ -324,7 +324,7 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
             </div>
 
 
-            <div className="flex flex-col gap-10 p-10">
+            <div className="flex flex-col gap-10 p-10 pb-16">
                 {isEditing ? (
                     <>
                         {renderEditForm()}
