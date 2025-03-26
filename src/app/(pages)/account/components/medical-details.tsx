@@ -4,6 +4,7 @@ import { MedicalDetail } from './index';
 import DetailSection from './details';
 import Records from './records';
 import { MdEdit, MdSave, MdCancel } from "react-icons/md";
+import { GrClose } from 'react-icons/gr';
 
 interface MedicalDetailsProps {
     userId: string;
@@ -301,33 +302,33 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
     };
 
     return (
-        <div className="w-full pl-10 border-l-[1px] border-[#00909A]/60">
-            <div className="relative flex justify-center items-center bg-[#62B6B8] rounded-md text-white w-full py-3 px-4">
-                <p className="text-center text-white text-sm">MEDICAL DETAILS</p>
+        <div className="w-full border-[#00909A]/60">
+            <div className="bg-gradient-to-r md:border-l border-l-1 border-teal-600 from-teal-500 to-teal-600 text-white py-4 px-4 flex items-center justify-between">
+                <p className="text-lg pl-4 text-white font-semibold">Medical Details</p>
                 {!isEditing ? (
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="absolute right-0 py-3 pl-3 pr-4 rounded-r-md text-white hover:bg-[#00909A] text-sm flex items-center gap-1 transition duration-300"
+                        className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors"
                     >
-                        <MdEdit size={16} /> Edit
+                        <MdEdit className="text-white" />
                     </button>
 
                 ) : (
                     <button
                         onClick={handleCancel}
-                        className="absolute right-0 py-3 pl-3 pr-4 rounded-r-md text-white hover:bg-[#00909A] transition duration-300 text-sm flex items-center gap-1"
+                        className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors"
                         disabled={isSaving}
                     >
-                        <MdCancel /> Cancel
+                        <GrClose />
                     </button>)}
             </div>
 
 
-            <div className="flex flex-col gap-10 px-4 py-8">
+            <div className="flex flex-col gap-10 p-10">
                 {isEditing ? (
                     <>
                         {renderEditForm()}
-                        <div className="flex justify-end gap-2 mt-4">
+                        <div className="flex justify-end gap-2">
                             <button
                                 onClick={handleCancel}
                                 className="py-3 pr-5 pl-4 text-sm rounded-xl border border-1px hover:bg-[#C8CCD2] transition duration-300 bg-gray-300 text-gray-700 flex items-center gap-2"
@@ -337,7 +338,7 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                             </button>
                             <button
                                 onClick={handleSave}
-                                className="py-3 pr-5 pl-4 text-sm rounded-xl border border-1px hover:bg-[#529E9F] transition duration-300  bg-[#62B6B8] text-white flex items-center gap-2 hover:bg"
+                                className="py-3 pr-5 pl-4 text-sm rounded-xl border border-1px hover:bg-[#4B8C8D] transition duration-300  bg-[#62B6B8] text-white flex items-center gap-2 hover:bg"
                                 disabled={isSaving}
                             >
                                 {isSaving ? 'Saving...' : <><MdSave className="text-sm" /> Save</>}
