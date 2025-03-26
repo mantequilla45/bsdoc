@@ -90,9 +90,9 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 >
                     <div className="space-y-2">
-                        <span className={`block w-8 h-0.5 bg-white transform transition duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2.5' : ''}`}></span>
-                        <span className={`block w-8 h-0.5 bg-white transition duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
-                        <span className={`block w-8 h-0.5 bg-white transform transition duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2.5' : ''}`}></span>
+                        <span className={`block w-8 h-0.5 ${pathname === "/" ? "bg-white" : "bg-black"} transform transition duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2.5' : ''}`}></span>
+                        <span className={`block w-8 h-0.5 ${pathname === "/" ? "bg-white" : "bg-black"} transition duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                        <span className={`block w-8 h-0.5 ${pathname === "/" ? "bg-white" : "bg-black"} transform transition duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2.5' : ''}`}></span>
                     </div>
                 </div>
 

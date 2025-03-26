@@ -1,5 +1,5 @@
 // src/app/components/AvailabilityCalendar.tsx
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
 interface AvailabilityCalendarProps {
@@ -13,8 +13,10 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ doctorId, o
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Function to fetch available dates for the doctor
-    const fetchAvailableDates = async () => {
+    // Memoized function to fetch available dates
+    const fetchAvailableDates = useCallback(async () => {
+        if (!doctorId) return;
+
         setIsLoading(true);
         setError(null);
         
@@ -32,14 +34,12 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ doctorId, o
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [doctorId]);
 
     // Fetch available dates when doctorId changes
-    React.useEffect(() => {
-        if (doctorId) {
-            fetchAvailableDates();
-        }
-    }, [doctorId]);
+    useEffect(() => {
+        fetchAvailableDates();
+    }, [fetchAvailableDates]);
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const dateString = e.target.value;
