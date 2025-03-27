@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import AuthModal from "@/app/components/modals/userAuth";
+import AuthModal from "@/app/(pages)/login/userAuth";
 import Link from "next/link";
 import { signOut } from "@/services/Auth/auth";
 import { supabase } from "@/lib/supabaseClient";
