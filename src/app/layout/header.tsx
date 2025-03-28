@@ -86,9 +86,10 @@ const Header = ({ background, title }: { background: string; title: string }) =>
     return (
         <header
             ref={headerRef}
-            className={`text-[#222726] overflow-visible z-50 ${pathname === "/" ? "fixed" : "sticky"} top-0 transition-all duration-300 bg-${background}
-                ${scrolled ? "py-0 h-[70px]" : "py-4 md:h-[10vh] h-[80px]"} 
-                flex items-center max-w-[1300px] min-w-[100%]`}
+            style={{ backgroundColor: background }}
+            className={`text-[#222726] overflow-visible z-50 ${pathname === "/" ? "fixed" : "sticky"} top-0 transition-all duration-300
+        ${scrolled ? "py-0 h-[70px]" : "py-4 md:h-[10vh] h-[80px]"} 
+        flex items-center max-w-[1300px] min-w-[100%]`}
         >
             <title>{title}</title>
             <nav className="relative mx-auto flex justify-center items-center md:px-16 px-6 w-full md:h-full">
@@ -109,7 +110,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                     <div className="hidden md:flex flex-row items-center gap-5 text-sm relative justify-start w-[400px] z-100">
                         <Link
                             href="/"
-                            className={`hover:underline cursor-pointer ${background === "black/40" ? "text-white" : ""}  text-md `}>
+                            className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md `}>
                             Home
                         </Link>
                     </div>
@@ -122,7 +123,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                         <Link href="/">
                             <Image
                                 fill
-                                src={`/logo/${background === "black/40" ? "logo-white" : "logo-clear"}.svg`}
+                                src={`/logo/${background === "rgba(0,0,0,0.4)" ? "logo-white" : "logo-clear"}.svg`}
                                 alt="BSDOC Logo"
                                 className="object-contain"
                             />
@@ -133,7 +134,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                     <ul className="hidden md:flex flex-row items-center gap-5 text-sm relative justify-end w-[400px]">
                         <a
                             href="/appointment-page"
-                            className={`hover:underline cursor-pointer ${background === "black/40" ? "text-white" : ""}  text-md `}>
+                            className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md `}>
                             Schedule an Appointment
                         </a>
 
