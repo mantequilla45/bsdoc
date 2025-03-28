@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { IoSearch } from "react-icons/io5";
 import Footer from "@/app/layout/footer";
 import { motion, AnimatePresence } from "framer-motion";
-import AdvancedSearchForm from "@/app/components/search-symptoms/adv-search-form";
-import ImageContainer from "@/app/components/search-symptoms/background";
+import AdvancedSearchForm from "@/app/(pages)/search-symptoms/components/adv-search-form";
+import ImageContainer from "@/app/(pages)/search-symptoms/components/background";
 
 const SearchSymptomsPage = () => {
     const [isAdvancedSearchEnabled, setIsAdvancedSearchEnabled] = useState(false);

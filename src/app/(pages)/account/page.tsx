@@ -40,8 +40,8 @@ const AccountPage = () => {
 
     return (
         <div className="bg-[#62B6B8]">
-            <Header background="white" title="Account" />
-            <div className="md:py-5 md:px-10 px-0" style={{ minHeight: 'calc(100vh - var(--header-height))' }}>
+            <Header background="black/40" title="Account"/>
+            <div className="md:py-5 md:px-10 px-0 md:pt-16" style={{ minHeight: 'calc(100vh - var(--header-height))' }}>
                 <div className="max-w-[1300px] overflow-hidden mx-auto flex h-full md:flex-row flex-col bg-white md:p-0 md:rounded-xl rounded-0">
                     {authLoading ? (
                         <div className="w-full flex justify-center items-center p-10">
