@@ -1,14 +1,13 @@
-// src/app/pages/appointments/index.tsx
-import React from 'react';
-import AppointmentList from '../../components/booking/AppointmentList';
-
-const AppointmentsPage: React.FC = () => {
+import DoctorSchedule from "./components/calendar";
+import Header from "@/app/layout/header";
+const Appointments = () => {
     return (
         <div>
-            <h1>My Appointments</h1>
-            <AppointmentList />
+            <Header background="white" title="Calendar" />
+            <DoctorSchedule />
         </div>
     );
-};
+}
 
-export default AppointmentsPage;
+export default Appointments;
+
