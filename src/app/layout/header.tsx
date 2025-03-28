@@ -159,8 +159,8 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                             ref={containerRef}
                                         >
                                             <ul className="text-gray-700">
-                                                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                                    <Link href="/account" className="block w-full h-full">Account</Link>
+                                                <li className={`px-4 py-2 rounded-t-md ${pathname === "/account"  ? "pointer-events-none opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer "}`}>
+                                                    <Link href="/account" className={`block w-full h-full `}>Account</Link>
                                                 </li>
                                                 <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                                                     Settings
@@ -171,7 +171,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                                         setMenuOpen(false);
                                                         signOut();
                                                     }}
-                                                    className="px-4 py-2 hover:bg-red-100 cursor-pointer text-red-500"
+                                                    className="px-4 py-2 hover:bg-red-100 cursor-pointer rounded-b-md text-red-500"
                                                 >
                                                     Logout
                                                 </li>
