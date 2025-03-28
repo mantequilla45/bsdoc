@@ -1,4 +1,6 @@
 "use client";
+
+import React, { useState } from "react";
 import Header from "@/app/layout/header";
 import React, { useState } from "react";
 import { IoSearch } from "react-icons/io5";
@@ -148,5 +150,28 @@ const SearchSymptomsPage = () => {
     </div>
   );
 };
+
+const ConditionCard = ({
+  condition,
+  highlight,
+}: {
+  condition: Condition;
+  highlight: "blue" | "orange";
+}) => (
+  <div className="bg-gray-100 p-4 rounded-lg shadow-md">
+    <h4 className={`text-lg font-bold text-${highlight}-700`}>
+      {condition.disease}
+    </h4>
+    <p className="text-sm text-gray-600">Commonality: {condition.commonality}</p>
+    <p className="text-sm font-semibold mt-2">💊 Medications:</p>
+    <p className="text-sm text-gray-700">{condition.informational_medications}</p>
+    <p className="text-sm font-semibold mt-2">🛑 Precautions:</p>
+    <ul className="list-disc list-inside text-sm text-gray-700">
+      {condition.precautions.map((precaution, i) => (
+        <li key={i}>{precaution}</li>
+      ))}
+    </ul>
+  </div>
+);
 
 export default SearchSymptomsPage;
