@@ -2,10 +2,8 @@
 
 import React, { useState } from "react";
 import Header from "@/app/layout/header";
-import React, { useState } from "react";
-import { IoSearch } from "react-icons/io5";
 import Footer from "@/app/layout/footer";
-import ImageContainer from "@/app/components/search-symptoms/background";
+import { IoSearch } from "react-icons/io5";
 import { getSymptomInfo } from "@/services/symptom-search/symptomService";
 
 // Define TypeScript interfaces
@@ -33,28 +31,32 @@ const SearchSymptomsPage = () => {
 
   const handleSearch = async () => {
     if (!inputValue.trim()) return;
+
     setLoading(true);
     setError("");
     setResult(null);
+
     try {
-      const symptoms = inputValue.split(",").map((s) => s.trim().toLowerCase());
+      const symptoms = inputValue
+        .split(",")
+        .map((s) => s.trim().toLowerCase());
       const data: SymptomResponse = await getSymptomInfo(symptoms);
       setResult(data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       setError("Could not fetch results. Make sure the AI backend is running.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <div className="min-h-screen flex flex-col relative bg-[#EEFFFE]">
       <Header background="[#EEFFFE]" title="Search Symptoms" />
 
+      {/* Optional: You can create a separate component for background visual if needed */}
       <div className="absolute inset-0">
-        <div className="sticky top-0 h-screen">
-          <ImageContainer />
-        </div>
+        <div className="sticky top-0 h-screen bg-gradient-to-b from-[#EEFFFE] to-white opacity-10" />
       </div>
 
       <div className="md:h-[30vh] h-[20%]" />
@@ -65,15 +67,15 @@ const SearchSymptomsPage = () => {
         <p className="text-gray-600 text-lg">
           Enter symptoms (comma-separated) and let our AI assist you:
         </p>
-        <div className="relative flex items-center shadow-md border-[1px] rounded-xl px-6 bg-white">
+
+        <div className="relative flex items-center shadow-md border rounded-xl px-6 bg-white">
           <input
             type="text"
             placeholder="Example: fever, headache, cold"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            className="w-full h-14 border-none placeholder:text-base md:placeholder:text-xl outline-none text-lg text-[#2D383D]"
-            style={{ lineHeight: "2rem" }}
+            className="w-full h-14 border-none outline-none text-lg text-[#2D383D] placeholder:text-base md:placeholder:text-xl"
           />
           <button
             onClick={handleSearch}
@@ -87,7 +89,7 @@ const SearchSymptomsPage = () => {
         {error && <p className="text-red-500 mt-4">{error}</p>}
 
         {result && (
-          <div className="bg-white shadow-lg p-8 mt-8 rounded-xl border-[1px] space-y-6">
+          <div className="bg-white shadow-lg p-8 mt-8 rounded-xl border space-y-6">
             <h2 className="text-2xl font-bold text-gray-800">Search Results</h2>
             <p className="text-gray-600">{result.recommendation_note}</p>
 
@@ -98,18 +100,7 @@ const SearchSymptomsPage = () => {
               </h3>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 {result.likely_common_conditions.map((condition, index) => (
-                  <div key={index} className="bg-gray-100 p-4 rounded-lg shadow-md">
-                    <h4 className="text-lg font-bold text-blue-700">{condition.disease}</h4>
-                    <p className="text-sm text-gray-600">Commonality: {condition.commonality}</p>
-                    <p className="text-sm font-semibold mt-2">💊 Medications:</p>
-                    <p className="text-sm text-gray-700">{condition.informational_medications}</p>
-                    <p className="text-sm font-semibold mt-2">🛑 Precautions:</p>
-                    <ul className="list-disc list-inside text-sm text-gray-700">
-                      {condition.precautions.map((precaution, i) => (
-                        <li key={i}>{precaution}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  <ConditionCard key={index} condition={condition} highlight="blue" />
                 ))}
               </div>
             </div>
@@ -121,25 +112,12 @@ const SearchSymptomsPage = () => {
               </h3>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 {result.other_possible_conditions.map((condition, index) => (
-                  <div key={index} className="bg-gray-50 p-4 rounded-lg shadow-md">
-                    <h4 className="text-lg font-bold text-orange-700">{condition.disease}</h4>
-                    <p className="text-sm text-gray-600">Commonality: {condition.commonality}</p>
-                    <p className="text-sm font-semibold mt-2">💊 Medications:</p>
-                    <p className="text-sm text-gray-700">{condition.informational_medications}</p>
-                    <p className="text-sm font-semibold mt-2">🛑 Precautions:</p>
-                    <ul className="list-disc list-inside text-sm text-gray-700">
-                      {condition.precautions.map((precaution, i) => (
-                        <li key={i}>{precaution}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  <ConditionCard key={index} condition={condition} highlight="orange" />
                 ))}
               </div>
             </div>
 
-            <p className="text-gray-500 text-sm mt-6 italic">
-              {result.note}
-            </p>
+            <p className="text-gray-500 text-sm mt-6 italic">{result.note}</p>
           </div>
         )}
       </div>
