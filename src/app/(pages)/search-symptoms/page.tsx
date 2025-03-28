@@ -5,6 +5,7 @@ import Header from "@/app/layout/header";
 import Footer from "@/app/layout/footer";
 import { IoSearch } from "react-icons/io5";
 import { getSymptomInfo } from "@/services/symptom-search/symptomService";
+import Background from "@/app/(pages)/search-symptoms/components/background";
 
 // Define TypeScript interfaces
 interface Condition {
@@ -54,9 +55,9 @@ const SearchSymptomsPage = () => {
     <div className="min-h-screen flex flex-col relative bg-[#EEFFFE]">
       <Header background="[#EEFFFE]" title="Search Symptoms" />
 
-      {/* Optional: You can create a separate component for background visual if needed */}
-      <div className="absolute inset-0">
-        <div className="sticky top-0 h-screen bg-gradient-to-b from-[#EEFFFE] to-white opacity-10" />
+      {/* Integrated Background Component */}
+      <div className="absolute inset-0 -z-10">
+        <Background />
       </div>
 
       <div className="md:h-[30vh] h-[20%]" />
