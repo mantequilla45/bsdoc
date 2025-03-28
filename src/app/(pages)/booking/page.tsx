@@ -15,16 +15,15 @@ interface Doctor {
     };
 }
 
-interface TimeSlot {
-    id: string;
-    start_time: string;
-}
+// Changed TimeSlot interface to reflect 30-minute slots (strings)
+type TimeSlot = string; // e.g., "14:00-14:30"
 
 const TestBookingPage: React.FC = () => {
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [selectedDoctorId, setSelectedDoctorId] = useState<string>('');
-    const [availableTimes, setAvailableTimes] = useState<TimeSlot[]>([]);
-    const [selectedTime, setSelectedTime] = useState<string>('');
+    const [availableTimes, setAvailableTimes] = useState<TimeSlot[]>([]); // Now an array of strings
+    const [bookedTimes, setBookedTimes] = useState<TimeSlot[]>([]); // New state to track booked times
+    const [selectedTime, setSelectedTime] = useState<string>(''); // Still a string, but now a slot
     const [bookingStatus, setBookingStatus] = useState<string>('');
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -33,7 +32,7 @@ const TestBookingPage: React.FC = () => {
     const router = useRouter();
 
     useEffect(() => {
-        // Fetch doctors
+        // Fetch doctors - No changes needed here
         const fetchDoctors = async () => {
             setIsLoading(true);
             setError('');
@@ -52,7 +51,7 @@ const TestBookingPage: React.FC = () => {
             }
         };
 
-        // Get current user
+        // Get current user - No changes needed here
         const getCurrentUser = async () => {
             setIsLoading(true);
             setError('');
@@ -77,7 +76,7 @@ const TestBookingPage: React.FC = () => {
     }, [router]);
 
     useEffect(() => {
-        // Fetch availability
+        // Fetch availability - Modified to handle 30-minute slots and booked times
         const fetchAvailability = async () => {
             if (selectedDoctorId && selectedDate) {
                 setIsLoading(true);
@@ -87,13 +86,22 @@ const TestBookingPage: React.FC = () => {
                         weekday: 'long',
                     });
                     const response = await fetch(
-                        `/api/availability?doctor_id=${selectedDoctorId}&day_of_week=${dayOfWeek}`
+                        `/api/availability?doctor_id=${selectedDoctorId}&day_of_week=${dayOfWeek}&selected_date=${selectedDate}`
                     );
                     if (!response.ok) {
                         throw new Error('Failed to fetch availability');
                     }
                     const data = await response.json();
-                    setAvailableTimes(data.data || []);
+
+                    // Extract timeSlots and bookedTimes
+                    if (data.data) {
+                        setAvailableTimes(data.data.timeSlots || []);
+                        setBookedTimes(data.data.bookedTimes || []); // New line to set booked times
+                    } else {
+                        setAvailableTimes([]); 
+                        setBookedTimes([]); // Reset booked times
+                    }
+
                 } catch (error) {
                     console.error(error);
                     setError('Error loading available times');
@@ -102,6 +110,7 @@ const TestBookingPage: React.FC = () => {
                 }
             } else {
                 setAvailableTimes([]);
+                setBookedTimes([]); // Reset booked times
             }
         };
 
@@ -113,17 +122,20 @@ const TestBookingPage: React.FC = () => {
             setIsLoading(true);
             setBookingStatus('');
             setError('');
-    
+
             try {
                 // Get the current session token
                 const { data: { session } } = await supabase.auth.getSession();
-                
+
                 if (!session) {
                     throw new Error('User not authenticated');
                 }
-    
+
                 const token = session.access_token;
-    
+
+                // Extract appointment_time from selectedTime
+                const appointment_time = selectedTime.split('-')[0];
+
                 const response = await fetch('/api/appointments', {
                     method: 'POST',
                     headers: {
@@ -133,16 +145,16 @@ const TestBookingPage: React.FC = () => {
                     body: JSON.stringify({
                         doctor_id: selectedDoctorId,
                         appointment_date: selectedDate,
-                        appointment_time: selectedTime,
+                        appointment_time: appointment_time,
                     }),
                 });
-    
+
                 const data = await response.json();
-    
+
                 if (!response.ok) {
                     throw new Error(data.error || data.details || 'Failed to book appointment');
                 }
-    
+
                 setBookingStatus('Appointment booked successfully!');
                 setSelectedTime('');
             } catch (error) {
@@ -172,8 +184,6 @@ const TestBookingPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                    {/* Removed Patient Selection */}
-
                     <div>
                         <h2 className="text-xl font-semibold mb-2">Select a Doctor</h2>
                         <select
@@ -213,19 +223,27 @@ const TestBookingPage: React.FC = () => {
                                 <p>Loading available times...</p>
                             ) : availableTimes && availableTimes.length > 0 ? (
                                 <div className="grid grid-cols-3 gap-2">
-                                    {availableTimes.map((timeSlot) => (
-                                        <button
-                                            key={timeSlot.id}
-                                            className={`p-2 border rounded ${
-                                                selectedTime === timeSlot.start_time
-                                                    ? 'bg-blue-500 text-white'
-                                                    : 'bg-white'
-                                            }`}
-                                            onClick={() => setSelectedTime(timeSlot.start_time)}
-                                        >
-                                            {timeSlot.start_time}
-                                        </button>
-                                    ))}
+                                    {availableTimes.map((timeSlot) => {
+                                        const isBooked = bookedTimes.includes(timeSlot);
+                                        return (
+                                            <button
+                                                key={timeSlot}
+                                                className={`p-2 border rounded ${
+                                                    selectedTime === timeSlot
+                                                        ? 'bg-blue-500 text-white'
+                                                        : 'bg-white'
+                                                } ${
+                                                    isBooked 
+                                                        ? 'opacity-50 cursor-not-allowed bg-gray-200' 
+                                                        : 'hover:bg-blue-100'
+                                                }`}
+                                                disabled={isBooked}
+                                                onClick={isBooked ? () => {} : () => setSelectedTime(timeSlot)}
+                                            >
+                                                {timeSlot}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <p>No available times.</p>
