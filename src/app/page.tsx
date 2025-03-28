@@ -6,7 +6,7 @@ import OurServicesSection from "@/app/(pages)/homepage/components/ourservices"
 const Landing = () => {
   return (
     <div className="overflow-x-hidden">
-      <Header background="[#000000]" title="BSDOC" />
+      <Header background="black/40" title="BSDOC" />
       <HomePage />
       <OurServicesSection />
       <Footer />
