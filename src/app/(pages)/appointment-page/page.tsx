@@ -75,10 +75,6 @@ const AppointmentPage = () => {
                                         <option>Name of Doctor</option>
                                     </select>
 
-                                    <select className="border rounded-md p-3 w-1/34">
-                                        <option>Mode of Meeting</option>
-                                    </select>
-
                                     {/* Submit Button */}
                                     <button className="bg-[#62B6B8] text-white px-6 py-3 rounded-md">
                                         Submit
