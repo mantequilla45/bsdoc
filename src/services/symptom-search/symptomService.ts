@@ -13,3 +13,4 @@ export const getSymptomInfo = async (symptoms: string[]) => {
 
   return response.json();
 };
+  
