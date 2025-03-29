@@ -5,6 +5,7 @@ const protectedPages = ['/account', '/booking'];
 const adminPages = [{
   path: '/admin', roles: ['admin']
 }];
+const doctorPages = [{ path: '/doctor-schedule', roles: ['doctor'] }];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -17,6 +18,7 @@ export async function updateSession(request: NextRequest) {
     {
       cookies: {
         getAll() {
+          //console.log("Middleware - getAll cookies:", request.cookies.getAll());
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
@@ -25,9 +27,10 @@ export async function updateSession(request: NextRequest) {
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value, options }) => {
+            //console.log("Middleware - Setting cookie:", name, value, options); // Log each cookie being set
             supabaseResponse.cookies.set(name, value, options)
-          )
+          })
         },
       },
     }
@@ -42,6 +45,7 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  //console.log("Middleware - User after supabase.auth.getUser():", user);
 
   // if (
   //   !user &&
@@ -69,6 +73,7 @@ export async function updateSession(request: NextRequest) {
     const adminOnly = adminPages.find(route => path.startsWith(route.path))
     
     if (adminOnly) {
+      console.log("Middleware - Checking admin route:", adminOnly.path);
       // Get user role from profiles table
       const { data: profile } = await supabase
         .from('profiles')
@@ -78,6 +83,26 @@ export async function updateSession(request: NextRequest) {
       
       // If we have a profile and the role isn't in the allowed roles, redirect
       if (!profile || !adminOnly.roles.includes(profile.role)) {
+        // Redirect to unauthorized page or homepage
+        const url = request.nextUrl.clone()
+        url.pathname = '/' // Create this page or redirect elsewhere
+        return NextResponse.redirect(url)
+      }
+    }
+
+    const doctorOnly = doctorPages.find(route => request.nextUrl.pathname.startsWith(route.path))
+
+    if (doctorOnly) {
+      console.log("Middleware - Checking doctor route:", doctorOnly.path);
+      // Get user role from profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      
+      // If we have a profile and the role isn't in the allowed roles, redirect
+      if (!profile || !doctorOnly.roles.includes(profile.role)) {
         // Redirect to unauthorized page or homepage
         const url = request.nextUrl.clone()
         url.pathname = '/' // Create this page or redirect elsewhere
