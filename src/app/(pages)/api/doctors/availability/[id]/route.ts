@@ -58,41 +58,133 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const id = (await params).id;
 
     try {
-        // Authentication and authorization logic here (check if user is a doctor)
-        const doctorUser = await getUser();
-        if (!doctorUser) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        // 1. Authentication
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Missing or invalid Authorization header' }, { status: 401 });
         }
 
-        // Authorization: Ensure the user is a doctor
+        const token = authHeader.split(' ')[1];
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+        if (authError || !user) {
+            console.error('Token verification failed:', authError);
+            return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+        }
+
+        // 2. Authorization: Ensure the user is a doctor and is deleting their own availability
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('role')
-            .eq('id', doctorUser.id)
+            .eq('id', user.id)
             .single();
 
         if (profileError || !profile || profile.role !== 'doctor') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
-        const { data, error } = await supabase
+        // Fetch the availability to be deleted to compare doctor IDs and get details
+        const { data: availability, error: availabilityError } = await supabase
+            .from('availability')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (availabilityError || !availability) {
+            return NextResponse.json({ error: 'Availability not found' }, { status: 404 });
+        }
+
+        if (availability.doctor_id !== user.id) {
+            return NextResponse.json({ error: 'You are not authorized to delete this availability' }, { status: 403 });
+        }
+
+        // Day of week mapping
+        const dayOfWeekMap: Record<string, number> = {
+            'Sunday': 0,
+            'Monday': 1,
+            'Tuesday': 2,
+            'Wednesday': 3,
+            'Thursday': 4,
+            'Friday': 5,
+            'Saturday': 6
+        };
+        
+        const dayNumber = dayOfWeekMap[availability.day_of_week];
+        if (dayNumber === undefined) {
+            return NextResponse.json({ error: 'Invalid day of week in availability' }, { status: 400 });
+        }
+
+        // Define interfaces for type safety
+        interface Appointment {
+            id: string;
+            appointment_date: string;
+            appointment_time: string;
+            status?: string;
+        }
+            
+        // Get all appointments for this doctor with 'booked' status
+        const { data: doctorAppointments, error: doctorApptsError } = await supabase
+            .from('appointments')
+            .select('id, appointment_date, appointment_time')
+            .eq('doctor_id', availability.doctor_id)
+            .eq('status', 'booked')
+            .gte('appointment_time', availability.start_time)
+            .lt('appointment_time', availability.end_time);
+            
+        if (doctorApptsError) {
+            console.error('Error finding doctor appointments:', doctorApptsError);
+            return NextResponse.json({ error: 'Error finding doctor appointments' }, {
+                status: 500,
+            });
+        }
+        
+        // Then filter appointments by day of week manually
+        const affectedAppointments = doctorAppointments?.filter((appointment: Appointment) => {
+            const appointmentDate = new Date(appointment.appointment_date);
+            const appointmentDayOfWeek = appointmentDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            return appointmentDayOfWeek === dayNumber;
+        });
+        
+        // Update appointments
+        if (affectedAppointments && affectedAppointments.length > 0) {
+            const appointmentIds = affectedAppointments.map((app: Appointment) => app.id);
+            
+            const { error: updateAppointmentsError } = await supabase
+                .from('appointments')
+                .update({ status: 'cancelled', updated_at: new Date() })
+                .in('id', appointmentIds);
+
+            if (updateAppointmentsError) {
+                console.error('Error updating appointments:', updateAppointmentsError);
+                return NextResponse.json({ error: 'Error updating affected appointments' }, {
+                    status: 500,
+                });
+            }
+        }
+
+        // Delete the availability
+        const { data, error: deleteError } = await supabase
             .from('availability')
             .delete()
             .eq('id', id)
             .select('*')
             .single();
 
-        if (error) {
-            console.error('Error deleting availability:', error);
+        if (deleteError) {
+            console.error('Error deleting availability:', deleteError);
             return NextResponse.json({ error: 'Error deleting availability' }, {
                 status: 500,
             });
         }
 
-        return NextResponse.json({ data }, { status: 200 });
+        return NextResponse.json({ 
+            data, 
+            affectedAppointments: affectedAppointments?.length || 0,
+            message: `Availability deleted and ${affectedAppointments?.length || 0} affected appointments cancelled` 
+        }, { status: 200 });
     } catch (error) {
         console.error('Error in availability DELETE route:', error);
-        console.error('API Route Error Details:', error); // Log the error object
+        console.error('API Route Error Details:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
