@@ -1,16 +1,23 @@
 // /api/doctors/availability/[id]
 import { NextResponse, NextRequest } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
-import { getUser } from '@/services/Auth/auth'; // Assuming you have this
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const id = (await params).id;
 
     try {
         // Authentication and authorization logic here (check if user is a doctor)
-        const doctorUser = await getUser();
-        if (!doctorUser) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Missing or invalid Authorization header' }, { status: 401 });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const { data: { user: doctorUser }, error: authError } = await supabase.auth.getUser(token);
+
+        if (authError || !doctorUser) {
+            console.error('Token verification failed:', authError);
+            return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
         }
 
         // Authorization: Ensure the user is a doctor

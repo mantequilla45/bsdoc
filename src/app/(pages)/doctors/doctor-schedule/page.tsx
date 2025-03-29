@@ -1,10 +1,8 @@
-// app/doctor/schedule/page.tsx
 'use client';
 
 import { supabase } from '@/lib/supabaseClient';
 import { useState, useEffect } from 'react';
-//import { useSession } from '@/services/Auth/middleware'; // Import useSession (or similar)
-import { ProfileUser } from '@/types/user'; // Import ProfileUser type
+import { ProfileUser } from '@/types/user';
 
 // Define types for our data
 type Appointment = {
@@ -25,13 +23,6 @@ type Availability = {
   end_time: string;
 };
 
-//eslint-disable-next-line
-type CalendarEvent = {
-  date: string;
-  title: string;
-  status: string;
-};
-
 export default function DoctorSchedulePage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [availability, setAvailability] = useState<Availability[]>([]);
@@ -42,9 +33,15 @@ export default function DoctorSchedulePage() {
     start_time: '',
     end_time: ''
   });
-  const [doctorId, setDoctorId] = useState<string | null>(null); // State for doctor's ID
-  //const session = useSession(); // Get session - adjust based on your auth implementation
+  const [doctorId, setDoctorId] = useState<string | null>(null);
   const [user, setUser] = useState<ProfileUser | null>(null);
+  
+  // New state for editing availability
+  const [editingAvailability, setEditingAvailability] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    start_time: '',
+    end_time: ''
+  });
 
   useEffect(() => {
     const getSession = async () => {
@@ -84,7 +81,7 @@ export default function DoctorSchedulePage() {
         const { data: doctorData, error: doctorError } = await supabase
           .from('doctors')
           .select('id')
-          .eq('id', user.id) // Use 'id' from profiles table
+          .eq('id', user.id)
           .single();
 
         if (doctorError || !doctorData) {
@@ -126,7 +123,7 @@ export default function DoctorSchedulePage() {
     };
 
     fetchDoctorSchedule();
-  }, [user]); //  Depend on user
+  }, [user]);
 
   // Generate calendar days for the selected month
   const generateCalendarDays = () => {
@@ -141,8 +138,6 @@ export default function DoctorSchedulePage() {
 
     // Add actual days
     for (let i = 1; i <= lastDay.getDate(); i++) {
-      const currentDate = new Date(selectedYear, selectedMonth, i); //eslint-disable-line
-
       // Fix: Create date string in YYYY-MM-DD format without timezone conversion
       const dateString = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
 
@@ -169,7 +164,7 @@ export default function DoctorSchedulePage() {
       return;
     }
     try {
-      const response = await fetch('/api/availability', { // Correct API endpoint
+      const response = await fetch('/api/availability', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,6 +195,65 @@ export default function DoctorSchedulePage() {
     }
   };
 
+  // Handle editing availability
+  const handleEditAvailability = (avail: Availability) => {
+    setEditingAvailability(avail.id);
+    setEditForm({
+      start_time: avail.start_time,
+      end_time: avail.end_time
+    });
+  };
+
+  // Handle updating availability
+  const handleUpdateAvailability = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAvailability) {
+      return;
+    }
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      if (!token) {
+        throw new Error('Not Authenticated.');
+      }
+
+      const response = await fetch(`/api/doctors/availability/${editingAvailability}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          start_time: editForm.start_time,
+          end_time: editForm.end_time
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update availability');
+      }
+
+      // Update the state with the updated availability
+      setAvailability(availability.map(avail => 
+        avail.id === editingAvailability 
+          ? { ...avail, start_time: editForm.start_time, end_time: editForm.end_time } 
+          : avail
+      ));
+
+      // Reset the editing state
+      setEditingAvailability(null);
+    } catch (error) {
+      console.error('Error updating availability:', error);
+    }
+  };
+
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditingAvailability(null);
+  };
+
   const handleDeleteAvailability = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this availability?')) {
       return;
@@ -215,7 +269,7 @@ export default function DoctorSchedulePage() {
       const response = await fetch(`/api/doctors/availability/${id}`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': `application/json`,
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
       });
@@ -287,14 +341,15 @@ export default function DoctorSchedulePage() {
                   {day.appointments.map((appt) => (
                     <div
                       key={appt.id}
-                      className={`mt-1 p-1 rounded ${appt.status === 'booked'
+                      className={`mt-1 p-1 rounded ${
+                        appt.status === 'booked'
                           ? 'bg-blue-200'
                           : appt.status === 'cancelled'
                             ? 'bg-red-200'
                             : appt.status === 'completed'
                               ? 'bg-green-200'
                               : 'bg-gray-200'
-                        }`}
+                      }`}
                     >
                       {appt.appointment_time} - {appt.patient?.first_name}{' '}
                       {appt.patient?.last_name || 'Patient'}{' '}
@@ -328,19 +383,83 @@ export default function DoctorSchedulePage() {
                   <td className="p-2 border">{avail.day_of_week}</td>
                   <td className="p-2 border">{avail.start_time}</td>
                   <td className="p-2 border">{avail.end_time}</td>
-                  <td className="p-2 border">
-                    {/* Add Delete Button */}
-                    <button
-                      onClick={() => handleDeleteAvailability(avail.id)}
-                      className="bg-red-500 text-white p-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
+                  <td className="p-2 border flex space-x-2">
+                    {editingAvailability === avail.id ? (
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={cancelEdit}
+                          className="bg-gray-500 text-white p-1 rounded hover:bg-gray-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleEditAvailability(avail)}
+                          className="bg-blue-500 text-white p-1 rounded hover:bg-blue-600"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAvailability(avail.id)}
+                          className="bg-red-500 text-white p-1 rounded hover:bg-red-600"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          {/* Edit Form */}
+          {editingAvailability && (
+            <div className="mt-4 p-4 border rounded bg-gray-50">
+              <h3 className="font-semibold mb-2">Edit Availability</h3>
+              <form onSubmit={handleUpdateAvailability} className="space-y-4">
+                <div>
+                  <label htmlFor="edit-start-time" className="block mb-2">Start Time</label>
+                  <input
+                    id="edit-start-time"
+                    type="time"
+                    value={editForm.start_time}
+                    onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })}
+                    className="w-full p-2 border"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="edit-end-time" className="block mb-2">End Time</label>
+                  <input
+                    id="edit-end-time"
+                    type="time"
+                    value={editForm.end_time}
+                    onChange={(e) => setEditForm({ ...editForm, end_time: e.target.value })}
+                    className="w-full p-2 border"
+                    required
+                  />
+                </div>
+                <div className="flex justify-between">
+                  <button
+                    type="submit"
+                    className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
+                  >
+                    Update Availability
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="bg-gray-500 text-white p-2 rounded hover:bg-gray-600"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
 
         {/* Add Availability Form */}
@@ -348,8 +467,9 @@ export default function DoctorSchedulePage() {
           <h2 className="text-xl font-semibold mb-2">Add Availability</h2>
           <form onSubmit={handleAddAvailability} className="space-y-4">
             <div>
-              <label className="block mb-2">Day of Week</label>
+              <label htmlFor="day-of-week" className="block mb-2">Day of Week</label>
               <select
+                id="day-of-week"
                 value={newAvailability.day_of_week}
                 onChange={(e) =>
                   setNewAvailability({
@@ -367,8 +487,9 @@ export default function DoctorSchedulePage() {
               </select>
             </div>
             <div>
-              <label className="block mb-2">Start Time</label>
+              <label htmlFor="start-time" className="block mb-2">Start Time</label>
               <input
+                id="start-time"
                 type="time"
                 value={newAvailability.start_time}
                 onChange={(e) =>
@@ -382,8 +503,9 @@ export default function DoctorSchedulePage() {
               />
             </div>
             <div>
-              <label className="block mb-2">End Time</label>
+              <label htmlFor="end-time" className="block mb-2">End Time</label>
               <input
+                id="end-time"
                 type="time"
                 value={newAvailability.end_time}
                 onChange={(e) =>
