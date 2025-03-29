@@ -279,8 +279,7 @@ export default function DoctorSchedulePage() {
           {calendarDays.map((day, index) => (
             <div
               key={index}
-              className={`border p-2 min-h-[100px] ${day ? 'bg-white' : 'bg-gray-50'
-                }`}
+              className={`border p-2 min-h-[100px] ${day ? 'bg-white' : 'bg-gray-50'}`}
             >
               {day && (
                 <>
@@ -297,9 +296,9 @@ export default function DoctorSchedulePage() {
                               : 'bg-gray-200'
                         }`}
                     >
-                      {appt.appointment_time} -{' '}
-                      {appt.patient?.first_name}{' '}
-                      {appt.patient?.last_name || 'Patient'} {/* Modified: Display Name */}
+                      {appt.appointment_time} - {appt.patient?.first_name}{' '}
+                      {appt.patient?.last_name || 'Patient'}{' '}
+                      {appt.status === 'cancelled' && <span className="font-bold">(Cancelled)</span>}
                     </div>
                   ))}
                 </>
