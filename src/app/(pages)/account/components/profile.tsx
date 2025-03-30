@@ -60,7 +60,7 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
     };
 
     return (
-        <div className="md:w-[85%] md:min-w-[150px] w-[300px] mx-auto relative">
+        <div className="md:w-[85%] md:min-w-[150px] w-[250px] mx-auto relative">
             <div className="w-full aspect-square rounded-full border border-gray-300 relative group">
                 {/* Loading Overlay */}
                 {isImageLoading && (
@@ -74,8 +74,8 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
                 <Image
                     alt="Profile Picture"
                     src={forcedImagePreview || profile?.profile_image_url || profile?.profile_picture || defaultPlaceholder}
-                    width={500}
-                    height={500}
+                    width={450}
+                    height={450}
                     className="w-full h-full object-cover rounded-full"
                     onLoadingComplete={handleImageLoadingComplete}
                     onError={(e) => {

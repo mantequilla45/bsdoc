@@ -165,7 +165,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                         isSaving={isSaving}
                     />
                     {!isEditing && profile && (
-                        <h3 className="md:mt-4 mt-6 text-xl font-bold text-gray-800">
+                        <h3 className="md:mt-4 mt-6 text-xl font-semibold text-center text-gray-800">
                             {profile.first_name} {profile.last_name}
                         </h3>
                     )}

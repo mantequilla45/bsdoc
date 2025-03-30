@@ -2,26 +2,10 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import { useState, useEffect } from 'react';
-import { ProfileUser } from '@/types/user';
-
-// Define types for our data
-type Appointment = {
-  id: string;
-  appointment_date: string;
-  appointment_time: string;
-  status: string;
-  patient: {
-    first_name: string;
-    last_name: string;
-  };
-};
-
-type Availability = {
-  id: string;
-  day_of_week: string;
-  start_time: string;
-  end_time: string;
-};
+import { ProfileUser, Appointment, Availability } from './components/types';
+import Calendar from './components/Calendar';
+import AvailabilityManagement from './components/AvailabilityManagement';
+import Footer from '@/app/layout/footer';
 
 export default function DoctorSchedulePage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -35,8 +19,8 @@ export default function DoctorSchedulePage() {
   });
   const [doctorId, setDoctorId] = useState<string | null>(null);
   const [user, setUser] = useState<ProfileUser | null>(null);
-  
-  // New state for editing availability
+
+  // State for editing availability
   const [editingAvailability, setEditingAvailability] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     start_time: '',
@@ -125,35 +109,14 @@ export default function DoctorSchedulePage() {
     fetchDoctorSchedule();
   }, [user]);
 
-  // Generate calendar days for the selected month
-  const generateCalendarDays = () => {
-    const days = [];
-    const firstDay = new Date(selectedYear, selectedMonth, 1);
-    const lastDay = new Date(selectedYear, selectedMonth + 1, 0);
-
-    // Pad with empty days at the start
-    for (let i = 0; i < firstDay.getDay(); i++) {
-      days.push(null);
-    }
-
-    // Add actual days
-    for (let i = 1; i <= lastDay.getDate(); i++) {
-      // Fix: Create date string in YYYY-MM-DD format without timezone conversion
-      const dateString = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-
-      // Find appointments for this date
-      const dayAppointments = appointments.filter(
-        (appt) => appt.appointment_date === dateString
-      );
-
-      days.push({
-        date: dateString,
-        day: i,
-        appointments: dayAppointments,
-      });
-    }
-
-    return days;
+  // Navigation for month/year
+  const changeMonth = (direction: 'next' | 'prev') => {
+    const newDate = new Date(
+      selectedYear,
+      selectedMonth + (direction === 'next' ? 1 : -1)
+    );
+    setSelectedMonth(newDate.getMonth());
+    setSelectedYear(newDate.getFullYear());
   };
 
   // Handle adding new availability
@@ -236,9 +199,9 @@ export default function DoctorSchedulePage() {
       }
 
       // Update the state with the updated availability
-      setAvailability(availability.map(avail => 
-        avail.id === editingAvailability 
-          ? { ...avail, start_time: editForm.start_time, end_time: editForm.end_time } 
+      setAvailability(availability.map(avail =>
+        avail.id === editingAvailability
+          ? { ...avail, start_time: editForm.start_time, end_time: editForm.end_time }
           : avail
       ));
 
@@ -285,248 +248,32 @@ export default function DoctorSchedulePage() {
     }
   };
 
-  // Navigation for month/year
-  const changeMonth = (direction: 'next' | 'prev') => {
-    const newDate = new Date(
-      selectedYear,
-      selectedMonth + (direction === 'next' ? 1 : -1)
-    );
-    setSelectedMonth(newDate.getMonth());
-    setSelectedYear(newDate.getFullYear());
-  };
-
-  const calendarDays = generateCalendarDays();
-
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Doctor Schedule Management</h1>
-
-      {/* Calendar View */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={() => changeMonth('prev')}
-            className="bg-gray-200 p-2 rounded"
-          >
-            Previous
-          </button>
-          <h2 className="text-xl font-semibold">
-            {new Date(selectedYear, selectedMonth).toLocaleString('default', {
-              month: 'long',
-              year: 'numeric',
-            })}
-          </h2>
-          <button
-            onClick={() => changeMonth('next')}
-            className="bg-gray-200 p-2 rounded"
-          >
-            Next
-          </button>
-        </div>
-
-        <div className="grid grid-cols-7 gap-2 text-center">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <div key={day} className="font-bold bg-gray-100 p-2">
-              {day}
-            </div>
-          ))}
-          {calendarDays.map((day, index) => (
-            <div
-              key={index}
-              className={`border p-2 min-h-[100px] ${day ? 'bg-white' : 'bg-gray-50'}`}
-            >
-              {day && (
-                <>
-                  <div className="font-bold">{day.day}</div>
-                  {day.appointments.map((appt) => (
-                    <div
-                      key={appt.id}
-                      className={`mt-1 p-1 rounded ${
-                        appt.status === 'booked'
-                          ? 'bg-blue-200'
-                          : appt.status === 'cancelled'
-                            ? 'bg-red-200'
-                            : appt.status === 'completed'
-                              ? 'bg-green-200'
-                              : 'bg-gray-200'
-                      }`}
-                    >
-                      {appt.appointment_time} - {appt.patient?.first_name}{' '}
-                      {appt.patient?.last_name || 'Patient'}{' '}
-                      {appt.status === 'cancelled' && <span className="font-bold">(Cancelled)</span>}
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-          ))}
-        </div>
+    <div className="flex flex-col">
+      <div className="w-full min-h-screen">
+        <main className="flex-grow overflow-hidden bg-white flex lg:flex-row flex-col">
+          <Calendar
+            appointments={appointments}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            changeMonth={changeMonth}
+          />
+          <AvailabilityManagement
+            availability={availability}
+            editingAvailability={editingAvailability}
+            editForm={editForm}
+            setEditForm={setEditForm}
+            newAvailability={newAvailability}
+            setNewAvailability={setNewAvailability}
+            handleEditAvailability={handleEditAvailability}
+            handleUpdateAvailability={handleUpdateAvailability}
+            handleDeleteAvailability={handleDeleteAvailability}
+            handleAddAvailability={handleAddAvailability}
+            cancelEdit={cancelEdit}
+          />
+        </main>
       </div>
-
-      {/* Availability Management */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* Current Availability */}
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Current Availability</h2>
-          <table className="w-full border">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="p-2">Day</th>
-                <th className="p-2">Start Time</th>
-                <th className="p-2">End Time</th>
-                <th className="p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {availability.map((avail) => (
-                <tr key={avail.id}>
-                  <td className="p-2 border">{avail.day_of_week}</td>
-                  <td className="p-2 border">{avail.start_time}</td>
-                  <td className="p-2 border">{avail.end_time}</td>
-                  <td className="p-2 border flex space-x-2">
-                    {editingAvailability === avail.id ? (
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={cancelEdit}
-                          className="bg-gray-500 text-white p-1 rounded hover:bg-gray-600"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => handleEditAvailability(avail)}
-                          className="bg-blue-500 text-white p-1 rounded hover:bg-blue-600"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAvailability(avail.id)}
-                          className="bg-red-500 text-white p-1 rounded hover:bg-red-600"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* Edit Form */}
-          {editingAvailability && (
-            <div className="mt-4 p-4 border rounded bg-gray-50">
-              <h3 className="font-semibold mb-2">Edit Availability</h3>
-              <form onSubmit={handleUpdateAvailability} className="space-y-4">
-                <div>
-                  <label htmlFor="edit-start-time" className="block mb-2">Start Time</label>
-                  <input
-                    id="edit-start-time"
-                    type="time"
-                    value={editForm.start_time}
-                    onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })}
-                    className="w-full p-2 border"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="edit-end-time" className="block mb-2">End Time</label>
-                  <input
-                    id="edit-end-time"
-                    type="time"
-                    value={editForm.end_time}
-                    onChange={(e) => setEditForm({ ...editForm, end_time: e.target.value })}
-                    className="w-full p-2 border"
-                    required
-                  />
-                </div>
-                <div className="flex justify-between">
-                  <button
-                    type="submit"
-                    className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
-                  >
-                    Update Availability
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cancelEdit}
-                    className="bg-gray-500 text-white p-2 rounded hover:bg-gray-600"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-        </div>
-
-        {/* Add Availability Form */}
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Add Availability</h2>
-          <form onSubmit={handleAddAvailability} className="space-y-4">
-            <div>
-              <label htmlFor="day-of-week" className="block mb-2">Day of Week</label>
-              <select
-                id="day-of-week"
-                value={newAvailability.day_of_week}
-                onChange={(e) =>
-                  setNewAvailability({
-                    ...newAvailability,
-                    day_of_week: e.target.value,
-                  })
-                }
-                className="w-full p-2 border"
-                required
-              >
-                <option value="">Select Day</option>
-                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(
-                  (day) => <option key={day} value={day}>{day}</option>
-                )}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="start-time" className="block mb-2">Start Time</label>
-              <input
-                id="start-time"
-                type="time"
-                value={newAvailability.start_time}
-                onChange={(e) =>
-                  setNewAvailability({
-                    ...newAvailability,
-                    start_time: e.target.value,
-                  })
-                }
-                className="w-full p-2 border"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="end-time" className="block mb-2">End Time</label>
-              <input
-                id="end-time"
-                type="time"
-                value={newAvailability.end_time}
-                onChange={(e) =>
-                  setNewAvailability({
-                    ...newAvailability,
-                    end_time: e.target.value,
-                  })
-                }
-                className="w-full p-2 border"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-            >
-              Add Availability
-            </button>
-          </form>
-        </div>
-      </div>
+      <Footer />
     </div>
   );
 }

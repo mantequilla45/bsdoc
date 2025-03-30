@@ -56,10 +56,10 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                 ];
 
                 const medicalHistory = [
-                    rawData.conditions.join(', '),
-                    rawData.allergies.join(', '),
-                    rawData.medications.map((med) => `${med.name} ${med.dose}`).join(', '),
-                    rawData.surgeries.map((surgery) => `${surgery.name} (${surgery.year})`).join(', ')
+                    rawData.conditions?.join(', ') || '',
+                    rawData.allergies?.join(', ') || '',
+                    rawData.medications?.map((med) => `${med.name} ${med.dose}`).join(', ') || '',
+                    rawData.surgeries?.map((surgery) => `${surgery.name} (${surgery.year})`).join(', ') || ''
                 ];
 
                 setPersonalDetails(personalDetails);
@@ -81,12 +81,35 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
             if (!prev) return prev;
 
             if (field === 'blood_type' || field === 'height' || field === 'weight' || field === 'age') {
-                return {
-                    ...prev,
-                    [field]: field === 'height' || field === 'weight' || field === 'age'
-                        ? parseFloat(value)
-                        : value
-                };
+                if (field === 'height' || field === 'weight' || field === 'age') {
+                    // Parse the value first
+                    let parsedValue = parseFloat(value);
+
+                    // Check if it's a valid number
+                    if (isNaN(parsedValue)) {
+                        parsedValue = 0; // Default to 0 for invalid input
+                    }
+
+                    // Apply appropriate validation based on field
+                    if (field === 'height') {
+                        parsedValue = Math.min(Math.max(parsedValue, 0), 300);
+                    } else if (field === 'weight') {
+                        parsedValue = Math.min(Math.max(parsedValue, 0), 700);
+                    } else if (field === 'age') {
+                        parsedValue = Math.min(Math.max(Math.floor(parsedValue), 0), 130);
+                    }
+
+                    return {
+                        ...prev,
+                        [field]: parsedValue
+                    };
+                } else {
+                    // Handle blood_type (string value)
+                    return {
+                        ...prev,
+                        [field]: value
+                    };
+                }
             } else if (field === 'conditions' || field === 'allergies') {
                 return {
                     ...prev,
@@ -134,43 +157,60 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
 
     const handleSave = async () => {
         if (!formData) return;
-
         setIsSaving(true);
 
-        const { error } = await supabase
-            .from('medical_details')
-            .update(formData)
-            .eq('user_id', userId);
+        // Check if we're creating a new record or updating existing one
+        if (medicalData) {
+            // Update existing record
+            const { error } = await supabase
+                .from('medical_details')
+                .update(formData)
+                .eq('user_id', userId);
 
-        if (error) {
-            console.error('Error updating medical details:', error);
-            alert('Failed to update medical details. Please try again.');
-        } else {
-            // Refresh the displayed data
-            if (formData as MedicalDetail) {
-                const rawData = formData as MedicalDetail;
-                setMedicalData(rawData);
-
-                const personalDetails = [
-                    rawData.blood_type,
-                    `${rawData.height} cm`,
-                    `${rawData.weight} kg`,
-                    `${rawData.age}`
-                ];
-
-                const medicalHistory = [
-                    rawData.conditions.join(', '),
-                    rawData.allergies.join(', '),
-                    rawData.medications.map((med) => `${med.name} ${med.dose}`).join(', '),
-                    rawData.surgeries.map((surgery) => `${surgery.name} (${surgery.year})`).join(', ')
-                ];
-
-                setPersonalDetails(personalDetails);
-                setMedicalHistory(medicalHistory);
+            if (error) {
+                console.error('Error updating medical details:', error);
+                alert('Failed to update medical details. Please try again.');
+                setIsSaving(false);
+                return;
             }
-            setIsEditing(false);
+        } else {
+            // Create new record
+            const { error } = await supabase
+                .from('medical_details')
+                .insert({ ...formData, user_id: userId });
+
+            if (error) {
+                console.error('Error creating medical details:', error);
+                alert('Failed to create medical details. Please try again.');
+                setIsSaving(false);
+                return;
+            }
         }
 
+        // Refresh the displayed data
+        if (formData as MedicalDetail) {
+            const rawData = formData as MedicalDetail;
+            setMedicalData(rawData);
+
+            const personalDetails = [
+                rawData.blood_type || '',
+                `${rawData.height || 0} cm`,
+                `${rawData.weight || 0} kg`,
+                `${rawData.age || 0}`
+            ];
+
+            const medicalHistory = [
+                rawData.conditions?.join(', ') || '',
+                rawData.allergies?.join(', ') || '',
+                rawData.medications?.map((med) => `${med.name} ${med.dose}`).join(', ') || '',
+                rawData.surgeries?.map((surgery) => `${surgery.name} (${surgery.year})`).join(', ') || ''
+            ];
+
+            setPersonalDetails(personalDetails);
+            setMedicalHistory(medicalHistory);
+        }
+
+        setIsEditing(false);
         setIsSaving(false);
     };
 
@@ -178,7 +218,57 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
         setFormData(medicalData || {});
         setIsEditing(false);
     };
+    const handleAddMedication = () => {
+        setFormData(prev => {
+            if (!prev) return prev;
 
+            const currentMeds = prev.medications || [];
+            return {
+                ...prev,
+                medications: [...currentMeds, { name: '', dose: '' }]
+            };
+        });
+    };
+
+    const handleRemoveMedication = (index: number) => {
+        setFormData(prev => {
+            if (!prev || !prev.medications) return prev;
+
+            const updatedMedications = [...prev.medications];
+            updatedMedications.splice(index, 1);
+
+            return {
+                ...prev,
+                medications: updatedMedications
+            };
+        });
+    };
+
+    const handleAddSurgery = () => {
+        setFormData(prev => {
+            if (!prev) return prev;
+
+            const currentSurgeries = prev.surgeries || [];
+            return {
+                ...prev,
+                surgeries: [...currentSurgeries, { name: '', year: new Date().getFullYear() }]
+            };
+        });
+    };
+
+    const handleRemoveSurgery = (index: number) => {
+        setFormData(prev => {
+            if (!prev || !prev.surgeries) return prev;
+
+            const updatedSurgeries = [...prev.surgeries];
+            updatedSurgeries.splice(index, 1);
+
+            return {
+                ...prev,
+                surgeries: updatedSurgeries
+            };
+        });
+    };
     // Render edit form
     const renderEditForm = () => {
         if (!formData) return null;
@@ -208,8 +298,11 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                                 type="number"
                                 value={formData.height || ''}
                                 onChange={(e) => handleInputChange(e, 'height')}
-
-                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
+                                min="0"
+                                max="300"
+                                step="0"
+                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
+                            />
                         </div>
                         <div>
                             <label className="block text-sm text-gray-700">Weight (kg)</label>
@@ -217,8 +310,11 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                                 type="number"
                                 value={formData.weight || ''}
                                 onChange={(e) => handleInputChange(e, 'weight')}
-
-                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
+                                min="0"
+                                max="700"
+                                step="0"
+                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
+                            />
                         </div>
                         <div>
                             <label className="block text-sm text-gray-700">Age</label>
@@ -226,8 +322,11 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                                 type="number"
                                 value={formData.age || ''}
                                 onChange={(e) => handleInputChange(e, 'age')}
-
-                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
+                                min="0"
+                                max="130"
+                                step="1"
+                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
+                            />
                         </div>
                     </div>
                 </div>
@@ -235,25 +334,24 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                 <div className="flex flex-col gap-4">
                     <h3 className="text-2xl">Medical History</h3>
                     <div>
-                        <label className="block text-sm text-gray-700">Conditions (comma separated)</label>
-                        <textarea
-                            value={formData.conditions ? formData.conditions.join(', ') : ''}
-                            onChange={(e) => handleInputChange(e, 'conditions')}
-                            className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
-                            rows={2}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm text-gray-700">Allergies (comma separated)</label>
-                        <textarea
-                            value={formData.allergies ? formData.allergies.join(', ') : ''}
-                            onChange={(e) => handleInputChange(e, 'allergies')}
+                        <div>
+                            <label className="block text-sm text-gray-700">Conditions (comma separated)</label>
+                            <textarea
+                                value={formData.conditions ? formData.conditions.join(', ') : ''}
+                                onChange={(e) => handleInputChange(e, 'conditions')}
+                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
+                                rows={2}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-gray-700">Allergies (comma separated)</label>
+                            <textarea
+                                value={formData.allergies ? formData.allergies.join(', ') : ''}
+                                onChange={(e) => handleInputChange(e, 'allergies')}
 
-                            className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" rows={2}
-                        />
-                    </div>
-
-                    <div>
+                                className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" rows={2}
+                            />
+                        </div>
                         <label className="block text-sm text-gray-700">Medications</label>
                         {formData.medications && formData.medications.map((med, index) => (
                             <div key={index} className="flex gap-2 mt-2">
@@ -262,17 +360,31 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                                     value={med.name}
                                     onChange={(e) => handleMedicationChange(index, 'name', e.target.value)}
                                     placeholder="Medication name"
-
-                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
+                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
+                                />
                                 <input
                                     type="text"
                                     value={med.dose}
                                     onChange={(e) => handleMedicationChange(index, 'dose', e.target.value)}
                                     placeholder="Dose"
-
-                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
+                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveMedication(index)}
+                                    className="bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-md mt-1"
+                                >
+                                    &times;
+                                </button>
                             </div>
                         ))}
+                        <button
+                            type="button"
+                            onClick={handleAddMedication}
+                            className="mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm"
+                        >
+                            + Add Medication
+                        </button>
                     </div>
 
                     <div>
@@ -284,17 +396,33 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                                     value={surgery.name}
                                     onChange={(e) => handleSurgeryChange(index, 'name', e.target.value)}
                                     placeholder="Surgery name"
-
-                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
+                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
+                                />
                                 <input
                                     type="number"
                                     value={surgery.year}
                                     onChange={(e) => handleSurgeryChange(index, 'year', e.target.value)}
                                     placeholder="Year"
-
-                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2" />
+                                    min="1900"
+                                    max="2025"
+                                    className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveSurgery(index)}
+                                    className="bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-md mt-1"
+                                >
+                                    &times;
+                                </button>
                             </div>
                         ))}
+                        <button
+                            type="button"
+                            onClick={handleAddSurgery}
+                            className="mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm"
+                        >
+                            + Add Surgery
+                        </button>
                     </div>
                 </div>
             </div>

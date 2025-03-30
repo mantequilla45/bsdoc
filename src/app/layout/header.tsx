@@ -6,8 +6,10 @@ import Link from "next/link";
 import { signOut } from "@/services/Auth/auth";
 import { supabase } from "@/lib/supabaseClient";
 import Image from 'next/image';
+import { useRouter } from 'next/navigation'; // Import router for navigation
 
 const Header = ({ background, title }: { background: string; title: string }) => {
+    const router = useRouter(); // Initialize the router
     const [scrolled, setScrolled] = useState(false);
     const [isLoginOpen, setIsLoginOpen] = useState(false);
     const [pathname, setPathname] = useState("");
@@ -83,11 +85,25 @@ const Header = ({ background, title }: { background: string; title: string }) =>
         setIsLoginOpen(false);
     };
 
+    // New function to handle logout process
+    const handleLogout = async () => {
+        try {
+            setLoggedIn(false);
+            setMenuOpen(false);
+            setMobileMenuOpen(false);
+            await signOut();
+            // Navigate to the landing page after logout
+            router.push('/');
+        } catch (error) {
+            console.error('Error during logout:', error);
+        }
+    };
+
     return (
         <header
             ref={headerRef}
             style={{ backgroundColor: background }}
-            className={`text-[#222726] overflow-visible z-50 ${pathname === "/" ? "fixed" : "sticky"} top-0 transition-all duration-300
+            className={`text-[#222726] overflow-visible z-50 fixed top-0 transition-all duration-300
         ${scrolled ? "py-0 h-[70px]" : "py-4 md:h-[10vh] h-[80px]"} 
         flex items-center max-w-[1300px] min-w-[100%]`}
         >
@@ -116,11 +132,10 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                     </div>
 
                     <div
-
                         className={`transform header-transition  relative w-[70px] transition-all duration-300
-                            ${scrolled ? "scale-[1] translate-y-0 hover:scale-[1.1]" : "translate-y-[35px] scale-[3] hover:scale-[2.7]"}`}
+                            ${scrolled ? "scale-[1] translate-y-0 hover:scale-[1.1]" : "scale-[1.8] hover:scale-[1.5]"}`}
                     >
-                        <Link href="/">
+                        <Link href="/search-symptoms">
                             <Image
                                 fill
                                 src={`/logo/${background === "rgba(0,0,0,0.4)" ? "logo-white" : "logo-clear"}.svg`}
@@ -128,7 +143,6 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                 className="object-contain"
                             />
                         </Link>
-
                     </div>
 
                     <ul className="hidden md:flex flex-row items-center gap-5 text-sm relative justify-end w-[400px]">
@@ -151,34 +165,45 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                 <AnimatePresence>
                                     {menuOpen && (
                                         <motion.div
-                                            initial={{ height: 0, opacity: 0, y: 0 }}
-                                            animate={{ height: "auto", opacity: 1, y: 0 }}
-                                            exit={{ height: 0, opacity: 0, y: 0 }}
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
                                             transition={{ duration: 0.2 }}
                                             className="absolute right-0 mt-2 w-40 bg-white shadow-md rounded-lg border-[1px]"
                                             ref={containerRef}
                                         >
                                             <ul className="text-gray-700">
-                                                <li className={`px-4 py-2 rounded-t-md ${pathname === "/account"  ? "pointer-events-none opacity-50 cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer "}`}>
-                                                    <Link href="/account" className={`block w-full h-full `}>Account</Link>
-                                                </li>
-                                                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                                    Settings
-                                                </li>
-                                                <li
-                                                    onClick={() => {
-                                                        setLoggedIn(false);
-                                                        setMenuOpen(false);
-                                                        signOut();
-                                                    }}
-                                                    className="px-4 py-2 hover:bg-red-100 cursor-pointer rounded-b-md text-red-500"
-                                                >
-                                                    Logout
-                                                </li>
+                                                {["/account", "Settings", "Logout"].map((item, index) => (
+                                                    <motion.li
+                                                        key={item}
+                                                        initial={{ opacity: 0, y: -10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: -10 }}
+                                                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                                                        className={`px-4 py-2 ${item === "/account"
+                                                                ? pathname === "/account"
+                                                                    ? "pointer-events-none text-[#62B6B8]  rounded-t-md cursor-not-allowed"
+                                                                    : "hover:bg-gray-100 cursor-pointer rounded-t-md"
+                                                                : item === "Logout"
+                                                                    ? "hover:bg-red-100 cursor-pointer rounded-b-md text-red-500"
+                                                                    : "hover:bg-gray-100 cursor-pointer"
+                                                            }`}
+                                                        onClick={item === "Logout" ? handleLogout : undefined}
+                                                    >
+                                                        {item === "/account" ? (
+                                                            <Link href="/account" className="block w-full h-full">
+                                                                Account
+                                                            </Link>
+                                                        ) : (
+                                                            item
+                                                        )}
+                                                    </motion.li>
+                                                ))}
                                             </ul>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
+
                             </div>
                         ) : (
                             <div
@@ -217,10 +242,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                             <Link href="/settings" className="block">Settings</Link>
                                         </li>
                                         <li
-                                            onClick={() => {
-                                                setLoggedIn(false);
-                                                setMobileMenuOpen(false);
-                                            }}
+                                            onClick={handleLogout}
                                             className="px-4 py-3 hover:bg-red-100 text-red-500"
                                         >
                                             Logout
