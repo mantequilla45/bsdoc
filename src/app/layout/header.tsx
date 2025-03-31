@@ -20,6 +20,30 @@ const Header = ({ background, title }: { background: string; title: string }) =>
     const buttonRef = useRef<HTMLDivElement | null>(null);
     const headerRef = useRef<HTMLElement | null>(null);
 
+    const [userRole, setUserRole] = useState<string | null>(null);
+    const fetchUserProfile = async (userId: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles') // Assuming your user profile table is named 'profiles'
+                .select('role')
+                .eq('id', userId)
+                .single();
+
+            if (error) {
+                console.error('Error fetching user profile:', error);
+                setUserRole(null);
+            } else if (data) {
+                setUserRole(data.role);
+            } else {
+                setUserRole(null);
+            }
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+            setUserRole(null);
+        }
+    };
+
+
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (containerRef.current &&
@@ -43,6 +67,12 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                 // Get the current session from Supabase
                 const { data: { session } } = await supabase.auth.getSession();
                 setLoggedIn(!!session); // Set to true if session exists, false otherwise
+                if (session?.user?.id) {
+                    await fetchUserProfile(session.user.id);
+                }
+                else {
+                    setUserRole(null);
+                }
             } catch (error) {
                 console.error('Error checking authentication status:', error);
                 setLoggedIn(false);
@@ -76,9 +106,14 @@ const Header = ({ background, title }: { background: string; title: string }) =>
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    const handleAuthSuccess = () => {
+    const handleAuthSuccess = async () => {
         setIsLoginOpen(false);
         setLoggedIn(true);
+        // Fetch user profile immediately after successful authentication
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.id) {
+            await fetchUserProfile(session.user.id);
+        }
     };
 
     const handleModalClose = () => {
@@ -88,6 +123,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
     // New function to handle logout process
     const handleLogout = async () => {
         try {
+            setUserRole(null);
             setLoggedIn(false);
             setMenuOpen(false);
             setMobileMenuOpen(false);
@@ -124,11 +160,29 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                 {/* Desktop Menu */}
                 <div className="flex justify-between w-full">
                     <div className="hidden md:flex flex-row items-center gap-5 text-sm relative justify-start w-[400px] z-100">
+                        
                         <Link
                             href="/"
                             className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md `}>
                             Home
                         </Link>
+
+                        {userRole === 'doctor' && (
+                            <Link
+                                href="/doctors/doctor-schedule"
+                                className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md`}>
+                                My Schedule
+                            </Link>
+                        )}
+
+                        {userRole === 'admin' && (
+                            <Link
+                                href="/admin/dashboard"
+                                className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md`}>
+                                User Management
+                            </Link>
+                        )}
+
                     </div>
 
                     <div
@@ -181,12 +235,12 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                                         exit={{ opacity: 0, y: -10 }}
                                                         transition={{ duration: 0.2, delay: index * 0.05 }}
                                                         className={`px-4 py-2 ${item === "/account"
-                                                                ? pathname === "/account"
-                                                                    ? "pointer-events-none text-[#62B6B8]  rounded-t-md cursor-not-allowed"
-                                                                    : "hover:bg-gray-100 cursor-pointer rounded-t-md"
-                                                                : item === "Logout"
-                                                                    ? "hover:bg-red-100 cursor-pointer rounded-b-md text-red-500"
-                                                                    : "hover:bg-gray-100 cursor-pointer"
+                                                            ? pathname === "/account"
+                                                                ? "pointer-events-none text-[#62B6B8]  rounded-t-md cursor-not-allowed"
+                                                                : "hover:bg-gray-100 cursor-pointer rounded-t-md"
+                                                            : item === "Logout"
+                                                                ? "hover:bg-red-100 cursor-pointer rounded-b-md text-red-500"
+                                                                : "hover:bg-gray-100 cursor-pointer"
                                                             }`}
                                                         onClick={item === "Logout" ? handleLogout : undefined}
                                                     >
@@ -232,6 +286,15 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                     <Link href="/schedule" className="block">
                                         Schedule an Appointment
                                     </Link>
+                                </li>
+                                <li className="px-4 py-3 hover:bg-gray-100">
+                                    {userRole === 'doctor' && (
+                                        <Link
+                                            href="/doctors/doctor-schedule"
+                                            className="block">
+                                            My Schedule
+                                        </Link>
+                                    )}
                                 </li>
                                 {loggedIn ? (
                                     <>

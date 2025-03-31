@@ -109,7 +109,7 @@ const AdminDashboardPage = () => {
     };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return;
     }
 
     if (error) {

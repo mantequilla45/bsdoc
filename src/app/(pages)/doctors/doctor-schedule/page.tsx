@@ -6,6 +6,7 @@ import { ProfileUser, Appointment, Availability } from './components/types';
 import Calendar from './components/Calendar';
 import AvailabilityManagement from './components/AvailabilityManagement';
 import Footer from '@/app/layout/footer';
+import { useRouter } from 'next/navigation';
 
 export default function DoctorSchedulePage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -26,6 +27,27 @@ export default function DoctorSchedulePage() {
     start_time: '',
     end_time: ''
   });
+
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      setLoading(true);
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        console.error("No session found:", sessionError);
+        console.log("Error: ", error);
+        setError("Not authenticated");
+        // Redirect to login page
+        router.push('/'); // Adjust the login route as needed
+        return;
+      }
+    };
+    fetchUserRole();
+  }, [router]);
 
   useEffect(() => {
     const getSession = async () => {
@@ -57,7 +79,7 @@ export default function DoctorSchedulePage() {
   // Fetch doctor's schedule
   useEffect(() => {
     const fetchDoctorSchedule = async () => {
-      if (!user) {
+      if (!user || loading) {
         return; // Don't fetch if we don't have user yet
       }
       try {
@@ -247,6 +269,10 @@ export default function DoctorSchedulePage() {
       console.error('Error deleting availability:', error);
     }
   };
+
+  if (loading) {
+    return;
+  }
 
   return (
     <div className="flex flex-col">
