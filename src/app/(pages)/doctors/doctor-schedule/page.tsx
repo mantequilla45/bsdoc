@@ -45,6 +45,7 @@ export default function DoctorSchedulePage() {
         router.push('/'); // Adjust the login route as needed
         return;
       }
+      setLoading(false);
     };
     fetchUserRole();
   }, [router]);
@@ -79,7 +80,7 @@ export default function DoctorSchedulePage() {
   // Fetch doctor's schedule
   useEffect(() => {
     const fetchDoctorSchedule = async () => {
-      if (!user || loading) {
+      if (!user) {
         return; // Don't fetch if we don't have user yet
       }
       try {
