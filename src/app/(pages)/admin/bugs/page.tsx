@@ -70,11 +70,11 @@ const AdminBugReports = () => {
     };
 
     if (loading) {
-        return <div></div>;
+        return;
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        return;// <div>Error: {error}</div>;
     }
 
     return (

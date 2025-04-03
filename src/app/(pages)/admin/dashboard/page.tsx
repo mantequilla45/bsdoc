@@ -30,7 +30,7 @@ const AdminDashboardPage = () => {
 
             if (sessionError || !session) {
                 console.error("No session found:", sessionError);
-                setError("Not authenticated");
+                //setError("Not authenticated");
                 // Redirect to login page
                 router.push('/'); // Adjust the login route as needed
                 return;
@@ -113,7 +113,7 @@ const AdminDashboardPage = () => {
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        return; //<div>Error: {error}</div>;
     }
 
     return (
