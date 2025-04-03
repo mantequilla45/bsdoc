@@ -55,7 +55,6 @@ const ContactUs = () => {
             setSubmissionStatus('success');
             setCategory('');
             setSeverity('');
-            setEmail('');
             setMessage('');
             setTitle('');
         } else {
