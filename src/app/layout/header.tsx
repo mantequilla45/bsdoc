@@ -160,7 +160,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                 {/* Desktop Menu */}
                 <div className="flex justify-between w-full">
                     <div className="hidden md:flex flex-row items-center gap-5 text-sm relative justify-start w-[400px] z-100">
-                        
+
                         <Link
                             href="/"
                             className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md `}>
@@ -180,6 +180,14 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                 href="/admin/dashboard"
                                 className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md`}>
                                 User Management
+                            </Link>
+                        )}
+
+                        {userRole === 'admin' && (
+                            <Link
+                                href="/admin/bugs"
+                                className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md`}>
+                                Bug Reports
                             </Link>
                         )}
 
