@@ -21,25 +21,31 @@ const Header = ({ background, title }: { background: string; title: string }) =>
     const headerRef = useRef<HTMLElement | null>(null);
 
     const [userRole, setUserRole] = useState<string | null>(null);
+    const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+
     const fetchUserProfile = async (userId: string) => {
         try {
             const { data, error } = await supabase
                 .from('profiles') // Assuming your user profile table is named 'profiles'
-                .select('role')
+                .select('role, profile_image_url')
                 .eq('id', userId)
                 .single();
 
             if (error) {
                 console.error('Error fetching user profile:', error);
                 setUserRole(null);
+                setProfileImageUrl(null);
             } else if (data) {
                 setUserRole(data.role);
+                setProfileImageUrl(data.profile_image_url);
             } else {
                 setUserRole(null);
+                setProfileImageUrl(null);
             }
         } catch (error) {
             console.error('Error fetching user profile:', error);
             setUserRole(null);
+            setProfileImageUrl(null);
         }
     };
 
@@ -72,6 +78,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                 }
                 else {
                     setUserRole(null);
+                    setProfileImageUrl(null);
                 }
             } catch (error) {
                 console.error('Error checking authentication status:', error);
@@ -85,6 +92,12 @@ const Header = ({ background, title }: { background: string; title: string }) =>
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             (_event, session) => {
                 setLoggedIn(!!session);
+                if (session?.user?.id) {
+                    fetchUserProfile(session.user.id);
+                } else {
+                    setUserRole(null);
+                    setProfileImageUrl(null);
+                }
             }
         );
 
@@ -124,6 +137,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
     const handleLogout = async () => {
         try {
             setUserRole(null);
+            setProfileImageUrl(null);
             setLoggedIn(false);
             setMenuOpen(false);
             setMobileMenuOpen(false);
@@ -140,8 +154,8 @@ const Header = ({ background, title }: { background: string; title: string }) =>
             ref={headerRef}
             style={{ backgroundColor: background }}
             className={`text-[#222726] overflow-visible z-50 fixed top-0 transition-all duration-300
-        ${scrolled ? "py-0 h-[70px]" : "py-4 md:h-[10vh] h-[80px]"} 
-        flex items-center max-w-[1300px] min-w-[100%]`}
+            ${scrolled ? "py-0 h-[70px]" : "py-4 md:h-[10vh] h-[80px]"}
+            flex items-center max-w-[1300px] min-w-[100%]`}
         >
             <title>{title}</title>
             <nav className="relative mx-auto flex justify-center items-center md:px-16 px-6 w-full md:h-full">
@@ -219,9 +233,19 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                 <div
                                     ref={buttonRef}
                                     onClick={() => setMenuOpen(!menuOpen)}
-                                    className="w-10 h-10 rounded-full bg-gray-300 cursor-pointer flex items-center justify-center hover:bg-gray-400 transition active:scale-95"
+                                    className="w-10 h-10 rounded-full bg-gray-300 cursor-pointer flex items-center justify-center hover:bg-gray-400 transition active:scale-95 overflow-hidden"
                                 >
-                                    <span className="text-lg text-white">👤</span>
+                                    {profileImageUrl ? (
+                                        <Image
+                                            src={profileImageUrl}
+                                            alt="Profile"
+                                            layout="fill"
+                                            objectFit="cover"
+                                            className="rounded-full"
+                                        />
+                                    ) : (
+                                        <span className="text-lg text-white">👤</span>
+                                    )}
                                 </div>
 
                                 <AnimatePresence>
@@ -301,6 +325,22 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                             href="/doctors/doctor-schedule"
                                             className="block">
                                             My Schedule
+                                        </Link>
+                                    )}
+
+                                    {userRole === 'admin' && (
+                                        <Link
+                                            href="/admin/dashboard"
+                                            className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md`}>
+                                            User Management
+                                        </Link>
+                                    )}
+
+                                    {userRole === 'admin' && (
+                                        <Link
+                                            href="/admin/bugs"
+                                            className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md`}>
+                                            Bug Reports
                                         </Link>
                                     )}
                                 </li>
