@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await supabase //eslint-disable-line
       .from('bugs')
-      .insert({ title, description, category, severity, user_id: userId })
+      .insert({ title, description, category, severity, user_id: userId, email: email })
       .select()
       .single();
 

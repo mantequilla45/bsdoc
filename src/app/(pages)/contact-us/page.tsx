@@ -134,7 +134,7 @@ const ContactUs = () => {
 
                             <input
                                 type="email"
-                                placeholder="Email"
+                                placeholder="Contact Email"
                                 className="py-3 px-5 w-full border-[2px] rounded-xl font-light focus:ring-2 focus:ring-[#E97A73]"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
