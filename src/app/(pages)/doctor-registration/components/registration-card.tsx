@@ -1,31 +1,59 @@
-import InputField from '@/app/components/input-box'; // Importing the new separate component
+'use client';
 
-// Registration Card
+import { useState } from 'react';
+
 const RegistrationCard = () => {
-    return (
-        <div className="flex bg-white m-5 rounded-2xl py-[10%] pb-[15%] flex-col px-[7%]">
-            <p className="text-3xl mb-5">Register as Doctor</p>
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    file: null as File | null,
+  });
 
-            {/* Name Fields */}
-            <div className="flex flex-row gap-5 w-full">
-                {["First Name", "Last Name"].map((label, index) => (
-                    <InputField key={index} label={label} type="text" />
-                ))}
-            </div>
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, files } = e.target;
+    if (name === 'file') {
+      setForm((prev) => ({ ...prev, file: files?.[0] || null }));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
+  };
 
-            {/* Other Fields */}
-            <div className="w-full flex flex-col mb-7">
-                {["Email", "Password", "Confirm Password", "Upload File (PRC ID)"].map((label, index) => (
-                    <InputField key={index} label={label} type={label === "Upload File (PRC ID)" ? "file" : "text"} />
-                ))}
-            </div>
-            <div className="register w-full">
-                <button>
-                    Submit
-                </button>
-            </div>
-        </div>
-    );
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!form.file) return alert('Please upload your PRC ID');
+
+    const formData = new FormData();
+    formData.append('firstName', form.firstName);
+    formData.append('lastName', form.lastName);
+    formData.append('email', form.email);
+    formData.append('password', form.password);
+    formData.append('file', form.file);
+
+    const res = await fetch('/api/doctor/register', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await res.json();
+    alert(result.message || result.error);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex bg-white m-5 rounded-2xl py-10 px-8 flex-col">
+      <p className="text-3xl mb-5">Register as Doctor</p>
+      <div className="flex gap-5 mb-5">
+        <input type="text" name="firstName" placeholder="First Name" onChange={handleChange} className="border p-2" required />
+        <input type="text" name="lastName" placeholder="Last Name" onChange={handleChange} className="border p-2" required />
+      </div>
+      <input type="email" name="email" placeholder="Email" onChange={handleChange} className="border p-2 mb-5" required />
+      <input type="password" name="password" placeholder="Password" onChange={handleChange} className="border p-2 mb-5" required />
+      <input type="file" name="file" accept="image/*" onChange={handleChange} className="mb-5" required />
+      <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded">Submit</button>
+    </form>
+  );
 };
 
 export default RegistrationCard;
