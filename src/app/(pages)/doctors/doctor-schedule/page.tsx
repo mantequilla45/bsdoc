@@ -48,7 +48,7 @@ export default function DoctorSchedulePage() {
       setLoading(false);
     };
     fetchUserRole();
-  }, [router]);
+  }, [router, error]); // Added error to dependency array
 
   useEffect(() => {
     const getSession = async () => {
