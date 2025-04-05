@@ -1,10 +1,9 @@
-// src\app\(pages)\api\admin\bugs\route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, description, category, severity, email } = await req.json(); //eslint-disable-line
+    const { title, description, category, severity, email } = await req.json();
 
     // Get user ID if available (user might not be logged in when submitting feedback)
     const authHeader = req.headers.get('authorization');
@@ -22,7 +21,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { data, error } = await supabase //eslint-disable-line
+    const { error } = await supabase
       .from('bugs')
       .insert({ title, description, category, severity, user_id: userId, email: email })
       .select()

@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: uploadError.message }, { status: 500 });
   }
 
-  const { data: doctor, error: insertError } = await supabase
+  const { error: insertError } = await supabase
     .from('doctor-registration')
     .insert([
       {
