@@ -19,7 +19,7 @@ export const Toast: React.FC<ToastProps> = ({
 
     return (
         <div className={`fixed bottom-4 right-4 flex items-center p-4 rounded-md text-white shadow-lg ${types[type]}`}>
-            <span>{message}</span>
+            <span className="text-white">{message}</span>
             <button
                 onClick={onClose}
                 className="ml-4 text-white hover:text-gray-200 focus:outline-none"
