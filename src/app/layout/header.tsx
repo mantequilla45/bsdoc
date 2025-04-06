@@ -191,17 +191,9 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
                         {userRole === 'admin' && (
                             <Link
-                                href="/admin/dashboard"
+                                href="/admin"
                                 className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md`}>
-                                User Management
-                            </Link>
-                        )}
-
-                        {userRole === 'admin' && (
-                            <Link
-                                href="/admin/bugs"
-                                className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md`}>
-                                Bug Reports
+                                Administrator
                             </Link>
                         )}
 

@@ -21,7 +21,7 @@ const AdminPage: React.FC = () => {
     return (
         <div className="flex flex-row bg-[#62B6B8]">
             <SideBar onContentChange={setActiveContent} />
-            <div className="bg-white w-[1300px] p-6 overflow-y-auto">
+            <div className="bg-white w-full p-10 overflow-y-auto">
                 <h1 className="text-2xl font-bold text-gray-900 mb-4 md:mb-0">
                     {activeContent.charAt(0).toUpperCase() + activeContent.slice(1).replace(/-/g, ' ')}
                 </h1>

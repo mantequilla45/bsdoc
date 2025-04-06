@@ -136,9 +136,50 @@ const UserManagement = () => {
         }
     };
 
-    // Function to handle user edit - Redirect to edit page
-    const handleEditUser = (id: string) => {
-        router.push(`/admin/users/${id}`);
+    // New function to handle saving user updates
+    const handleSaveUser = async (id: string, updatedUserData: Partial<ProfileUser>) => {
+        // Get the current session first
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session) {
+            setError("Not authenticated");
+            router.push('/');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/admin/users/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedUserData)
+            });
+
+            if (response.ok) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const updatedUser = await response.json();
+                
+                // Update the user in the state
+                setUsers(prevUsers => 
+                    prevUsers.map(user => 
+                        user.id === id ? { ...user, ...updatedUserData } : user
+                    )
+                );
+                
+                showToast('User updated successfully', 'success');
+            } else {
+                const data = await response.json();
+                console.error("Error updating user:", data.error);
+                setError(data.error || "Failed to update user");
+                showToast(data.error || "Failed to update user", 'error');
+            }
+        } catch (error) {
+            console.error("Error updating user:", error);
+            setError("Failed to update user");
+            showToast("Failed to update user", 'error');
+        }
     };
 
     // Function to cancel delete confirmation
@@ -148,7 +189,7 @@ const UserManagement = () => {
 
     if (loading) {
         return (
-            <div className="flex h-screen w-full items-center justify-center">
+            <div className="flex h-full w-full items-center justify-center">
                 <div className="flex flex-col items-center">
                     <Loader className="h-12 w-12 animate-spin text-blue-600" />
                     <p className="mt-4 text-lg text-gray-700">Loading users...</p>
@@ -159,7 +200,7 @@ const UserManagement = () => {
 
     if (error) {
         return (
-            <div className="flex h-screen w-full items-center justify-center">
+            <div className="flex h-full w-full items-center justify-center">
                 <div className="flex flex-col items-center bg-red-50 p-8 rounded-lg shadow-md">
                     <AlertCircle className="h-12 w-12 text-red-600" />
                     <h2 className="mt-4 text-xl font-semibold text-red-900">Error</h2>
@@ -178,15 +219,15 @@ const UserManagement = () => {
 
     return (
         <div className="">
-            <div className="max-w-6xl">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <div className="">
+                <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-6">
                     <div className="flex items-center relative w-full md:w-64">
                         <input
                             type="text"
                             placeholder="Search users..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#00909A]"
                         />
                         <Search className="w-5 h-5 absolute left-3 text-gray-400" />
                     </div>
@@ -198,7 +239,7 @@ const UserManagement = () => {
                         totalUsers={users.length}
                         searchTerm={searchTerm}
                         confirmDelete={confirmDelete}
-                        onEditUser={handleEditUser}
+                        onSaveUser={handleSaveUser}
                         onDeleteUser={handleDeleteUser}
                         onCancelDelete={cancelDelete}
                     />

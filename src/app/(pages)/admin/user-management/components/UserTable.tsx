@@ -1,5 +1,5 @@
-import React from 'react';
-import { Edit, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Edit, Trash2, Check, X } from 'lucide-react';
 import { ProfileUser } from './ProfileUser';
 import { Badge } from './Badge';
 import { Button } from './Button';
@@ -9,7 +9,7 @@ interface UserTableProps {
     totalUsers: number;
     searchTerm: string;
     confirmDelete: string | null;
-    onEditUser: (id: string) => void;
+    onSaveUser: (id: string, updatedUser: Partial<ProfileUser>) => void;
     onDeleteUser: (id: string) => void;
     onCancelDelete: () => void;
 }
@@ -19,7 +19,7 @@ const getRoleBadgeVariant = (role: string) => {
     switch (role.toLowerCase()) {
         case 'admin':
             return 'danger';
-        case 'moderator':
+        case 'doctor':
             return 'warning';
         case 'user':
             return 'info';
@@ -33,10 +33,45 @@ const UserTable: React.FC<UserTableProps> = ({
     totalUsers,
     searchTerm,
     confirmDelete,
-    onEditUser,
+    onSaveUser,
     onDeleteUser,
     onCancelDelete
 }) => {
+    const [editingUserId, setEditingUserId] = useState<string | null>(null);
+    const [editFormData, setEditFormData] = useState<Partial<ProfileUser>>({});
+    
+    // Available roles for dropdown
+    const availableRoles = ['user', 'doctor', 'admin'];
+    
+    const handleEditClick = (user: ProfileUser) => {
+        setEditingUserId(user.id);
+        setEditFormData({
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            role: user.role
+        });
+    };
+    
+    const handleCancelEdit = () => {
+        setEditingUserId(null);
+        setEditFormData({});
+    };
+    
+    const handleSaveEdit = (id: string) => {
+        onSaveUser(id, editFormData);
+        setEditingUserId(null);
+        setEditFormData({});
+    };
+    
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setEditFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
     return (
         <>
             <div className="overflow-x-auto">
@@ -61,41 +96,111 @@ const UserTable: React.FC<UserTableProps> = ({
                             users.map((user) => (
                                 <tr key={user.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                                <span className="text-gray-600 font-medium">
-                                                    {user?.first_name?.charAt(0) ?? ''}{user?.last_name?.charAt(0) ?? ''}
-                                                </span>
-                                            </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    {user.first_name} {user.last_name}
+                                        {editingUserId === user.id ? (
+                                            <div className="flex items-center space-x-2">
+                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                    <span className="text-gray-600 font-medium">
+                                                        {editFormData.first_name?.charAt(0) ?? ''}{editFormData.last_name?.charAt(0) ?? ''}
+                                                    </span>
+                                                </div>
+                                                <div className="space-x-2">
+                                                    <input
+                                                        name="first_name"
+                                                        className="text-sm border rounded px-2 py-1 w-24"
+                                                        value={editFormData.first_name || ''}
+                                                        onChange={handleInputChange}
+                                                        placeholder="First name"
+                                                    />
+                                                    <input
+                                                        name="last_name"
+                                                        className="text-sm border rounded px-2 py-1 w-24"
+                                                        value={editFormData.last_name || ''}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Last name"
+                                                    />
                                                 </div>
                                             </div>
-                                        </div>
+                                        ) : (
+                                            <div className="flex items-center">
+                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                    <span className="text-gray-600 font-medium">
+                                                        {user?.first_name?.charAt(0) ?? ''}{user?.last_name?.charAt(0) ?? ''}
+                                                    </span>
+                                                </div>
+                                                <div className="ml-4">
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {user.first_name} {user.last_name}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {user.email}
+                                        {editingUserId === user.id ? (
+                                            <input
+                                                name="email"
+                                                className="text-sm border rounded px-2 py-1 w-full"
+                                                value={editFormData.email || ''}
+                                                onChange={handleInputChange}
+                                                placeholder="Email"
+                                            />
+                                        ) : (
+                                            user.email
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <Badge variant={getRoleBadgeVariant(user.role)}>
-                                            {user.role}
-                                        </Badge>
+                                        {editingUserId === user.id ? (
+                                            <select
+                                                name="role"
+                                                className="text-sm border rounded px-2 py-1"
+                                                value={editFormData.role || ''}
+                                                onChange={handleInputChange}
+                                            >
+                                                {availableRoles.map(role => (
+                                                    <option key={role} value={role}>
+                                                        {role}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <Badge variant={getRoleBadgeVariant(user.role)}>
+                                                {user.role}
+                                            </Badge>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <span className="font-mono">{user.id.slice(0, 8)}...</span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="flex justify-end space-x-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => onEditUser(user.id)}
-                                                className="text-blue-600 hover:text-blue-900"
-                                            >
-                                                <Edit className="w-4 h-4 mr-1" />
-                                                Edit
-                                            </Button>
+                                            {editingUserId === user.id ? (
+                                                <>
+                                                    <Button
+                                                        variant="success"
+                                                        size="icon"
+                                                        onClick={() => handleSaveEdit(user.id)}
+                                                        className="text-white"
+                                                    >
+                                                        <Check className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="icon"
+                                                        onClick={handleCancelEdit}
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleEditClick(user)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </Button>
+                                            )}
 
                                             {confirmDelete === user.id ? (
                                                 <div className="flex space-x-2">
@@ -117,12 +222,11 @@ const UserTable: React.FC<UserTableProps> = ({
                                             ) : (
                                                 <Button
                                                     variant="ghost"
-                                                    size="sm"
+                                                    size="icon"
                                                     onClick={() => onDeleteUser(user.id)}
                                                     className="text-red-600 hover:text-red-900"
                                                 >
-                                                    <Trash2 className="w-4 h-4 mr-1" />
-                                                    Delete
+                                                    <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             )}
                                         </div>
