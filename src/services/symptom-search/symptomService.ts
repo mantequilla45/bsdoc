@@ -1,5 +1,5 @@
 export const getSymptomInfo = async (symptoms: string[]) => {
-  const response = await fetch("http://127.0.0.1:8000/symptom-info", {
+  const response = await fetch("https://symptom-search-bsdoc.onrender.com/symptom-info", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -13,4 +13,3 @@ export const getSymptomInfo = async (symptoms: string[]) => {
 
   return response.json();
 };
-  
