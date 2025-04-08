@@ -3,14 +3,16 @@ import Image from 'next/image';
 import Header from "@/app/layout/header";
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import InputField from '@/app/components/input-box';
+import TextareaField from '@/app/components/text-area';
 
 const ContactUs = () => {
     const [category, setCategory] = useState('');
     const [severity, setSeverity] = useState('');
     const [email, setEmail] = useState('');
+    const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
     const [submissionStatus, setSubmissionStatus] = useState<string | null>(null); // 'success', 'error', null
-    const [title, setTitle] = useState('');
 
     useEffect(() => {
         const getSession = async () => {
@@ -34,7 +36,7 @@ const ContactUs = () => {
             severity: category === 'Bug Report' ? severity : null,
             email,
             description: message,
-            title: title,//category === 'Bug Report' ? `Bug Report: ${message.substring(0, 50)}...` : `Feedback: ${message.substring(0, 50)}...`, // Create a basic title
+            title: subject,//category === 'Bug Report' ? `Bug Report: ${message.substring(0, 50)}...` : `Feedback: ${message.substring(0, 50)}...`, // Create a basic title
         };
 
         const headers: { 'Content-Type': string; Authorization?: string } = {
@@ -56,7 +58,8 @@ const ContactUs = () => {
             setCategory('');
             setSeverity('');
             setMessage('');
-            setTitle('');
+            setSubject('');
+            setMessage('');
         } else {
             setSubmissionStatus('error');
             console.error('Error submitting report:', await response.json());
@@ -94,7 +97,7 @@ const ContactUs = () => {
 
                     {/* Contact Form */}
                     <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-[600px]">
-                        <form className="flex flex-col items-center gap-6" onSubmit={handleSubmit}>
+                        <form className="flex flex-col items-center gap-2" onSubmit={handleSubmit}>
                             <div className="flex items-center gap-3">
                                 <h1 className="text-4xl font-bold">Contact Us</h1>
                                 <Image
@@ -131,31 +134,25 @@ const ContactUs = () => {
                                     <option value="Trivial">Trivial</option>
                                 </select>
                             )}
-
-                            <input
+                            <InputField
+                                label="Email"
                                 type="email"
-                                placeholder="Contact Email"
-                                className="py-3 px-5 w-full border-[2px] rounded-xl font-light focus:ring-2 focus:ring-[#E97A73]"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                required
                             />
-                            <input
-                                type="text"
-                                placeholder="Title"
-                                className="py-3 px-5 w-full border-[2px] rounded-xl font-light focus:ring-2 focus:ring-[#E97A73]"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                required
+                            <InputField
+                                label="Subject"
+                                type="subject"
+                                value={subject}
+                                onChange={(e) => setSubject(e.target.value)}
                             />
-                            <textarea
-                                placeholder="Message"
-                                className="w-full h-[400px] p-3 border-[2px] rounded-xl focus:ring-2 focus:ring-[#E97A73] text-left align-top"
+                            <TextareaField
+                                label="Message"
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
-                                required
-                            ></textarea>
-                            <button type="submit" className="py-3 px-6 w-full border-[1px] rounded-full font-bold bg-[#78DDD3] text-white cursor-pointer hover:bg-[#62B6B8]">
+                                rows={3}
+                            />
+                            <button type="submit" className="py-3 mt-5 px-6 w-full border-[1px] rounded-full font-bold bg-[#78DDD3] text-white cursor-pointer hover:bg-[#62B6B8]">
                                 Send
                             </button>
 

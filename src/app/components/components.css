@@ -55,3 +55,61 @@
 .register button:active {
     transform: scale(0.98);
 }
+
+
+/* Styles for the TextareaField component, adapted from input styles */
+
+/* Container (assuming it's already defined like the original) */
+.input-container {
+    position: relative;
+    width: 100%;
+    /* Add margin if needed, e.g., margin-top: 25px; */
+    margin-top: 25px;
+  }
+  
+  /* === Textarea Specific Styles === */
+  
+  .input-container .textarea-styled {
+    display: block;
+    width: 100%;
+    padding: 15px 20px 15px 20px;
+    box-sizing: border-box;
+    background-color: #F0F0F0;
+    border-radius: 15px;
+    border: none;
+    outline: none;
+    color: #645F5F;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  
+  .input-container .textarea-styled::placeholder {
+    color: transparent;
+  }
+  
+  
+  .input-container .textarea-styled + label {
+    position: absolute;
+    left: 20px;
+    top: 15px;
+    transform: translateY(0);
+    color: #645F5F;
+    font-weight: 300;
+    font-size: 16px;
+    padding: 0 5px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  
+  .input-container .textarea-styled:focus + label,
+  .input-container .textarea-styled:not(:placeholder-shown) + label {
+    top: -20px; 
+    left: 10px;
+    font-size: 13px;
+    font-weight: 400; 
+    color: #4b4b4b; 
+    transition: all 0.3s;
+  }

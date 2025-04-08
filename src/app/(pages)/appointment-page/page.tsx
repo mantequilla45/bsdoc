@@ -260,7 +260,7 @@ const AppointmentPage = () => {
 
         setBookingStatus('Appointment booked successfully!');
         setSelectedTime('');
-        
+
         // Reset form after successful booking
         setSelectedDate('');
         setSelectedDoctorId('');
@@ -307,22 +307,22 @@ const AppointmentPage = () => {
                 {/* Curve under "Book an Appointment" */}
                 <div className="relative inline-block">
                   <h1 className='text-6xl font-regular'>Book an Appointment</h1>
-                  <svg xmlns="http://www.w3.org/2000/svg" 
-                       className="absolute left-1/2 -translate-x-1/2 mt-1 ml-[120px]"
-                       width="410" 
-                       height="50" 
-                       viewBox="0 0 300 20" 
-                       fill="none">
-                      <path d="M5 10 C 70 50, 230 -40, 295 10" 
-                            stroke="#E97A73" 
-                            strokeWidth="4" 
-                            fill="transparent"/>
+                  <svg xmlns="http://www.w3.org/2000/svg"
+                    className="absolute left-1/2 -translate-x-1/2 mt-1 ml-[120px]"
+                    width="410"
+                    height="50"
+                    viewBox="0 0 300 20"
+                    fill="none">
+                    <path d="M5 10 C 70 50, 230 -40, 295 10"
+                      stroke="#E97A73"
+                      strokeWidth="4"
+                      fill="transparent" />
                   </svg>
                 </div>
               </div>
 
               {/* Appointment Form Section */}
-              <div className="border-2 border-[#64B5B7] my-[50px] rounded-lg p-6 w-full max-w-4xl bg-white shadow-md">
+              <div className="border-2 border-[#64B5B7] my-[50px] rounded-lg p-6 w-full bg-white shadow-md max-w-[700px]">
                 <h2 className="text-lg font-semibold mb-4">Book your appointment</h2>
 
                 {error && (
@@ -349,7 +349,7 @@ const AppointmentPage = () => {
                   />
 
                   {/* Doctor Dropdown */}
-                  <select 
+                  <select
                     className="border rounded-md p-3 flex-1 focus:ring-2 focus:ring-[#62B6B8]"
                     value={selectedDoctorId}
                     onChange={(e) => setSelectedDoctorId(e.target.value)}
@@ -364,7 +364,7 @@ const AppointmentPage = () => {
                   </select>
 
                   {/* Submit Button */}
-                  <button 
+                  <button
                     className="bg-[#62B6B8] text-white px-6 py-3 rounded-md disabled:bg-gray-400"
                     onClick={handleBooking}
                     disabled={isLoading || !selectedDoctorId || !selectedDate || !selectedTime}
@@ -386,15 +386,13 @@ const AppointmentPage = () => {
                           return (
                             <button
                               key={timeSlot}
-                              className={`p-2 text-sm border rounded ${
-                                selectedTime === timeSlot
+                              className={`p-2 text-sm border rounded ${selectedTime === timeSlot
                                   ? 'bg-[#62B6B8] text-white'
                                   : 'bg-white'
-                              } ${
-                                isBooked 
-                                  ? 'opacity-50 cursor-not-allowed bg-gray-200' 
+                                } ${isBooked
+                                  ? 'opacity-50 cursor-not-allowed bg-gray-200'
                                   : 'hover:bg-[#C3EFEB]'
-                              }`}
+                                }`}
                               disabled={isBooked}
                               onClick={isBooked ? undefined : () => setSelectedTime(timeSlot)}
                             >
