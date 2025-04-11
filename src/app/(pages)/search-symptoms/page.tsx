@@ -54,7 +54,7 @@ const SearchSymptomsPage = () => {
     <div className="min-h-screen flex flex-col bg-[#EEFFFE]">
       <motion.div
         className="bg-[#EEFFFE] flex-grow relative"
-        animate={{ height: isAdvancedSearchEnabled ? '100%' : '100vh' }}
+        animate={{ height: isAdvancedSearchEnabled ? '100%' : 'auto' }}
         transition={{
           duration: 0.5,
           ease: "easeInOut"
