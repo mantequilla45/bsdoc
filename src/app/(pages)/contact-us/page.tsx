@@ -1,3 +1,4 @@
+
 'use client'
 import Image from 'next/image';
 import Header from "@/app/layout/header";
@@ -93,7 +94,7 @@ const ContactUs = () => {
                     </div>
 
                     {/* Contact Form */}
-                    <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-[600px]">
+                    <div className="bg-white p-6 rounded-2xl mt-[90px] shadow-lg w-full max-w-[600px]">
                         <form className="flex flex-col items-center gap-6" onSubmit={handleSubmit}>
                             <div className="flex items-center gap-3">
                                 <h1 className="text-4xl font-bold">Contact Us</h1>
@@ -150,7 +151,7 @@ const ContactUs = () => {
                             />
                             <textarea
                                 placeholder="Message"
-                                className="w-full h-[400px] p-3 border-[2px] rounded-xl focus:ring-2 focus:ring-[#E97A73] text-left align-top"
+                                className="w-full h-[340px] p-3 border-[2px] rounded-xl focus:ring-2 focus:ring-[#E97A73] text-left align-top"
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 required
