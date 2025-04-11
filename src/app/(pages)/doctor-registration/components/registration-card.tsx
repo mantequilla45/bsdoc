@@ -75,57 +75,61 @@ const RegistrationCard = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex bg-white m-5 rounded-2xl py-10 px-8 flex-col">
-      <p className="text-3xl mb-5">Register as Doctor</p>
-      <div className="flex gap-5 mb-5">
+    <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-[600px]">
+      <form onSubmit={handleSubmit} className="flex bg-white m-5 rounded-2xl py-10 px-8 flex-col">
+        <p className="text-3xl mb-8 text-center text-gray-800 font-semibold">Register as Doctor</p>
+        <div className="flex gap-5 mb-5">
+          <input
+            type="text"
+            name="firstName"
+            placeholder="First Name"
+            onChange={handleChange}
+            className="border rounded-lg p-3 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            required />
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Last Name"
+            onChange={handleChange}
+            className="border rounded-lg p-3 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            required />
+        </div>
         <input
-          type="text"
-          name="firstName"
-          placeholder="First Name"
+          type="email"
+          name="email"
+          placeholder="Email"
           onChange={handleChange}
-          className="border p-2"
+          className="border rounded-lg p-3 mb-6 w-full focus:outline-none focus:ring-2 focus:ring-blue-200"
           required />
         <input
-          type="text"
-          name="lastName"
-          placeholder="Last Name"
+          type="password"
+          name="password"
+          placeholder="Password"
           onChange={handleChange}
-          className="border p-2"
+          className="border rounded-lg p-3 mb-6 w-full focus:outline-none focus:ring-2 focus:ring-blue-200"
+
           required />
-      </div>
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        onChange={handleChange}
-        className="border p-2 mb-5"
-        required />
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        onChange={handleChange}
-        className="border p-2 mb-5"
-        required />
-      <input
-        type="file"
-        name="file"
-        accept="image/*"
-        onChange={handleChange}
-        className="mb-5"
-        required />
-      <button
-        type="submit"
-        className="bg-blue-500 text-white py-2 px-4 rounded">
-        {isLoading ? 'Submitting...' : 'Submit Registration'}
-      </button>
-      {formError && (
-        <p style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
-          {/* You might want specific styling */}
-          {formError}
-        </p>
-      )}
-    </form>
+        <input
+          type="file"
+          name="file"
+          accept="image/*"
+          onChange={handleChange}
+          className="mb-8 w-full"
+          required />
+        <button
+          type="submit"
+          className="bg-[#48c9b0] text-white py-3 px-6 rounded-lg w-full font-semibold hover:bg-[#34b19b] transition duration-300">
+          {isLoading ? 'Submitting...' : 'Submit Registration'}
+        </button>
+        {formError && (
+          <p style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
+            {/* You might want specific styling */}
+            {formError}
+          </p>
+        )}
+      </form>
+    </div>
+
   );
 };
 
