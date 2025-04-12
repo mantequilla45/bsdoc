@@ -145,10 +145,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
             {/* Left Side - Background Image */}
             <div className="hidden md:block md:w-[70%] relative">
               <Image alt="Login Background" fill src="/graphics/loginbg.svg" className="object-cover" />
-              <div className="absolute inset-0 z-10 flex flex-col pt-[160px] pl-[80px]">
-                <h1 className="text-7xl text-[#62B6B8] mt-10">Hello,</h1>
-                <h2 className="text-5xl">Welcome to <span className="text-[#62B6B8]">BSDOC</span></h2>
-                <h3 className="text-3xl">Your Personal Guide to Self-Care for Common Ailments</h3>
+              <div className="absolute inset-0 z-10 flex flex-col justify-center mb-[150px] pl-[150px]">
+                <h1 className="text-[90px]">Welcome to <span className="text-[#62B6B8]">BSDOC</span></h1>
+                <p className="text-3xl w-[600px]">Your Personal Guide to Self-Care for Common Ailments</p>
               </div>
             </div>
 
@@ -158,7 +157,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="w-full md:w-[30%] bg-white md:rounded-[25px] rounded-none h-full md:h-auto md:m-10 md:shadow-2xl z-10 flex flex-col justify-center relative overflow-hidden"
+              className="w-full md:min-w-[500px] md:w-[30%] bg-white md:rounded-[25px] rounded-none h-full md:h-auto md:m-10 md:shadow-2xl z-10 flex flex-col justify-center relative overflow-hidden"
             >
               {/* Desktop Close Button */}
               <button
@@ -193,7 +192,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
 
                       <div className="w-full border-t border-gray-300" />
 
-                      <form onSubmit={handleAuth} className="space-y-3 md:space-y-4 w-full">
+                      <form onSubmit={handleAuth} className="space-y-3 md:space-y-8 w-full">
                         <InputField
                           label="Email"
                           type="email"
@@ -217,7 +216,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                         {errorMessage && <p className="text-red-500 text-sm text-center">{errorMessage}</p>}
                         <button
                           type="submit"
-                          className="py-2 md:py-3 px-4 md:px-5 w-full rounded-full bg-[#78DDD3] text-white hover:bg-[#82C2BC] active:scale-95 duration-300"
+                          className="py-2 md:py-3 px-4 md:px-5 w-full rounded-full bg-[#78DDD3] text-white hover:bg-[#55a19a] active:scale-95 duration-300"
                         >
                           {getButtonText()}
                         </button>

@@ -140,28 +140,25 @@ const UserManagement = () => {
     const handleSaveUser = async (id: string, updatedUserData: Partial<ProfileUser>) => {
         // Get the current session first
         const { data: { session } } = await supabase.auth.getSession();
-
+    
         if (!session) {
             setError("Not authenticated");
             router.push('/');
             return;
         }
-
+    
         try {
             const response = await fetch(`/api/admin/users/${id}`, {
-                method: 'PATCH',
+                method: 'PUT', // Changed from 'PATCH'
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(updatedUserData)
             });
-
+    
             if (response.ok) {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const updatedUser = await response.json();
-                
-                // Update the user in the state
+                // Instead of parsing JSON response, just update state with the data we sent
                 setUsers(prevUsers => 
                     prevUsers.map(user => 
                         user.id === id ? { ...user, ...updatedUserData } : user
@@ -170,10 +167,18 @@ const UserManagement = () => {
                 
                 showToast('User updated successfully', 'success');
             } else {
-                const data = await response.json();
-                console.error("Error updating user:", data.error);
-                setError(data.error || "Failed to update user");
-                showToast(data.error || "Failed to update user", 'error');
+                // For error responses, try to parse JSON if available
+                try {
+                    const data = await response.json();
+                    console.error("Error updating user:", data.error);
+                    setError(data.error || "Failed to update user");
+                    showToast(data.error || "Failed to update user", 'error');
+                } catch {
+                    // If JSON parsing fails, use generic error message
+                    console.error("Error updating user:", response.statusText);
+                    setError("Failed to update user");
+                    showToast("Failed to update user", 'error');
+                }
             }
         } catch (error) {
             console.error("Error updating user:", error);
@@ -227,9 +232,9 @@ const UserManagement = () => {
                             placeholder="Search users..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#00909A]"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md md:text-base text-sm focus:outline-none focus:border-[#00909A]"
                         />
-                        <Search className="w-5 h-5 absolute left-3 text-gray-400" />
+                        <Search className="md:w-5 w-4 md:h-5 h-4 absolute left-3 text-gray-400" />
                     </div>
                 </div>
 
