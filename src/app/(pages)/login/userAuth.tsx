@@ -35,7 +35,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
-  
+
     try {
       if (isLogin) {
         await login(email, password);
@@ -52,8 +52,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
     }
     catch (error) {
       if (error instanceof Error) {
-        console.log('Error: ', error);
-        setErrorMessage(error.message);
+        if (isLogin && error.message.toLowerCase().includes('email not confirmed')) {
+          setErrorMessage("Please verify your email before logging in. Check your inbox for the verification link.");
+        }
+        else {
+          console.log('Error: ', error);
+          setErrorMessage(error.message);
+        }
       }
       else {
         setErrorMessage('An unknown error has occurred.');
@@ -189,22 +194,22 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                       <div className="w-full border-t border-gray-300" />
 
                       <form onSubmit={handleAuth} className="space-y-3 md:space-y-4 w-full">
-                        <InputField 
-                          label="Email" 
-                          type="email" 
+                        <InputField
+                          label="Email"
+                          type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                         />
-                        <InputField 
-                          label="Password" 
-                          type="password" 
+                        <InputField
+                          label="Password"
+                          type="password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                         />
                         {!isLogin && (
-                          <InputField 
-                            label="Confirm Password" 
-                            type="password" 
+                          <InputField
+                            label="Confirm Password"
+                            type="password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                           />

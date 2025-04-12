@@ -5,14 +5,14 @@ import RegistrationCard from './components/registration-card';
 
 const DoctorRegistration = () => {
     return (
-        <div>
+        <div className='bg-[#C3EFEB] min-h-screen relative overflow-hidden'>
             <div className="fixed h-[10vh] flex items-center justify-center w-full">
                 <Link href="/">
                     home
                 </Link>
             </div>
             <div className="flex flex-row h-[100vh]">
-                <div className="w-full relative bg-[#C3EFEB] overflow-hidden">
+                <div className="w-[1270px] relative bg-[#C3EFEB] overflow-hidden">
                     <div className="absolute w-full z-50 p-8 flex h-full items-center">
                         <div className="flex flex-row items-center justify-between w-full pr-[25%] pl-[10%]">
                             <div className="flex flex-col">
