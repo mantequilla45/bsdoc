@@ -232,9 +232,9 @@ const UserManagement = () => {
                             placeholder="Search users..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#00909A]"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md md:text-base text-sm focus:outline-none focus:border-[#00909A]"
                         />
-                        <Search className="w-5 h-5 absolute left-3 text-gray-400" />
+                        <Search className="md:w-5 w-4 md:h-5 h-4 absolute left-3 text-gray-400" />
                     </div>
                 </div>
 

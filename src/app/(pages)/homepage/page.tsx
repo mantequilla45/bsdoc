@@ -1,7 +1,7 @@
 import Image from 'next/image';
 const HomePage = () => {
   return (
-    <div className="max-w-[1300px] mx-auto h-screen md:pt-[100px] pt-[100px] justify-start flex">
+    <div className="max-w-[1300px] mx-auto h-screen md:pt-[100px] pt-[100px] justify-start flex md:flex-row flex-col">
       <div>
         <Image
           src="/Images/background/landing-background.png"

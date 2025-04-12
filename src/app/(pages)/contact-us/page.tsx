@@ -98,7 +98,7 @@ const ContactUs = () => {
 
                     {/* Contact Form */}
                     <div className="bg-white p-6 rounded-2xl mt-[90px] shadow-lg w-full max-w-[600px]">
-                        <form className="flex flex-col items-center gap-6" onSubmit={handleSubmit}>
+                        <form className="flex flex-col items-center gap-4" onSubmit={handleSubmit}>
                             <div className="flex items-center gap-3">
                                 <h1 className="text-4xl font-bold">Contact Us</h1>
                                 <Image
@@ -112,7 +112,7 @@ const ContactUs = () => {
                             <select
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="py-3 px-5 w-full border-[2px] rounded-xl font-light focus:ring-2 focus:ring-[#E97A73]"
+                                className="py-[15px] px-5 w-full border-[2px] focus:border-[#216b70] rounded-xl font-light"
                                 required
                             >
                                 <option value="">Select Category</option>
@@ -125,7 +125,7 @@ const ContactUs = () => {
                                 <select
                                     value={severity}
                                     onChange={(e) => setSeverity(e.target.value)}
-                                    className="py-3 px-5 w-full border-[2px] rounded-xl font-light focus:ring-2 focus:ring-[#E97A73]"
+                                    className="py-3 px-5 w-full border-[2px] rounded-xl font-light focus:border-[#216b70] rounded-xl font-light"
                                     required
                                 >
                                     <option value="">Select Severity</option>
@@ -147,9 +147,8 @@ const ContactUs = () => {
                                 value={subject}
                                 onChange={(e) => setSubject(e.target.value)}
                             />
-                            <textarea
-                                placeholder="Message"
-                                className="w-full h-[340px] p-3 border-[2px] rounded-xl focus:ring-2 focus:ring-[#E97A73] text-left align-top"
+                            <TextareaField
+                                label="Message"
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 rows={3}
