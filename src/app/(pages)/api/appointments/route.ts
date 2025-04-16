@@ -53,10 +53,10 @@ export async function POST(req: NextRequest) {
         }
 
         const token = authHeader.split(' ')[1];
-        
+
         // Verify the token with Supabase
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-        
+
         if (authError || !user) {
             console.log('Invalid token or user not found', authError);
             return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
@@ -106,6 +106,35 @@ export async function POST(req: NextRequest) {
                 error: 'Error booking appointment',
                 details: error.message
             }, { status: 500 });
+        }
+
+        if (data) { // Check if insert was successful and returned data
+            try {
+                // Fetch patient name for a more informative message
+                const { data: patientProfile, error: patientFetchError } = await supabase
+                    .from('profiles')
+                    .select('first_name, last_name')
+                    .eq('id', data.patient_id)
+                    .single();
+
+                const patientName = patientFetchError || !patientProfile ? 'A patient' : `${patientProfile.first_name} ${patientProfile.last_name}`;
+
+                const { error: insertNotifyError } = await supabase
+                    .from('notifications')
+                    .insert({
+                        user_id: data.doctor_id, // The Doctor who received the booking
+                        type: 'APPOINTMENT_BOOKED',
+                        message: `${patientName} booked an appointment with you on ${data.appointment_date} at ${data.appointment_time}.`,
+                        link_url: '/doctors/doctor-schedule', // Link to doctor's schedule
+                        metadata: { appointment_id: data.id, patient_id: data.patient_id }
+                    });
+
+                if (insertNotifyError) {
+                    console.error("Failed to insert doctor appointment notification:", insertNotifyError);
+                }
+            } catch (notifyError) {
+                console.error("Error during doctor notification process:", notifyError);
+            }
         }
 
         return NextResponse.json({ data }, { status: 201 });

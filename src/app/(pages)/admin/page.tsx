@@ -1,50 +1,101 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import SideBar from "@/app/layout/admin-sidebar/admin-sidebar";
 import UserManagement from "./user-management/user-management";
 import BugManagement from './bugs/bug-reports';
+import { AdminPanelProvider } from '@/app/context/AdminPanelContext';
+import { useSearchParams } from 'next/navigation';
 // Import other content components as needed
 
-const AdminPage: React.FC = () => {
-    const [activeContent, setActiveContent] = useState<string>('dashboard');
+function AdminPageContent() {
+    const searchParams = useSearchParams();
+    const initialSection = searchParams.get('section') ?? 'dashboard';
+    console.log(`[AdminPage] Initial section from URL: ${initialSection}`); // Log initial value
+    const [activeContentId, setactiveContentId] = useState<string>('dashboard');
 
-    // Function to render the appropriate content based on activeContent
+    // Effect to sync state if URL param changes *after* initial load
+    useEffect(() => {
+        const sectionFromUrl = searchParams.get('section') ?? 'dashboard';
+        console.log(`[AdminPageContent EFFECT Check] URL section: ${sectionFromUrl}, State section: ${activeContentId}`);
+        if (sectionFromUrl !== activeContentId) {
+            console.log(`[AdminPageContent EFFECT Update] State differs from URL. Syncing state to: ${sectionFromUrl}`);
+            setactiveContentId(sectionFromUrl);
+        }
+    }, [searchParams]); // Depend only on searchParams to react to URL changes
+
+
+    // Handler passed to Sidebar and Context
+    const handleContentChange = useCallback((contentId: string) => {
+        console.log(`[AdminPageContent] handleContentChange called with: ${contentId}`);
+        setactiveContentId(contentId);
+        // Optional: Update URL to match state changes from clicks
+        // window.history.pushState({}, '', `/admin?section=${contentId}`);
+    }, []); // Empty dependency array is fine here
+
+    // Function to render the appropriate content based on activeContentId
     const renderContent = () => {
         // Convert to lowercase and check if string contains certain keywords
-        const content = activeContent.toLowerCase();
+        // const content = activeContentId.toLowerCase();
 
-        if (content === 'users' || content.includes('user')) {
-            return <UserManagement />;
-        } else if (content === 'bugs' || content.includes('bug') || content.includes('report')) {
-            return <BugManagement />;
-        } else if (content === 'dashboard' || content.includes('dash')) {
-            return <div className="p-6 text-gray-600">Dashboard content will go here.</div>;
-        } else {
-            // Default fallback
-            return <div className="p-6 text-gray-600">Select an option from the sidebar to get started.</div>;
+        // if (content === 'users' || content.includes('user')) {
+        //     return <UserManagement />;
+        // } else if (content === 'bugs' || content.includes('bug') || content.includes('report')) {
+        //     return <BugManagement />;
+        // } else if (content === 'dashboard' || content.includes('dash')) {
+        //     return <div className="p-6 text-gray-600">Dashboard content will go here.</div>;
+        // } else {
+        //     // Default fallback
+        //     return <div className="p-6 text-gray-600">Select an option from the sidebar to get started.</div>;
+        // }
+        console.log(`[AdminPageContent] Rendering content for activeContentId: ${activeContentId}`);
+        switch (activeContentId) {
+            case 'users':
+                return <UserManagement />; // Render your User Management component
+            case 'bug-reports':
+                return <BugManagement />; // Render your Bug Reports component
+            // Add cases for 'database', 'notifications', 'help' etc.
+            case 'dashboard':
+                return <div className="p-6 text-gray-600">Dashboard content will go here.</div>;
+            default:
+                console.warn(`[AdminPageContent] Unknown content ID in render: ${activeContentId}. Falling back.`);
+                return <div className="p-6 text-gray-600">Select an option from the sidebar to get started.</div>; // Fallback to dashboard
         }
     };
 
-    // Debug logging to check the activeContent value when it changes
+    // Debug logging to check the activeContentId value when it changes
     useEffect(() => {
-        console.log("Active content changed to:", activeContent);
-    }, [activeContent]);
+        console.log("Active content changed to:", activeContentId);
+    }, [activeContentId]);
+
+    console.log(`[AdminPageContent Pre-Render] Final activeContentId: ${activeContentId}`);
 
     return (
-        <div className="flex flex-row bg-[#62B6B8]">
-            <SideBar onContentChange={setActiveContent} />
-            <div className="bg-white w-full md:p-10 p-5 overflow-y-auto">
-                <h1 className="md:text-2xl text-xl font-bold text-gray-900 mb-4 md:mb-0">
-                    {activeContent
-                        .replace(/-/g, ' ')
-                        .toLowerCase()
-                        .replace(/\b\w/g, (char) => char.toUpperCase())}
-
-                </h1>
-                {renderContent()}
+        <AdminPanelProvider switchContent={handleContentChange}>
+            <div className="flex h-screen flex-row bg-gray-100"> {/* Adjusted background, ensure h-screen */}
+                {/* Pass the *same* handler to SideBar's prop */}
+                <SideBar
+                    onContentChange={handleContentChange}
+                    activeContentId={activeContentId}
+                />
+                {/* Main content area */}
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-white p-6"> {/* Changed bg, added padding */}
+                    {/* Optional: Dynamic Title based on activeContentId */}
+                    <h1 className="text-2xl font-semibold text-gray-900 mb-6">
+                        {activeContentId
+                            .replace(/-/g, ' ')
+                            .replace(/\b\w/g, (char) => char.toUpperCase())}
+                    </h1>
+                    {renderContent()}
+                </main>
             </div>
-        </div>
+        </AdminPanelProvider>
     );
 }
 
-export default AdminPage;
+export default function AdminPage() {
+    return (
+        <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading Admin...</div>}>
+            <AdminPageContent />
+        </Suspense>
+    );
+};

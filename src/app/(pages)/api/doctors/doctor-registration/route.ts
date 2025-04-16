@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabaseServer'; // Fixed: server client with correct cookie usage
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient(); // Use the correct server-side Supabase client
@@ -108,6 +109,47 @@ export async function POST(req: NextRequest) {
       console.error('Verification insert error:', verificationInsertError);
       return NextResponse.json({ error: `Failed to create verification record: ${verificationInsertError.message}` }, { status: 500 });
     }
+
+    // --- Send Notification to Admins (using supabaseAdmin) ---
+    console.log(`[Registration Route] Attempting to send notification to admins for user ID: ${userId}`);
+    try {
+        // Fetch all admin user IDs --> Use Admin Client to ensure RLS bypass if needed <--
+        const { data: admins, error: adminFetchError } = await supabaseAdmin // Use admin client
+            .from('profiles')
+            .select('id')
+            .eq('role', 'admin');
+
+        if (adminFetchError) {
+            console.error("[Registration Route] Failed to fetch admins for notification:", adminFetchError);
+        } else if (admins && admins.length > 0) {
+            console.log(`[Registration Route] Found ${admins.length} admin(s) to notify.`);
+            const notifications = admins.map(admin => ({
+                user_id: admin.id,
+                type: 'VERIFICATION_SUBMITTED',
+                message: `New doctor verification request from ${firstName} ${lastName} (${email}) needs review.`,
+                link_url: '/admin/doctor-verifications',
+                metadata: { applicant_user_id: userId }
+            }));
+
+             console.log(`[Registration Route] Inserting ${notifications.length} notification(s).`);
+            // --> Insert notifications using the Admin Client (bypasses RLS) <--
+            const { error: insertNotifyError } = await supabaseAdmin
+                .from('notifications')
+                .insert(notifications);
+
+            if (insertNotifyError) {
+                // This error should NOT be the RLS violation anymore
+                console.error("[Registration Route] Failed to insert admin notifications:", insertNotifyError);
+            } else {
+                 console.log(`[Registration Route] Successfully inserted notifications for admins.`);
+            }
+        } else {
+             console.warn("[Registration Route] No admin users found to notify.");
+        }
+    } catch (notifyError) {
+         console.error("[Registration Route] Error during admin notification process:", notifyError);
+    }
+    // --- End Notification Logic ---
 
     return NextResponse.json(
       { message: 'Registration successful! Your application is pending review.' },
