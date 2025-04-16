@@ -1,9 +1,47 @@
 'use client';
-import React, { useState } from 'react';
-import CheckBox from './checkbox'; // ✅ default import
+import React, { useState, memo } from 'react';
+import CheckBox from './checkbox';
 import { Gender, TextBox } from './elements';
 import { getSymptomInfo } from '@/services/symptom-search/symptomService';
 import { symptomGroups } from './symptomGroup';
+
+// ✅ Memoized, named component
+const SymptomCheckboxGroups = memo(function SymptomCheckboxGroups({
+  selectedSymptoms,
+  setSelectedSymptoms,
+}: {
+  selectedSymptoms: string[];
+  setSelectedSymptoms: React.Dispatch<React.SetStateAction<string[]>>;
+}) {
+  return (
+    <div className="w-full border-t border-gray-300 py-6 space-y-6">
+      <h2 className="text-2xl font-semibold">Symptoms</h2>
+      <div className="flex flex-col gap-8 max-h-[500px] overflow-y-auto pr-2">
+        {Object.entries(symptomGroups).map(([group, symptoms]) => (
+          <div key={group}>
+            <h3 className="text-lg font-medium text-[#2D383D] mb-2">{group}</h3>
+            <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
+              {symptoms.map((symptom, i) => (
+                <CheckBox
+                  key={i}
+                  item={symptom.replace(/_/g, ' ')}
+                  checked={selectedSymptoms.includes(symptom)}
+                  onChange={() =>
+                    setSelectedSymptoms((prev) =>
+                      prev.includes(symptom)
+                        ? prev.filter((s) => s !== symptom)
+                        : [...prev, symptom]
+                    )
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
 
 const AdvancedSearchForm = () => {
   enum Category {
@@ -11,7 +49,7 @@ const AdvancedSearchForm = () => {
     EndocrineMetabolic = 'Endocrine and Metabolic',
     Autoimmune = 'Autoimmune',
     KidneyRenal = 'Kidney and Renal',
-    Cancer = 'Cancer'
+    Cancer = 'Cancer',
   }
 
   interface SymptomCondition {
@@ -39,7 +77,7 @@ const AdvancedSearchForm = () => {
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [result, setResult] = useState<SymptomResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const handleAssess = async () => {
     const allSelected = [...selectedSymptoms, ...selectedConditions];
@@ -47,12 +85,12 @@ const AdvancedSearchForm = () => {
 
     try {
       setLoading(true);
-      setError("");
+      setError('');
       const data = await getSymptomInfo(allSelected);
       setResult(data);
     } catch (err) {
       console.error(err);
-      setError("An error occurred while fetching predictions.");
+      setError('An error occurred while fetching predictions.');
     } finally {
       setLoading(false);
     }
@@ -68,14 +106,14 @@ const AdvancedSearchForm = () => {
     { name: 'Hypothyroidism', category: Category.EndocrineMetabolic },
     { name: 'Hyperthyroidism', category: Category.EndocrineMetabolic },
     { name: 'Obesity', category: Category.EndocrineMetabolic },
-    { name: 'Cushing\'s Syndrome', category: Category.EndocrineMetabolic },
+    { name: "Cushing's Syndrome", category: Category.EndocrineMetabolic },
     { name: 'Diabetes Mellitus (Type 1 and Type 2)', category: Category.EndocrineMetabolic },
     { name: 'Polycystic Ovary Syndrome (PCOS)', category: Category.EndocrineMetabolic },
     { name: 'Rheumatoid Arthritis', category: Category.Autoimmune },
     { name: 'Psoriasis', category: Category.Autoimmune },
-    { name: 'Hashimoto\'s Thyroiditis', category: Category.Autoimmune },
+    { name: "Hashimoto's Thyroiditis", category: Category.Autoimmune },
     { name: 'Multiple Sclerosis', category: Category.Autoimmune },
-    { name: 'Graves\' Disease', category: Category.Autoimmune },
+    { name: "Graves' Disease", category: Category.Autoimmune },
     { name: 'Systemic Lupus Erythematosus (SLE)', category: Category.Autoimmune },
     { name: 'Chronic Kidney Disease', category: Category.KidneyRenal },
     { name: 'Polycystic Kidney Disease', category: Category.KidneyRenal },
@@ -88,47 +126,16 @@ const AdvancedSearchForm = () => {
     { name: 'Lung Cancer', category: Category.Cancer },
     { name: 'Colorectal Cancer', category: Category.Cancer },
     { name: 'Leukemia', category: Category.Cancer },
-    { name: 'Pancreatic Cancer', category: Category.Cancer }
+    { name: 'Pancreatic Cancer', category: Category.Cancer },
   ];
 
-  const groupConditionsByCategory = (
-    items: SymptomCondition[]
-  ): Record<Category, string[]> => {
+  const groupConditionsByCategory = (items: SymptomCondition[]): Record<Category, string[]> => {
     return items.reduce((acc, { name, category }) => {
       if (!acc[category]) acc[category] = [];
       acc[category].push(name);
       return acc;
     }, {} as Record<Category, string[]>);
   };
-
-  const SymptomCheckboxGroups = () => (
-    <div className="w-full border-t border-gray-300 py-6 space-y-6">
-      <h2 className="text-2xl font-semibold">Symptoms</h2>
-      <div className="flex flex-col gap-8 max-h-[500px] overflow-y-auto pr-2">
-        {Object.entries(symptomGroups).map(([group, symptoms]) => (
-          <div key={group}>
-            <h3 className="text-lg font-medium text-[#2D383D] mb-2">{group}</h3>
-            <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
-              {symptoms.map((symptom, i) => (
-                <CheckBox
-                  key={i}
-                  item={symptom.replace(/_/g, ' ')}
-                  checked={selectedSymptoms.includes(symptom)}
-                  onChange={() => {
-                    setSelectedSymptoms((prev) =>
-                      prev.includes(symptom)
-                        ? prev.filter((s) => s !== symptom)
-                        : [...prev, symptom]
-                    );
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
   const ConditionSection = () => {
     const grouped = groupConditionsByCategory(conditions);
@@ -181,7 +188,10 @@ const AdvancedSearchForm = () => {
       </div>
 
       <div className="space-y-10">
-        <SymptomCheckboxGroups />
+        <SymptomCheckboxGroups
+          selectedSymptoms={selectedSymptoms}
+          setSelectedSymptoms={setSelectedSymptoms}
+        />
         <ConditionSection />
       </div>
 
@@ -190,7 +200,6 @@ const AdvancedSearchForm = () => {
         <button
           onClick={handleAssess}
           className="px-6 py-3 bg-[#A3E7EA] hover:bg-[#9AE0E3] active:bg-[#91D7DA] rounded-md font-semibold transition-all duration-200 active:scale-95"
-          aria-label="Assess Symptoms"
         >
           Assess
         </button>
@@ -210,9 +219,7 @@ const AdvancedSearchForm = () => {
             <div className="grid md:grid-cols-2 gap-4 mt-4">
               {result.likely_common_conditions.map((condition, index) => (
                 <div key={index} className="bg-gray-100 p-4 rounded-lg shadow-md">
-                  <h4 className="text-lg font-bold text-blue-700">
-                    {condition.disease}
-                  </h4>
+                  <h4 className="text-lg font-bold text-blue-700">{condition.disease}</h4>
                   <p className="text-sm">Commonality: {condition.commonality}</p>
                   <p className="text-sm font-semibold mt-2">💊 Medications:</p>
                   <p className="text-sm text-gray-700">{condition.informational_medications}</p>
