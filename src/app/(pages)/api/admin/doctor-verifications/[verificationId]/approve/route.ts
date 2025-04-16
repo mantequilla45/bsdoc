@@ -63,8 +63,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
         // 4. Transaction to update both user role and verification status
         const { error: transactionError } = await supabaseAdmin.rpc('approve_doctor_verification', {
             p_verification_id: verificationId,
-            p_user_id: userId
+            p_user_id: userId,
         });
+        
 
         if (transactionError) {
             console.error('Error in transaction:', transactionError);
@@ -73,6 +74,29 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
                 { status: 500 }
             );
         }
+
+        // --- Start: Insert Notification Logic ---
+        try {
+            const { error: notifyError } = await supabaseAdmin
+                .from('notifications')
+                .insert({
+                    user_id: userId, // Notify the newly approved doctor
+                    type: 'PROFILE_COMPLETE_PROMPT',
+                    message: 'Congratulations! Your verification is approved. Please complete your doctor profile.',
+                    link_url: '/doctors/complete-profile' // Link to the profile completion page
+                    // metadata could be added if needed, e.g., { verification_id: verificationId }
+                });
+
+            if (notifyError) {
+                // Log the error but don't fail the main operation
+                console.error(`Failed to insert profile completion notification for user ${userId}:`, notifyError);
+            } else {
+                console.log(`Successfully inserted profile completion notification for user ${userId}`);
+            }
+        } catch (notificationCatchError) {
+            console.error(`Caught exception while inserting notification for user ${userId}:`, notificationCatchError);
+        }
+        // --- End: Insert Notification Logic ---
 
         // 5. Return success response
         return NextResponse.json(

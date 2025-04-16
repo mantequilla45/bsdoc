@@ -15,6 +15,7 @@ import NavItem from './components/NavItem';
 
 interface SideBarProps {
   onContentChange?: (contentId: string) => void;
+  activeContentId: string;
 }
 
 const SideBar: React.FC<SideBarProps> = ({ onContentChange }) => {
