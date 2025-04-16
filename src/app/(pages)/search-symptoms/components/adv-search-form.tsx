@@ -1,198 +1,235 @@
-import { CheckBox, Gender, TextBox } from './elements';
-
+'use client';
+import React, { useState } from 'react';
+import CheckBox from './checkbox'; // ✅ default import
+import { Gender, TextBox } from './elements';
+import { getSymptomInfo } from '@/services/symptom-search/symptomService';
+import { symptomGroups } from './symptomGroup';
 
 const AdvancedSearchForm = () => {
-    enum Category {
-        Respiratory = 'Respiratory',
-        PainAndDiscomfort = 'Pain & Discomfort',
-        Digestive = 'Digestive',
-        TemperatureRelated = 'Temperature Related',
-        General = 'General',
-        SkinRelated = 'Skin Related',
-        MentalNeurological = 'Mental/Neurological',
-        Cardiovascular = 'Cardiovascular',
-        EndocrineMetabolic = 'Endocrine and Metabolic',
-        Autoimmune = 'Autoimmune',
-        KidneyRenal = 'Kidney and Renal',
-        Cancer = 'Cancer'
+  enum Category {
+    Cardiovascular = 'Cardiovascular',
+    EndocrineMetabolic = 'Endocrine and Metabolic',
+    Autoimmune = 'Autoimmune',
+    KidneyRenal = 'Kidney and Renal',
+    Cancer = 'Cancer'
+  }
+
+  interface SymptomCondition {
+    name: string;
+    category: Category;
+  }
+
+  interface Condition {
+    disease: string;
+    commonality: string;
+    final_score: number;
+    precautions: string[];
+    informational_medications: string;
+  }
+
+  interface SymptomResponse {
+    input_symptoms: string[];
+    recommendation_note: string;
+    likely_common_conditions: Condition[];
+    other_possible_conditions: Condition[];
+    note: string;
+  }
+
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [result, setResult] = useState<SymptomResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleAssess = async () => {
+    const allSelected = [...selectedSymptoms, ...selectedConditions];
+    if (allSelected.length === 0) return;
+
+    try {
+      setLoading(true);
+      setError("");
+      const data = await getSymptomInfo(allSelected);
+      setResult(data);
+    } catch (err) {
+      console.error(err);
+      setError("An error occurred while fetching predictions.");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    interface SymptomCondition {
-        name: string;
-        category: Category;
-    }
+  const conditions: SymptomCondition[] = [
+    { name: 'Hypertension', category: Category.Cardiovascular },
+    { name: 'Coronary Artery Disease', category: Category.Cardiovascular },
+    { name: 'Heart Failure', category: Category.Cardiovascular },
+    { name: 'Arrhythmia', category: Category.Cardiovascular },
+    { name: 'Stroke', category: Category.Cardiovascular },
+    { name: 'Peripheral Artery Disease', category: Category.Cardiovascular },
+    { name: 'Hypothyroidism', category: Category.EndocrineMetabolic },
+    { name: 'Hyperthyroidism', category: Category.EndocrineMetabolic },
+    { name: 'Obesity', category: Category.EndocrineMetabolic },
+    { name: 'Cushing\'s Syndrome', category: Category.EndocrineMetabolic },
+    { name: 'Diabetes Mellitus (Type 1 and Type 2)', category: Category.EndocrineMetabolic },
+    { name: 'Polycystic Ovary Syndrome (PCOS)', category: Category.EndocrineMetabolic },
+    { name: 'Rheumatoid Arthritis', category: Category.Autoimmune },
+    { name: 'Psoriasis', category: Category.Autoimmune },
+    { name: 'Hashimoto\'s Thyroiditis', category: Category.Autoimmune },
+    { name: 'Multiple Sclerosis', category: Category.Autoimmune },
+    { name: 'Graves\' Disease', category: Category.Autoimmune },
+    { name: 'Systemic Lupus Erythematosus (SLE)', category: Category.Autoimmune },
+    { name: 'Chronic Kidney Disease', category: Category.KidneyRenal },
+    { name: 'Polycystic Kidney Disease', category: Category.KidneyRenal },
+    { name: 'Kidney Stones', category: Category.KidneyRenal },
+    { name: 'Nephrotic Syndrome', category: Category.KidneyRenal },
+    { name: 'Acute Kidney Injury', category: Category.KidneyRenal },
+    { name: 'End-Stage Renal Disease', category: Category.KidneyRenal },
+    { name: 'Breast Cancer', category: Category.Cancer },
+    { name: 'Prostate Cancer', category: Category.Cancer },
+    { name: 'Lung Cancer', category: Category.Cancer },
+    { name: 'Colorectal Cancer', category: Category.Cancer },
+    { name: 'Leukemia', category: Category.Cancer },
+    { name: 'Pancreatic Cancer', category: Category.Cancer }
+  ];
 
-    const symptoms: SymptomCondition[] = [
-        // Respiratory
-        { name: 'Dry Cough', category: Category.Respiratory },
-        { name: 'Cough with Phlegm', category: Category.Respiratory },
-        { name: 'Runny Nose', category: Category.Respiratory },
-        { name: 'Sore Throat', category: Category.Respiratory },
-        { name: 'Shortness of Breath', category: Category.Respiratory },
-        { name: 'Wheezing', category: Category.Respiratory },
+  const groupConditionsByCategory = (
+    items: SymptomCondition[]
+  ): Record<Category, string[]> => {
+    return items.reduce((acc, { name, category }) => {
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(name);
+      return acc;
+    }, {} as Record<Category, string[]>);
+  };
 
-        // Pain & Discomfort
-        { name: 'Headache', category: Category.PainAndDiscomfort },
-        { name: 'Body Pain', category: Category.PainAndDiscomfort },
-        { name: 'Muscle Aches', category: Category.PainAndDiscomfort },
-        { name: 'Joint Pain', category: Category.PainAndDiscomfort },
-        { name: 'Chest Pain', category: Category.PainAndDiscomfort },
-        { name: 'Abdominal Pain', category: Category.PainAndDiscomfort },
-
-        // Digestive
-        { name: 'Nausea', category: Category.Digestive },
-        { name: 'Vomiting', category: Category.Digestive },
-        { name: 'Diarrhea', category: Category.Digestive },
-        { name: 'Constipation', category: Category.Digestive },
-        { name: 'Loss of Appetite', category: Category.Digestive },
-        { name: 'Bloating', category: Category.Digestive },
-
-        // Temperature Related
-        { name: 'Fever', category: Category.TemperatureRelated },
-        { name: 'Chills', category: Category.TemperatureRelated },
-        { name: 'Night Sweats', category: Category.TemperatureRelated },
-        { name: 'Hot Flashes', category: Category.TemperatureRelated },
-        { name: 'Cold Sweats', category: Category.TemperatureRelated },
-        { name: 'Shivering', category: Category.TemperatureRelated },
-
-        // General
-        { name: 'Fatigue', category: Category.General },
-        { name: 'Dizziness', category: Category.General },
-        { name: 'Weakness', category: Category.General },
-        { name: 'Sleep Problems', category: Category.General },
-        { name: 'Loss of Balance', category: Category.General },
-        { name: 'Blurred Vision', category: Category.General },
-
-        // Skin Related
-        { name: 'Rash', category: Category.SkinRelated },
-        { name: 'Itching', category: Category.SkinRelated },
-        { name: 'Sweating', category: Category.SkinRelated },
-        { name: 'Skin Discoloration', category: Category.SkinRelated },
-        { name: 'Hives', category: Category.SkinRelated },
-        { name: 'Dry Skin', category: Category.SkinRelated },
-
-        // Mental/Neurological
-        { name: 'Confusion', category: Category.MentalNeurological },
-        { name: 'Memory Problems', category: Category.MentalNeurological },
-        { name: 'Anxiety', category: Category.MentalNeurological },
-        { name: 'Depression', category: Category.MentalNeurological },
-        { name: 'Mood Changes', category: Category.MentalNeurological },
-        { name: 'Irritability', category: Category.MentalNeurological }
-    ];
-
-
-    const conditions: SymptomCondition[] = [
-        // Cardiovascular Conditions
-        { name: 'Hypertension', category: Category.Cardiovascular },
-        { name: 'Coronary Artery Disease', category: Category.Cardiovascular },
-        { name: 'Heart Failure', category: Category.Cardiovascular },
-        { name: 'Arrhythmia', category: Category.Cardiovascular },
-        { name: 'Stroke', category: Category.Cardiovascular },
-        { name: 'Peripheral Artery Disease', category: Category.Cardiovascular },
-
-        // Endocrine and Metabolic Conditions
-        { name: 'Hypothyroidism', category: Category.EndocrineMetabolic },
-        { name: 'Hyperthyroidism', category: Category.EndocrineMetabolic },
-        { name: 'Obesity', category: Category.EndocrineMetabolic },
-        { name: 'Cushing\'s Syndrome', category: Category.EndocrineMetabolic },
-        { name: 'Diabetes Mellitus (Type 1 and Type 2)', category: Category.EndocrineMetabolic },
-        { name: 'Polycystic Ovary Syndrome (PCOS)', category: Category.EndocrineMetabolic },
-
-        // Autoimmune Conditions
-        { name: 'Rheumatoid Arthritis', category: Category.Autoimmune },
-        { name: 'Psoriasis', category: Category.Autoimmune },
-        { name: 'Hashimoto\'s Thyroiditis', category: Category.Autoimmune },
-        { name: 'Multiple Sclerosis', category: Category.Autoimmune },
-        { name: 'Graves\' Disease', category: Category.Autoimmune },
-        { name: 'Systemic Lupus Erythematosus (SLE)', category: Category.Autoimmune },
-
-        // Kidney and Renal Conditions
-        { name: 'Chronic Kidney Disease', category: Category.KidneyRenal },
-        { name: 'Polycystic Kidney Disease', category: Category.KidneyRenal },
-        { name: 'Kidney Stones', category: Category.KidneyRenal },
-        { name: 'Nephrotic Syndrome', category: Category.KidneyRenal },
-        { name: 'Acute Kidney Injury', category: Category.KidneyRenal },
-        { name: 'End-Stage Renal Disease', category: Category.KidneyRenal },
-
-        // Cancer
-        { name: 'Breast Cancer', category: Category.Cancer },
-        { name: 'Prostate Cancer', category: Category.Cancer },
-        { name: 'Lung Cancer', category: Category.Cancer },
-        { name: 'Colorectal Cancer', category: Category.Cancer },
-        { name: 'Leukemia', category: Category.Cancer },
-        { name: 'Pancreatic Cancer', category: Category.Cancer }
-    ];
-
-    const groupSymptomsByCategory = (symptoms: SymptomCondition[]) => {
-        const grouped = {} as Record<Category, string[]>;
-
-        symptoms.forEach(symptom => {
-            if (!grouped[symptom.category]) {
-                grouped[symptom.category] = [];
-            }
-            grouped[symptom.category].push(symptom.name);
-        });
-
-        return grouped;
-    };
-
-    const SymptomsConditions = ({ title }: { title: string }) => {
-        const groupedSymptoms = groupSymptomsByCategory(title === "Symptoms" ? symptoms : conditions);
-        return (
-            <div className="flex flex-col gap-3 w-full gap-5 border-t-[1px] border-black py-7">
-                <p className="md:text-2xl text-lg">{title}</p>
-                <div className="flex flex-row grid md:grid-cols-2 grid-cols-1 gap-10">
-                    {Object.entries(groupedSymptoms).map(([category, items]) => (
-                        <div key={category} className="md:px-5 px-0 space-y-3">
-                            <p className="md:text-xl text-base font-regular">
-                                {category}
-                            </p>
-                            <div className={`grid md:grid-cols-2 grid-cols-2 gap-4 font-light`}>
-                                {items.map((item, index) => (
-                                    <div key={index}>
-                                        <CheckBox item={item} />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
+  const SymptomCheckboxGroups = () => (
+    <div className="w-full border-t border-gray-300 py-6 space-y-6">
+      <h2 className="text-2xl font-semibold">Symptoms</h2>
+      <div className="flex flex-col gap-8 max-h-[500px] overflow-y-auto pr-2">
+        {Object.entries(symptomGroups).map(([group, symptoms]) => (
+          <div key={group}>
+            <h3 className="text-lg font-medium text-[#2D383D] mb-2">{group}</h3>
+            <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
+              {symptoms.map((symptom, i) => (
+                <CheckBox
+                  key={i}
+                  item={symptom.replace(/_/g, ' ')}
+                  checked={selectedSymptoms.includes(symptom)}
+                  onChange={() => {
+                    setSelectedSymptoms((prev) =>
+                      prev.includes(symptom)
+                        ? prev.filter((s) => s !== symptom)
+                        : [...prev, symptom]
+                    );
+                  }}
+                />
+              ))}
             </div>
-        );
-    };
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
+  const ConditionSection = () => {
+    const grouped = groupConditionsByCategory(conditions);
     return (
-        <div className="flex flex-col w-full h-full md:p-16 p-6">
-            <div>
-                <p className="md:text-4xl text-2xl mb-2">
-                    BSDOC Advanced Symptoms Search
-                </p>
-                <p className="md:text-base text-sm">
-                    Please fill the following form with the symptoms you are feeling.
-                </p>
+      <div className="w-full border-t border-gray-300 py-6 space-y-6">
+        <h2 className="text-2xl font-semibold">Underlying Health Conditions</h2>
+        <div className="grid md:grid-cols-2 gap-8">
+          {Object.entries(grouped).map(([category, items]) => (
+            <div key={category}>
+              <h3 className="text-lg font-medium text-[#333] mb-3">{category}</h3>
+              <div className="grid sm:grid-cols-2 gap-2 text-sm text-gray-700">
+                {items.map((item, i) => (
+                  <CheckBox
+                    key={i}
+                    item={item}
+                    checked={selectedConditions.includes(item)}
+                    onChange={() => {
+                      setSelectedConditions((prev) =>
+                        prev.includes(item)
+                          ? prev.filter((c) => c !== item)
+                          : [...prev, item]
+                      );
+                    }}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="flex md:flex-row flex-col justify-between md:my-10 my-4">
-                <TextBox title="Name" />
-                <TextBox title="Age" />
-                <TextBox title="Weight" />
-                <Gender />
-            </div>
-            <div className="space-y-10">
-                <SymptomsConditions title="Symptoms" />
-                <SymptomsConditions title="Underlying Health Conditions" />
-            </div>
-            <div className="flex flex-row justify-end items-center gap-6 w-full">
-                <div className="flex flex-row gap-3">
-                    <CheckBox item={"Add Record"} />
-                     
-                </div>
-                <div className="cursor-pointer px-6 p-3 rounded-md bg-[#A3E7EA] hover:bg-[#9AE0E3] active:bg-[#91D7DA] duration-300 active:scale-95">
-                    Assess
-                </div>
-            </div>
+          ))}
         </div>
+      </div>
     );
-}
+  };
+
+  return (
+    <div className="w-full h-full p-6 md:p-12 bg-white rounded-xl shadow">
+      <div className="mb-6">
+        <h1 className="text-3xl md:text-4xl font-bold text-[#2D383D]">
+          BSDOC Advanced Symptoms Search
+        </h1>
+        <p className="text-sm md:text-base text-gray-600 mt-1">
+          Please fill the following form with the symptoms you are feeling.
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-4 mb-10">
+        <TextBox title="Name" />
+        <TextBox title="Age" />
+        <TextBox title="Weight" />
+        <Gender />
+      </div>
+
+      <div className="space-y-10">
+        <SymptomCheckboxGroups />
+        <ConditionSection />
+      </div>
+
+      <div className="flex justify-end items-center gap-6 mt-10">
+        <CheckBox item="Add Record" />
+        <button
+          onClick={handleAssess}
+          className="px-6 py-3 bg-[#A3E7EA] hover:bg-[#9AE0E3] active:bg-[#91D7DA] rounded-md font-semibold transition-all duration-200 active:scale-95"
+          aria-label="Assess Symptoms"
+        >
+          Assess
+        </button>
+      </div>
+
+      {loading && <p className="text-blue-500 mt-4">Analyzing symptoms...</p>}
+      {error && <p className="text-red-500 mt-4">{error}</p>}
+      {result && (
+        <div className="bg-white shadow-lg p-8 mt-8 rounded-xl border space-y-6">
+          <h2 className="text-2xl font-bold text-gray-800">Search Results</h2>
+          <p className="text-gray-600">{result.recommendation_note}</p>
+
+          <div>
+            <h3 className="text-xl font-semibold text-green-700 border-b-2 pb-2">
+              🏥 Most Likely Conditions
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4 mt-4">
+              {result.likely_common_conditions.map((condition, index) => (
+                <div key={index} className="bg-gray-100 p-4 rounded-lg shadow-md">
+                  <h4 className="text-lg font-bold text-blue-700">
+                    {condition.disease}
+                  </h4>
+                  <p className="text-sm">Commonality: {condition.commonality}</p>
+                  <p className="text-sm font-semibold mt-2">💊 Medications:</p>
+                  <p className="text-sm text-gray-700">{condition.informational_medications}</p>
+                  <p className="text-sm font-semibold mt-2">🛑 Precautions:</p>
+                  <ul className="list-disc list-inside text-sm text-gray-700">
+                    {condition.precautions.map((precaution, i) => (
+                      <li key={i}>{precaution}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default AdvancedSearchForm;

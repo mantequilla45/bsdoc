@@ -129,7 +129,7 @@ const SearchSymptomsPage = () => {
                     </div>
                   </div>
                   <p className="text-gray-600 mt-4">
-                    Introducing a new way to diagnose your sickness.
+                    Introducing a new way to search.
                   </p>
                 </motion.div>
               )}
