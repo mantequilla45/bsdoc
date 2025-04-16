@@ -6,7 +6,10 @@ const protectedPages = ['/account', '/booking'];
 const adminPages = [{
   path: '/admin', roles: ['admin']
 }];
-const doctorPages = [{ path: '/doctors/doctor-schedule', roles: ['doctor'] }];
+const doctorPages = [
+  { path: '/doctors/doctor-schedule', roles: ['doctor'] },
+  { path: '/doctors/profile', roles: ['doctor']}
+];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({

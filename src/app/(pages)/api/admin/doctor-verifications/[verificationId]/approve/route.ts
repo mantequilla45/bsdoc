@@ -45,6 +45,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
     if ('error' in validation) {
         return NextResponse.json({ error: validation.error }, { status: validation.status });
     }
+    const adminUserId = validation.user.id;
 
     // 2. Get verificationId from URL path parameter
     const verificationId = (await params).verificationId;
@@ -65,11 +66,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
         const { error: transactionError } = await supabaseAdmin.rpc('approve_doctor_verification', {
             p_verification_id: verificationId,
             p_user_id: userId,
+            p_verifier_id: adminUserId
         });
         
+        console.log('[Approve Route] RPC transactionError:', transactionError);
 
         if (transactionError) {
-            console.error('Error in transaction:', transactionError);
+            console.error('[Approve Route] Error in transaction:', transactionError);
             return NextResponse.json(
                 { error: 'Failed to approve doctor verification' }, 
                 { status: 500 }
@@ -106,7 +109,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
             const payload = {
                 type: 'verification_approved',
                 message: 'Your verification application has been approved! Please complete your profile to continue.',
-                link: '/doctors/complete-profile'
+                link: '/doctors/profile'
             };
             const status = await channel.send({
                 type: 'broadcast',
