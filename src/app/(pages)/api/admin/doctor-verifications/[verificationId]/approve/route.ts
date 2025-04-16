@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabase } from '@/lib/supabaseClient';
 
 // Reuse the same validation function from proof-url route
 async function validateAdminAccess(req: NextRequest) {
@@ -83,13 +84,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
                     user_id: userId, // Notify the newly approved doctor
                     type: 'PROFILE_COMPLETE_PROMPT',
                     message: 'Congratulations! Your verification is approved. Please complete your doctor profile.',
-                    link_url: '/doctors/complete-profile' // Link to the profile completion page
+                    link_url: '/doctors/profile' // Link to the profile completion page
                     // metadata could be added if needed, e.g., { verification_id: verificationId }
                 });
 
             if (notifyError) {
                 // Log the error but don't fail the main operation
-                console.error(`Failed to insert profile completion notification for user ${userId}:`, notifyError);
+                console.error(`[Approve Route] Failed to insert profile completion notification for user ${userId}:`, notifyError);
             } else {
                 console.log(`Successfully inserted profile completion notification for user ${userId}`);
             }
@@ -97,6 +98,28 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
             console.error(`Caught exception while inserting notification for user ${userId}:`, notificationCatchError);
         }
         // --- End: Insert Notification Logic ---
+
+        // Broadcast real-time event to the approved user
+        try {
+            const channelName = `user-updates:${userId}`; // Unique channel per user
+            const channel = supabase.channel(channelName);
+            const payload = {
+                type: 'verification_approved',
+                message: 'Your verification application has been approved! Please complete your profile to continue.',
+                link: '/doctors/complete-profile'
+            };
+            const status = await channel.send({
+                type: 'broadcast',
+                event: 'verification_result', // Consistent event name
+                payload: payload,
+            });
+             console.log(`[Approve Route] Broadcast status for ${channelName}:`, status);
+             // You don't necessarily need to await unsubscribe here in a serverless function
+             // supabase.removeChannel(channel);
+       } catch (broadcastError) {
+            console.error("[Approve Route] Failed to broadcast approval event:", broadcastError);
+            // Log error but don't fail the overall success response
+       }
 
         // 5. Return success response
         return NextResponse.json(

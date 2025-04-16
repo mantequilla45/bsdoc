@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabase } from '@/lib/supabaseClient';
 
 // Assume validateAdminAccess helper function exists and works...
 async function validateAdminAccess(req: NextRequest) {
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
 
     let userIdToDelete: string | null = null;
     let filePathToDelete: string | null = null;
+    let broadcastStatus: string | null = null;
 
     try {
         // 3. Fetch Verification Record to get user_id, file path and check status
@@ -54,16 +56,51 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
 
         // Check if we have a user ID before proceeding
         if (!userIdToDelete) {
-             console.error("REJECT Route: Cannot proceed, userIdToDelete is null in verification record.");
-             return NextResponse.json({ error: 'User ID missing from verification record.' }, { status: 500 });
+            console.error("REJECT Route: Cannot proceed, userIdToDelete is null in verification record.");
+            return NextResponse.json({ error: 'User ID missing from verification record.' }, { status: 500 });
         }
+
+        // --- PRE-DELETION ACTIONS ---
+        // 2. Broadcast real-time rejection event *BEFORE* deleting user
+        console.log(`REJECT Route: Attempting to broadcast rejection to user ${userIdToDelete}`);
+        try {
+            const channelName = `user-updates:${userIdToDelete}`; // Unique channel for the user being rejected
+            const channel = supabase.channel(channelName);
+            const payload = {
+                type: 'verification_rejected',
+                message: 'Your verification application was rejected. Your associated account data will be removed. Please re-register if needed.'
+            };
+            const status = await channel.send({
+                type: 'broadcast',
+                event: 'verification_result', // Consistent event name
+                payload: payload,
+            });
+            broadcastStatus = status;
+            console.log(`[Reject Route] Broadcast status for ${channelName}:`, status);
+            // supabase.removeChannel(channel); // Cleanup attempt
+        } catch (broadcastError) {
+            broadcastStatus = `Error: ${broadcastError instanceof Error ? broadcastError.message : String(broadcastError)}`;
+            console.error("[Reject Route] Failed to broadcast rejection event (proceeding with deletion):", broadcastError);
+            // Log error but proceed with deletion as it's the primary action
+        }
+        console.log(`REJECT Route: Broadcast attempt finished with status: ${broadcastStatus}. Proceeding with rejection database updates and user deletion for ${userIdToDelete}...`);
+
+        // // 3. Update Verification Status to 'rejected' (good for tracking)
+        // console.log(`REJECT Route: Updating verification status to rejected for ID: ${verificationId}`);
+        // const { error: verificationUpdateError } = await supabaseAdmin
+        //     .from('doctor_verification')
+        //     .update({ status: 'rejected', verified_at: new Date().toISOString() })
+        //     .eq('id', verificationId);
+        // if (verificationUpdateError) { console.error("REJECT Route: Error updating verification status:", verificationUpdateError); }
+        // else { console.log("REJECT Route: Verification status updated to rejected."); }
+
 
         // 4. Delete Storage File (if path exists)
         if (filePathToDelete) {
             console.log(`REJECT Route: Attempting to delete storage file: ${filePathToDelete}`);
             const { error: storageError } = await supabaseAdmin.storage
-              .from('doctor-proofs') // Use your bucket name
-              .remove([filePathToDelete]);
+                .from('doctor-proofs') // Use your bucket name
+                .remove([filePathToDelete]);
             if (storageError) { console.error("REJECT Route: Error deleting storage file (proceeding anyway):", storageError); }
             else { console.log("REJECT Route: Storage file deleted successfully."); }
         } else { console.warn(`REJECT Route: No file path found for verification ID: ${verificationId}. Skipping storage deletion.`); }
@@ -77,7 +114,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
 
         if (publicUserDeleteError) {
             // Log error but likely continue, deleting the auth user is most critical
-             console.error(`REJECT Route: Error deleting from public.users table (proceeding anyway):`, publicUserDeleteError);
+            console.error(`REJECT Route: Error deleting from public.users table (proceeding anyway):`, publicUserDeleteError);
         } else {
             console.log(`REJECT Route: Entry deleted from public.users table for ID: ${userIdToDelete}`);
         }
@@ -97,13 +134,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ver
         const { error: deletionError } = await supabaseAdmin.auth.admin.deleteUser(userIdToDelete);
 
         if (deletionError) {
-           console.error(`REJECT Route: Error deleting auth user ${userIdToDelete}:`, deletionError);
-           if (deletionError.message.includes('User not found')) {
-                 return NextResponse.json({ error: 'User associated with this request was not found in auth (maybe already deleted).' }, { status: 404 });
-           }
-           // If deleting the auth user fails, the other deletions might have still happened.
-           // Return a specific error indicating partial failure.
-           return NextResponse.json({ error: `Failed to delete user from authentication system: ${deletionError.message}` }, { status: 500 });
+            console.error(`REJECT Route: Error deleting auth user ${userIdToDelete}:`, deletionError);
+            if (deletionError.message.includes('User not found')) {
+                return NextResponse.json({ error: 'User associated with this request was not found in auth (maybe already deleted).' }, { status: 404 });
+            }
+            // If deleting the auth user fails, the other deletions might have still happened.
+            // Return a specific error indicating partial failure.
+            return NextResponse.json({ error: `Failed to delete user from authentication system: ${deletionError.message}` }, { status: 500 });
         }
         console.log(`REJECT Route: Auth user ${userIdToDelete} deleted successfully.`);
 

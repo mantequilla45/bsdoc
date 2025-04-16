@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import InputField from '@/app/components/input-box'; // Adjust path as needed
 import { Upload } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const RegistrationCard = () => {
   const [form, setForm] = useState({
@@ -25,6 +26,8 @@ const RegistrationCard = () => {
 
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +67,7 @@ const RegistrationCard = () => {
       }
 
       alert(result.message || 'Registration successful! Please verify your email to sign in.');
+      router.push('/');
     } catch (error) {
       console.error('Registration error:', error);
     } finally {
