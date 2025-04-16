@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
     // --- End Notification Logic ---
 
     return NextResponse.json(
-      { message: 'Registration successful! Your application is pending review.' },
+      { message: 'Registration successful! Your application is pending review. Please verify your email to be able to login.' },
       { status: 201 }
     );
   } catch (error: unknown) {
