@@ -6,15 +6,18 @@ import Header from "@/app/layout/header";
 import AccountSection from './components/account-section';
 import MedicalDetails from './components/medical-details';
 import Footer from '@/app/layout/footer';
+import EditDoctorProfileForm from '../doctors/profile/components/EditProfileForm';
 
 const AccountPage = () => {
     const [userId, setUserId] = useState<string | null>(null);
+    const [userRole, setUserRole] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUser = async () => {
             const { data, error } = await supabase.auth.getUser();
             if (data?.user) {
                 setUserId(data.user.id);
+                fetchUserRole(data.user.id);
             } else {
                 console.error('Error fetching user:', error);
             }
@@ -22,6 +25,25 @@ const AccountPage = () => {
 
         fetchUser();
     }, []);
+
+    const fetchUserRole = async (userId: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', userId)
+                .single();
+
+            if (error) {
+                console.error('Error fetching user profile:', error);
+                setUserRole(null);
+            } else if (data) { setUserRole(data.role); } 
+            else { setUserRole(null); }
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+            setUserRole(null);
+        }
+    };
 
     useEffect(() => {
         const updateCssVariable = () => {
@@ -45,6 +67,11 @@ const AccountPage = () => {
                             <>
                                 <AccountSection userId={userId} />
                                 <MedicalDetails userId={userId} />
+                                {userRole === 'doctor' && (
+                                    <div className="w-full p-4 md:p-6 border-t md:border-t-0 md:border-l border-gray-200">
+                                        <EditDoctorProfileForm />
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>
