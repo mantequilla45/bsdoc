@@ -1,6 +1,7 @@
 // /api/doctors/availability/[id]
 import { NextResponse, NextRequest } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const id = (await params).id;
@@ -61,8 +62,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 }
 
+// Define interfaces for type safety (can be moved to a types file)
+// interface AppointmentForNotification {
+//     id: string;
+//     appointment_date: string;
+//     appointment_time: string;
+//     patient_id: string; // Need patient_id for notification
+// }
+
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const id = (await params).id;
+    console.log(`[API Dr Availability DELETE /${id}] Request received.`);
 
     try {
         // 1. Authentication
@@ -91,7 +101,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         }
 
         // Fetch the availability to be deleted to compare doctor IDs and get details
-        const { data: availability, error: availabilityError } = await supabase
+        console.log(`[API Dr Availability DELETE /${id}] Fetching availability and doctor info...`);
+        const { data: availability, error: availabilityError } = await supabaseAdmin
             .from('availability')
             .select('*')
             .eq('id', id)
@@ -105,6 +116,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
             return NextResponse.json({ error: 'You are not authorized to delete this availability' }, { status: 403 });
         }
 
+        console.log(`[API Dr Availability DELETE /${id}] Authorized Doctor: ${user.id}`);
+
         // Day of week mapping
         const dayOfWeekMap: Record<string, number> = {
             'Sunday': 0,
@@ -115,7 +128,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
             'Friday': 5,
             'Saturday': 6
         };
-        
+
         const dayNumber = dayOfWeekMap[availability.day_of_week];
         if (dayNumber === undefined) {
             return NextResponse.json({ error: 'Invalid day of week in availability' }, { status: 400 });
@@ -128,38 +141,42 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
             appointment_time: string;
             status?: string;
         }
-            
+
         // Get all appointments for this doctor with 'booked' status
         const { data: doctorAppointments, error: doctorApptsError } = await supabase
             .from('appointments')
-            .select('id, appointment_date, appointment_time')
+            .select('id, appointment_date, appointment_time, patient_id')
             .eq('doctor_id', availability.doctor_id)
             .eq('status', 'booked')
             .gte('appointment_time', availability.start_time)
             .lt('appointment_time', availability.end_time);
-            
+
         if (doctorApptsError) {
             console.error('Error finding doctor appointments:', doctorApptsError);
             return NextResponse.json({ error: 'Error finding doctor appointments' }, {
                 status: 500,
             });
         }
-        
+
         // Then filter appointments by day of week manually
         const affectedAppointments = doctorAppointments?.filter((appointment: Appointment) => {
             const appointmentDate = new Date(appointment.appointment_date);
             const appointmentDayOfWeek = appointmentDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
             return appointmentDayOfWeek === dayNumber;
         });
-        
+        console.log(`[API Dr Availability DELETE /${id}] Found ${affectedAppointments.length} affected appointments.`);
+
         // Update appointments
+        let cancelledAppointmentIds: string[] = [];
         if (affectedAppointments && affectedAppointments.length > 0) {
-            const appointmentIds = affectedAppointments.map((app: Appointment) => app.id);
-            
-            const { error: updateAppointmentsError } = await supabase
+            cancelledAppointmentIds = affectedAppointments.map((app) => app.id);
+            console.log(`[API Dr Availability DELETE /${id}] Updating status to cancelled for IDs:`, cancelledAppointmentIds);
+            //const appointmentIds = affectedAppointments.map((app: Appointment) => app.id);
+
+            const { error: updateAppointmentsError } = await supabaseAdmin
                 .from('appointments')
-                .update({ status: 'cancelled', updated_at: new Date() })
-                .in('id', appointmentIds);
+                .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+                .in('id', cancelledAppointmentIds);
 
             if (updateAppointmentsError) {
                 console.error('Error updating appointments:', updateAppointmentsError);
@@ -167,10 +184,35 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
                     status: 500,
                 });
             }
+            console.log(`[API Dr Availability DELETE /${id}] Successfully updated status for ${cancelledAppointmentIds.length} appointments.`);
         }
 
+        // --- 4. Send Notifications for Cancelled Appointments ---
+        if (affectedAppointments.length > 0) {
+            console.log(`[API Dr Availability DELETE /${id}] Inserting notifications for ${affectedAppointments.length} patients...`);
+            const notificationPromises = affectedAppointments.map(appt => {
+                const notificationPayload = {
+                    user_id: appt.patient_id, // Target patient
+                    type: 'APPOINTMENT_CANCELLED_BY_DOCTOR', // Same type as single cancel
+                    message: `Your appointment with on ${appt.appointment_date} at ${appt.appointment_time} has been cancelled due to a schedule change.`,
+                    link_url: '/appointments',
+                    metadata: { appointment_id: appt.id, doctor_id: availability.doctor_id }
+                };
+                return supabaseAdmin.from('notifications').insert(notificationPayload);
+            });
+            // Wait for all notifications inserts to attempt
+            const results = await Promise.allSettled(notificationPromises);
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.error(`[API Dr Availability DELETE /${id}] Failed to insert notification for patient ${affectedAppointments[index].patient_id}:`, result.reason);
+                }
+            });
+            console.log(`[API Dr Availability DELETE /${id}] Finished sending notifications.`);
+        }
+        // --- End Notification Logic ---
+
         // Delete the availability
-        const { data, error: deleteError } = await supabase
+        const { data, error: deleteError } = await supabaseAdmin
             .from('availability')
             .delete()
             .eq('id', id)
@@ -183,11 +225,12 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
                 status: 500,
             });
         }
+        console.log(`[API Dr Availability DELETE /${id}] Availability slot deleted.`);
 
-        return NextResponse.json({ 
-            data, 
+        return NextResponse.json({
+            data,
             affectedAppointments: affectedAppointments?.length || 0,
-            message: `Availability deleted and ${affectedAppointments?.length || 0} affected appointments cancelled` 
+            message: `Availability deleted and ${affectedAppointments?.length || 0} affected appointments cancelled`
         }, { status: 200 });
     } catch (error) {
         console.error('Error in availability DELETE route:', error);
