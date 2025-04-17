@@ -8,7 +8,6 @@ import { signOut } from "@/services/Auth/auth";
 import { supabase } from "@/lib/supabaseClient";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-// --> Import NotificationBell <--
 import NotificationBell from '@/app/components/Notifications/NotificationBell'; // Adjust path if needed
 
 const Header = ({ background, title }: { background: string; title: string }) => {
@@ -119,6 +118,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
     }, []);
 
     const handleAuthSuccess = async () => {
+        window.location.reload();
         setIsLoginOpen(false);
         setLoggedIn(true);
         const { data: { session } } = await supabase.auth.getSession();

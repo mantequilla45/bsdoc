@@ -128,10 +128,10 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
     };
 
     const handleCancel = () => {
-        setFormData(profile || {});
+        setFormData(profile ?? {});
         setIsEditing(false);
         setProfileImage(null);
-        setImagePreview(profile?.profile_image_url || null);
+        setImagePreview(profile?.profile_image_url ?? null);
     };
     return (
         <div className="bg-white shadow-lg md:w-[40%] md:min-w-[300px] w-full overflow-hidden">
@@ -210,13 +210,13 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                                     <input
                                         type={type}
                                         name={name}
-                                        value={formData?.[name as keyof Partial<Profile>] || ''}
+                                        value={formData?.[name as keyof Partial<Profile>] ?? ''}
                                         onChange={handleInputChange}
                                         className="w-full border-b border-gray-300 focus:border-teal-500 outline-none transition-colors truncate"
                                     />
                                 ) : (
                                     <p className="text-gray-800 break-words overflow-hidden">
-                                        {profile?.[name as keyof Profile] || '-'}
+                                        {profile?.[name as keyof Profile] ?? '-'}
                                     </p>
                                 )}
                             </div>
