@@ -56,10 +56,10 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                 ];
 
                 const medicalHistory = [
-                    rawData.conditions?.join(', ') || '',
-                    rawData.allergies?.join(', ') || '',
-                    rawData.medications?.map((med) => `${med.name} ${med.dose}`).join(', ') || '',
-                    rawData.surgeries?.map((surgery) => `${surgery.name} (${surgery.year})`).join(', ') || ''
+                    rawData.conditions?.join(', ') ?? '',
+                    rawData.allergies?.join(', ') ?? '',
+                    rawData.medications?.map((med) => `${med.name} ${med.dose}`).join(', ') ?? '',
+                    rawData.surgeries?.map((surgery) => `${surgery.name} (${surgery.year})`).join(', ') ?? ''
                 ];
 
                 setPersonalDetails(personalDetails);
@@ -281,7 +281,7 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                         <div>
                             <label className="block text-sm text-gray-700">Blood Type</label>
                             <select
-                                value={formData.blood_type || ''}
+                                value={formData.blood_type ?? ''}
                                 onChange={(e) => handleInputChange(e, 'blood_type')}
                                 className="mt-1 block text-sm font-light w-full border border-gray-300 rounded-md px-3 py-2"
                             >
@@ -296,7 +296,7 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                             <label className="block text-sm text-gray-700">Height (cm)</label>
                             <input
                                 type="number"
-                                value={formData.height || ''}
+                                value={formData.height ?? ''}
                                 onChange={(e) => handleInputChange(e, 'height')}
                                 min="0"
                                 max="300"
@@ -308,7 +308,7 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                             <label className="block text-sm text-gray-700">Weight (kg)</label>
                             <input
                                 type="number"
-                                value={formData.weight || ''}
+                                value={formData.weight ?? ''}
                                 onChange={(e) => handleInputChange(e, 'weight')}
                                 min="0"
                                 max="700"
@@ -320,7 +320,7 @@ const MedicalDetails = ({ userId }: MedicalDetailsProps) => {
                             <label className="block text-sm text-gray-700">Age</label>
                             <input
                                 type="number"
-                                value={formData.age || ''}
+                                value={formData.age ?? ''}
                                 onChange={(e) => handleInputChange(e, 'age')}
                                 min="0"
                                 max="130"
