@@ -3,8 +3,6 @@
 
 import React, { useEffect, useState } from 'react'; //eslint-disable-line
 import { usePathname, useRouter } from 'next/navigation';
-// import { supabase } from '@/lib/supabaseClient';
-// import { User } from '@supabase/supabase-js';
 import { ProfileCompletionProvider, useProfileCompletion } from '../context/ProfileCompletionContext';
 
 interface ClientWrapperProps {
@@ -15,33 +13,17 @@ function RedirectLogic({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     // ---> Use the context hook <---
-    const { user, isProfileComplete, isLoadingStatus } = useProfileCompletion();
+    const { user,isProfileComplete, isLoadingStatus } = useProfileCompletion();
 
     useEffect(() => {
-        console.log(
-            `[RedirectLogic Check Effect] Dependencies changed. State Snapshot: ` +
-            `isLoadingStatus=${isLoadingStatus}, ` +
-            `user=${user?.id ?? 'null'}, ` + // Log user ID or null
-            `isProfileComplete=${isProfileComplete}, ` +
-            `pathname=${pathname}`
-        );
+        console.log(`[RedirectLogic Check] Evaluating redirect. Loading: ${isLoadingStatus}, Complete: ${isProfileComplete}, Path: ${pathname}`);
 
         // Redirect if check is done, profile is INCOMPLETE, and not already on /account
-        if (!isLoadingStatus) {
-            console.log('[RedirectLogic Check Effect] Loading finished. Evaluating condition...');
-            if (user && isProfileComplete === false && pathname !== '/account') {
-                console.log('[RedirectLogic Check Effect] ---> Profile incomplete, REDIRECTING to /account <---');
-                // Add a small delay IF NEEDED, but ideally context update should be fast enough
-                // setTimeout(() => router.replace('/account'), 0); // Delay might help rendering flush
-                router.replace('/account');
-            } else {
-                console.log('[RedirectLogic Check Effect] Conditions for redirect NOT MET.');
-            }
-        } else {
-            console.log('[RedirectLogic Check Effect] Still loading status from context.');
+        if (!isLoadingStatus && user && isProfileComplete === false && pathname !== '/account') {
+            console.log('[RedirectLogic] ---> Profile incomplete, REDIRECTING to /account <---');
+            router.replace('/account');
         }
-
-    }, [isLoadingStatus, user, isProfileComplete, pathname, router]); // Depend on context values
+    }, [isLoadingStatus, isProfileComplete, pathname, router]); // Depend on context values
 
     // Render children while check is happening or if redirect isn't needed
     // if (isLoadingStatus) return <div>Loading user status...</div>; // Optional global loader
