@@ -5,45 +5,28 @@ import { Gender, TextBox } from './elements';
 import { getSymptomInfo } from '@/services/symptom-search/symptomService';
 import { symptomGroups } from './symptomGroup';
 
-// ✅ Memoized, named component
-const SymptomCheckboxGroups = memo(function SymptomCheckboxGroups({
-  selectedSymptoms,
-  setSelectedSymptoms,
-}: {
-  selectedSymptoms: string[];
-  setSelectedSymptoms: React.Dispatch<React.SetStateAction<string[]>>;
-}) {
-  return (
-    <div className="w-full border-t border-gray-300 py-6 space-y-6">
-      <h2 className="text-2xl font-semibold">Symptoms</h2>
-      <div className="flex flex-col gap-8 max-h-[500px] overflow-y-auto pr-2">
-        {Object.entries(symptomGroups).map(([group, symptoms]) => (
-          <div key={group}>
-            <h3 className="text-lg font-medium text-[#2D383D] mb-2">{group}</h3>
-            <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
-              {symptoms.map((symptom, i) => (
-                <CheckBox
-                  key={i}
-                  item={symptom.replace(/_/g, ' ')}
-                  checked={selectedSymptoms.includes(symptom)}
-                  onChange={() =>
-                    setSelectedSymptoms((prev) =>
-                      prev.includes(symptom)
-                        ? prev.filter((s) => s !== symptom)
-                        : [...prev, symptom]
-                    )
-                  }
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-});
+interface Condition {
+  disease: string;
+  commonality: string;
+  final_score: number;
+  precautions: string[];
+  informational_medications: string;
+}
 
-const AdvancedSearchForm = () => {
+interface SymptomResponse {
+  input_symptoms: string[];
+  recommendation_note: string;
+  likely_common_conditions: Condition[];
+  other_possible_conditions: Condition[];
+  note: string;
+}
+
+// ✅ Accepts setResult as prop from parent
+const AdvancedSearchForm = ({
+  setResult,
+}: {
+  setResult: React.Dispatch<React.SetStateAction<SymptomResponse | null>>;
+}) => {
   enum Category {
     Cardiovascular = 'Cardiovascular',
     EndocrineMetabolic = 'Endocrine and Metabolic',
@@ -57,25 +40,8 @@ const AdvancedSearchForm = () => {
     category: Category;
   }
 
-  interface Condition {
-    disease: string;
-    commonality: string;
-    final_score: number;
-    precautions: string[];
-    informational_medications: string;
-  }
-
-  interface SymptomResponse {
-    input_symptoms: string[];
-    recommendation_note: string;
-    likely_common_conditions: Condition[];
-    other_possible_conditions: Condition[];
-    note: string;
-  }
-
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-  const [result, setResult] = useState<SymptomResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -87,7 +53,7 @@ const AdvancedSearchForm = () => {
       setLoading(true);
       setError('');
       const data = await getSymptomInfo(allSelected);
-      setResult(data);
+      setResult(data); // ⬅️ update parent state
     } catch (err) {
       console.error(err);
       setError('An error occurred while fetching predictions.');
@@ -169,6 +135,43 @@ const AdvancedSearchForm = () => {
     );
   };
 
+  const SymptomCheckboxGroups = memo(function SymptomCheckboxGroups({
+    selectedSymptoms,
+    setSelectedSymptoms,
+  }: {
+    selectedSymptoms: string[];
+    setSelectedSymptoms: React.Dispatch<React.SetStateAction<string[]>>;
+  }) {
+    return (
+      <div className="w-full border-t border-gray-300 py-6 space-y-6">
+        <h2 className="text-2xl font-semibold">Symptoms</h2>
+        <div className="flex flex-col gap-8 max-h-[500px] overflow-y-auto pr-2">
+          {Object.entries(symptomGroups).map(([group, symptoms]) => (
+            <div key={group}>
+              <h3 className="text-lg font-medium text-[#2D383D] mb-2">{group}</h3>
+              <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
+                {symptoms.map((symptom, i) => (
+                  <CheckBox
+                    key={i}
+                    item={symptom.replace(/_/g, ' ')}
+                    checked={selectedSymptoms.includes(symptom)}
+                    onChange={() =>
+                      setSelectedSymptoms((prev) =>
+                        prev.includes(symptom)
+                          ? prev.filter((s) => s !== symptom)
+                          : [...prev, symptom]
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  });
+
   return (
     <div className="w-full h-full p-6 md:p-12 bg-white rounded-xl shadow">
       <div className="mb-6">
@@ -207,34 +210,6 @@ const AdvancedSearchForm = () => {
 
       {loading && <p className="text-blue-500 mt-4">Analyzing symptoms...</p>}
       {error && <p className="text-red-500 mt-4">{error}</p>}
-      {result && (
-        <div className="bg-white shadow-lg p-8 mt-8 rounded-xl border space-y-6">
-          <h2 className="text-2xl font-bold text-gray-800">Search Results</h2>
-          <p className="text-gray-600">{result.recommendation_note}</p>
-
-          <div>
-            <h3 className="text-xl font-semibold text-green-700 border-b-2 pb-2">
-              🏥 Most Likely Conditions
-            </h3>
-            <div className="grid md:grid-cols-2 gap-4 mt-4">
-              {result.likely_common_conditions.map((condition, index) => (
-                <div key={index} className="bg-gray-100 p-4 rounded-lg shadow-md">
-                  <h4 className="text-lg font-bold text-blue-700">{condition.disease}</h4>
-                  <p className="text-sm">Commonality: {condition.commonality}</p>
-                  <p className="text-sm font-semibold mt-2">💊 Medications:</p>
-                  <p className="text-sm text-gray-700">{condition.informational_medications}</p>
-                  <p className="text-sm font-semibold mt-2">🛑 Precautions:</p>
-                  <ul className="list-disc list-inside text-sm text-gray-700">
-                    {condition.precautions.map((precaution, i) => (
-                      <li key={i}>{precaution}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
