@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import Header from "@/app/layout/header";
 import React, { useState } from 'react';
 import { IoSearch } from "react-icons/io5";
@@ -64,11 +64,8 @@ const SearchSymptomsPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#EEFFFE]">
-      <motion.div
-        className="bg-[#EEFFFE] flex-grow relative"
-        animate={{ height: isAdvancedSearchEnabled ? '100%' : 'auto' }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-      >
+      {/* ✅ REMOVED height animation here to fix scroll issue */}
+      <motion.div className="bg-[#EEFFFE] flex-grow relative">
         <Header background='#EEFFFE' title="Search Symptoms" />
 
         <div className="absolute inset-0">
@@ -82,6 +79,7 @@ const SearchSymptomsPage = () => {
             <h1 className="md:text-7xl text-4xl">
               Welcome to <span className="text-[#519496]">BSDOC</span>
             </h1>
+
             <div className="flex items-center gap-4">
               <p className="md:pl-7 pl-4">Advanced Search</p>
               <button
@@ -139,12 +137,12 @@ const SearchSymptomsPage = () => {
             {loading && <p className="text-blue-500 mt-4">Analyzing symptoms...</p>}
             {error && <p className="text-red-500 mt-4">{error}</p>}
 
-            {/* Manual Results */}
+            {/* Manual Search Results */}
             {!isAdvancedSearchEnabled && manualResult && (
               <ResultDisplay result={manualResult} />
             )}
 
-            {/* Advanced Results */}
+            {/* Advanced Search Results */}
             {isAdvancedSearchEnabled && advancedResult && (
               <ResultDisplay result={advancedResult} />
             )}
@@ -159,7 +157,6 @@ const SearchSymptomsPage = () => {
   );
 };
 
-// Result display extracted for reuse
 const ResultDisplay = ({ result }: { result: SymptomResponse }) => (
   <div className="bg-white shadow-lg p-8 mt-8 rounded-xl border space-y-6">
     <h2 className="text-2xl font-bold text-gray-800">Search Results</h2>

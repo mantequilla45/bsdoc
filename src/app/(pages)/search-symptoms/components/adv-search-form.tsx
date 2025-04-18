@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, memo } from 'react';
+import React, { useState } from 'react';
 import CheckBox from './checkbox';
 import { Gender, TextBox } from './elements';
 import { getSymptomInfo } from '@/services/symptom-search/symptomService';
@@ -21,7 +21,6 @@ interface SymptomResponse {
   note: string;
 }
 
-// ✅ Accepts setResult as prop from parent
 const AdvancedSearchForm = ({
   setResult,
 }: {
@@ -53,7 +52,7 @@ const AdvancedSearchForm = ({
       setLoading(true);
       setError('');
       const data = await getSymptomInfo(allSelected);
-      setResult(data); // ⬅️ update parent state
+      setResult(data);
     } catch (err) {
       console.error(err);
       setError('An error occurred while fetching predictions.');
@@ -113,9 +112,9 @@ const AdvancedSearchForm = ({
             <div key={category}>
               <h3 className="text-lg font-medium text-[#333] mb-3">{category}</h3>
               <div className="grid sm:grid-cols-2 gap-2 text-sm text-gray-700">
-                {items.map((item, i) => (
+                {items.map((item) => (
                   <CheckBox
-                    key={i}
+                    key={item}
                     item={item}
                     checked={selectedConditions.includes(item)}
                     onChange={() => {
@@ -135,42 +134,49 @@ const AdvancedSearchForm = ({
     );
   };
 
-  const SymptomCheckboxGroups = memo(function SymptomCheckboxGroups({
-    selectedSymptoms,
-    setSelectedSymptoms,
-  }: {
-    selectedSymptoms: string[];
-    setSelectedSymptoms: React.Dispatch<React.SetStateAction<string[]>>;
-  }) {
-    return (
-      <div className="w-full border-t border-gray-300 py-6 space-y-6">
-        <h2 className="text-2xl font-semibold">Symptoms</h2>
-        <div className="flex flex-col gap-8 max-h-[500px] overflow-y-auto pr-2">
-          {Object.entries(symptomGroups).map(([group, symptoms]) => (
-            <div key={group}>
-              <h3 className="text-lg font-medium text-[#2D383D] mb-2">{group}</h3>
-              <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
-                {symptoms.map((symptom, i) => (
-                  <CheckBox
-                    key={i}
-                    item={symptom.replace(/_/g, ' ')}
-                    checked={selectedSymptoms.includes(symptom)}
-                    onChange={() =>
-                      setSelectedSymptoms((prev) =>
-                        prev.includes(symptom)
-                          ? prev.filter((s) => s !== symptom)
-                          : [...prev, symptom]
-                      )
-                    }
-                  />
-                ))}
+  const SymptomCheckboxGroups = React.memo(
+    function SymptomCheckboxGroups({
+      selectedSymptoms,
+      setSelectedSymptoms,
+    }: {
+      selectedSymptoms: string[];
+      setSelectedSymptoms: React.Dispatch<React.SetStateAction<string[]>>;
+    }) {
+      return (
+        <div className="w-full border-t border-gray-300 py-6 space-y-6">
+          <h2 className="text-2xl font-semibold">Symptoms</h2>
+          <div
+            className="flex flex-col gap-8 max-h-[500px] overflow-y-auto pr-2"
+            style={{ scrollBehavior: 'smooth' }}
+          >
+            {Object.entries(symptomGroups).map(([group, symptoms]) => (
+              <div key={group}>
+                <h3 className="text-lg font-medium text-[#2D383D] mb-2">{group}</h3>
+                <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
+                  {symptoms.map((symptom) => (
+                    <CheckBox
+                      key={symptom}
+                      item={symptom.replace(/_/g, ' ')}
+                      checked={selectedSymptoms.includes(symptom)}
+                      onChange={() =>
+                        setSelectedSymptoms((prev) =>
+                          prev.includes(symptom)
+                            ? prev.filter((s) => s !== symptom)
+                            : [...prev, symptom]
+                        )
+                      }
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
-    );
-  });
+      );
+    },
+    (prev, next) =>
+      JSON.stringify(prev.selectedSymptoms) === JSON.stringify(next.selectedSymptoms)
+  );
 
   return (
     <div className="w-full h-full p-6 md:p-12 bg-white rounded-xl shadow">
