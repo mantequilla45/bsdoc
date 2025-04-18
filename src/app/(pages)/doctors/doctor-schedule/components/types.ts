@@ -1,3 +1,4 @@
+// src\app\(pages)\doctors\doctor-schedule\components\types.ts
 export type Appointment = {
     id: string;
     appointment_date: string;
