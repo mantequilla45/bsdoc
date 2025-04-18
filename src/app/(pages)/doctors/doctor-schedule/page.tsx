@@ -353,8 +353,9 @@ export default function DoctorSchedulePage() {
       console.error('Error confirming cancellation:', error);
       alert(`Cancellation Error: ${error instanceof Error ? error.message : 'Could not cancel appointment.'}`);
       // Optional: Fetch schedule again on error to ensure UI is consistent with DB
-      fetchDoctorSchedule();
     }
+    fetchDoctorSchedule();
+
   };
 
   return (
