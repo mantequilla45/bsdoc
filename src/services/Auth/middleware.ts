@@ -2,7 +2,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const protectedPages = ['/account', '/booking'];
+const protectedPages = ['/account', '/booking', '/appointments'];
 const adminPages = [{
   path: '/admin', roles: ['admin']
 }];

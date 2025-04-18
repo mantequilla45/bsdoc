@@ -118,6 +118,23 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
         console.log(`[API Dr Availability DELETE /${id}] Authorized Doctor: ${user.id}`);
 
+        const doctorId = availability.doctor_id; // Get doctor ID from availability record
+        console.log(`[API Dr Availability DELETE /${id}] Fetching doctor profile for ID: ${doctorId}...`);
+        const { data: doctorProfile, error: doctorProfileError } = await supabaseAdmin
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', doctorId)
+            .single();
+
+        let doctorName = 'Your doctor'; // Default name
+        if (doctorProfileError) {
+            console.error(`[API Dr Availability DELETE /${id}] Warning: Could not fetch doctor profile for notification:`, doctorProfileError);
+            // Proceed without the name if fetch fails
+        } else if (doctorProfile) {
+            doctorName = `Dr. ${doctorProfile.first_name || ''} ${doctorProfile.last_name || ''}`.trim();
+        }
+        console.log(`[API Dr Availability DELETE /${id}] Using doctor name: ${doctorName}`);
+
         // Day of week mapping
         const dayOfWeekMap: Record<string, number> = {
             'Sunday': 0,
@@ -194,7 +211,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
                 const notificationPayload = {
                     user_id: appt.patient_id, // Target patient
                     type: 'APPOINTMENT_CANCELLED_BY_DOCTOR', // Same type as single cancel
-                    message: `Your appointment with on ${appt.appointment_date} at ${appt.appointment_time} has been cancelled due to a schedule change.`,
+                    message: `Your appointment with ${doctorName} on ${appt.appointment_date} at ${appt.appointment_time} has been cancelled due to a schedule change.`,
                     link_url: '/appointments',
                     metadata: { appointment_id: appt.id, doctor_id: availability.doctor_id }
                 };

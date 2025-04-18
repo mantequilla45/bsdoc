@@ -1,3 +1,4 @@
+// src\app\(pages)\doctors\doctor-schedule\page.tsx
 'use client';
 
 import { supabase } from '@/lib/supabaseClient';
@@ -7,6 +8,7 @@ import Calendar from './components/Calendar';
 import AvailabilityManagement from './components/AvailabilityManagement';
 import Footer from '@/app/layout/footer';
 import { useRouter } from 'next/navigation';
+import CancelAppointmentModal from './components/CancelAppointmentModal';
 
 export default function DoctorSchedulePage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -31,6 +33,9 @@ export default function DoctorSchedulePage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -77,58 +82,59 @@ export default function DoctorSchedulePage() {
     getSession();
   }, []);
 
+
+  const fetchDoctorSchedule = async () => {
+    if (!user) {
+      return; // Don't fetch if we don't have user yet
+    }
+    try {
+      // Fetch doctor's ID based on user
+      const { data: doctorData, error: doctorError } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (doctorError || !doctorData) {
+        console.error('Error fetching doctor profile:', doctorError);
+        return;
+      }
+
+      const fetchedDoctorId = doctorData.id;
+      setDoctorId(fetchedDoctorId);
+
+      // Fetch appointments and availability using doctorId
+      const { data: appointmentsData, error: appointmentsError } = await supabase
+        .from('appointments')
+        .select('*, patient:profiles(*)')
+        .eq('doctor_id', fetchedDoctorId)
+        .gte('appointment_date', new Date().toISOString().split('T')[0])
+        .order('appointment_date', { ascending: true })
+        .order('appointment_time', { ascending: true });
+
+      if (appointmentsError) {
+        console.error('Error fetching appointments:', appointmentsError);
+      } else {
+        setAppointments(appointmentsData || []);
+      }
+
+      const { data: availabilityData, error: availabilityError } = await supabase
+        .from('availability')
+        .select('*')
+        .eq('doctor_id', fetchedDoctorId);
+
+      if (availabilityError) {
+        console.error('Error fetching availability:', availabilityError);
+      } else {
+        setAvailability(availabilityData || []);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    }
+  };
+
   // Fetch doctor's schedule
   useEffect(() => {
-    const fetchDoctorSchedule = async () => {
-      if (!user) {
-        return; // Don't fetch if we don't have user yet
-      }
-      try {
-        // Fetch doctor's ID based on user
-        const { data: doctorData, error: doctorError } = await supabase
-          .from('doctors')
-          .select('id')
-          .eq('id', user.id)
-          .single();
-
-        if (doctorError || !doctorData) {
-          console.error('Error fetching doctor profile:', doctorError);
-          return;
-        }
-
-        const fetchedDoctorId = doctorData.id;
-        setDoctorId(fetchedDoctorId);
-
-        // Fetch appointments and availability using doctorId
-        const { data: appointmentsData, error: appointmentsError } = await supabase
-          .from('appointments')
-          .select('*, patient:profiles(*)')
-          .eq('doctor_id', fetchedDoctorId)
-          .gte('appointment_date', new Date().toISOString().split('T')[0])
-          .order('appointment_date', { ascending: true })
-          .order('appointment_time', { ascending: true });
-
-        if (appointmentsError) {
-          console.error('Error fetching appointments:', appointmentsError);
-        } else {
-          setAppointments(appointmentsData || []);
-        }
-
-        const { data: availabilityData, error: availabilityError } = await supabase
-          .from('availability')
-          .select('*')
-          .eq('doctor_id', fetchedDoctorId);
-
-        if (availabilityError) {
-          console.error('Error fetching availability:', availabilityError);
-        } else {
-          setAvailability(availabilityData || []);
-        }
-      } catch (error) {
-        console.error('Unexpected error:', error);
-      }
-    };
-
     fetchDoctorSchedule();
   }, [user]);
 
@@ -179,6 +185,8 @@ export default function DoctorSchedulePage() {
     } catch (error) {
       console.error('Error adding availability:', error);
     }
+
+    await fetchDoctorSchedule();
   };
 
   // Handle editing availability
@@ -230,6 +238,8 @@ export default function DoctorSchedulePage() {
 
       // Reset the editing state
       setEditingAvailability(null);
+
+      await fetchDoctorSchedule();
     } catch (error) {
       console.error('Error updating availability:', error);
     }
@@ -266,6 +276,8 @@ export default function DoctorSchedulePage() {
 
       // Update state to remove the deleted availability
       setAvailability(availability.filter((avail) => avail.id !== id));
+
+      await fetchDoctorSchedule();
     } catch (error) {
       console.error('Error deleting availability:', error);
     }
@@ -274,6 +286,77 @@ export default function DoctorSchedulePage() {
   if (loading) {
     return;
   }
+
+  const handleAppointmentClick = (appointment: Appointment) => {
+    console.log("Appointment clicked:", appointment);
+    // Prevent opening modal for already cancelled/completed appointments
+    if (appointment.status === 'cancelled' || appointment.status === 'completed') {
+      // Maybe show a different, non-cancellable modal or just log it
+      console.log("Cannot cancel appointments that are already cancelled or completed.");
+      alert(`This appointment is already ${appointment.status}.`);
+      return;
+    }
+    setSelectedAppointment(appointment);
+    setIsCancelModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsCancelModalOpen(false);
+    setSelectedAppointment(null);
+  };
+
+  const handleConfirmCancellation = async () => {
+    if (!selectedAppointment) return;
+
+    const appointmentIdToCancel = selectedAppointment.id;
+    console.log(`Attempting to cancel appointment ID: ${appointmentIdToCancel}`);
+
+
+    // Close modal before API call for better UX
+    handleCloseModal();
+
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      if (sessionError || !token) {
+        throw new Error("Authentication error. Please log in again.");
+      }
+
+      const response = await fetch(`/api/appointments/${appointmentIdToCancel}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: 'cancelled' })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("API Error Response:", errorData);
+        throw new Error(errorData.error || 'Failed to cancel appointment via API');
+      }
+
+      console.log('Appointment cancelled successfully via modal');
+      // Notification to user (optional, could rely on UI update)
+      // alert('Appointment successfully cancelled. The patient has been notified.');
+
+      // IMPORTANT: Let the Realtime subscription handle the state update by triggering fetchDoctorSchedule.
+      // Manually updating state here AND having realtime refetch can cause issues.
+      // If you *don't* use realtime, uncomment the state update below:
+      // setAppointments(prev => prev.map(app =>
+      //    app.id === appointmentIdToCancel ? { ...app, status: 'cancelled', patient: app.patient } : app // Ensure patient data persists
+      // ));
+
+    } catch (error) {
+      console.error('Error confirming cancellation:', error);
+      alert(`Cancellation Error: ${error instanceof Error ? error.message : 'Could not cancel appointment.'}`);
+      // Optional: Fetch schedule again on error to ensure UI is consistent with DB
+    }
+    fetchDoctorSchedule();
+
+  };
 
   return (
     <div className="flex flex-col">
@@ -284,6 +367,7 @@ export default function DoctorSchedulePage() {
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
             changeMonth={changeMonth}
+            onAppointmentClick={handleAppointmentClick}
           />
           <AvailabilityManagement
             availability={availability}
@@ -297,6 +381,13 @@ export default function DoctorSchedulePage() {
             handleDeleteAvailability={handleDeleteAvailability}
             handleAddAvailability={handleAddAvailability}
             cancelEdit={cancelEdit}
+          />
+          {/* Render the Modal */}
+          <CancelAppointmentModal
+            isOpen={isCancelModalOpen}
+            onClose={handleCloseModal}
+            onConfirm={handleConfirmCancellation}
+            appointment={selectedAppointment} // Pass the selected appointment
           />
         </main>
       </div>

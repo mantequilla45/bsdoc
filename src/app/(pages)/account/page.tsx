@@ -9,7 +9,7 @@ import MedicalDetails from './components/medical-details';
 import Footer from '@/app/layout/footer';
 import EditDoctorProfileForm from '../doctors/profile/components/EditProfileForm';
 import toast from 'react-hot-toast';
-import { useProfileCompletion } from '@/app/context/ProfileCompletionContext';
+//import { useProfileCompletion } from '@/app/context/ProfileCompletionContext';
 
 interface Profile {
     id: string;
@@ -23,7 +23,7 @@ const AccountPage = () => {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [isCompletingProfile, setIsCompletingProfile] = useState(false);
-    const { isProfileComplete, markProfileComplete, isLoadingStatus } = useProfileCompletion(); //eslint-disable-line
+    //const { isProfileComplete, markProfileComplete, isLoadingStatus } = useProfileCompletion(); //eslint-disable-line
 
     const fetchUserData = useCallback(async (showLoading = true) => {
         if (showLoading) setLoading(true);
@@ -124,11 +124,11 @@ const AccountPage = () => {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error ?? "Failed to mark profile complete");
 
-            markProfileComplete();
+            //markProfileComplete();
 
             toast.success("Profile setup complete!", { id: toastId });
             // Refetch profile data to update UI (hide button/prompt)
-            //await fetchUserData(false);
+            await fetchUserData(false);
 
         } catch (err) {
             console.error("Error marking profile complete:", err);
