@@ -77,58 +77,59 @@ export default function DoctorSchedulePage() {
     getSession();
   }, []);
 
+
+  const fetchDoctorSchedule = async () => {
+    if (!user) {
+      return; // Don't fetch if we don't have user yet
+    }
+    try {
+      // Fetch doctor's ID based on user
+      const { data: doctorData, error: doctorError } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (doctorError || !doctorData) {
+        console.error('Error fetching doctor profile:', doctorError);
+        return;
+      }
+
+      const fetchedDoctorId = doctorData.id;
+      setDoctorId(fetchedDoctorId);
+
+      // Fetch appointments and availability using doctorId
+      const { data: appointmentsData, error: appointmentsError } = await supabase
+        .from('appointments')
+        .select('*, patient:profiles(*)')
+        .eq('doctor_id', fetchedDoctorId)
+        .gte('appointment_date', new Date().toISOString().split('T')[0])
+        .order('appointment_date', { ascending: true })
+        .order('appointment_time', { ascending: true });
+
+      if (appointmentsError) {
+        console.error('Error fetching appointments:', appointmentsError);
+      } else {
+        setAppointments(appointmentsData || []);
+      }
+
+      const { data: availabilityData, error: availabilityError } = await supabase
+        .from('availability')
+        .select('*')
+        .eq('doctor_id', fetchedDoctorId);
+
+      if (availabilityError) {
+        console.error('Error fetching availability:', availabilityError);
+      } else {
+        setAvailability(availabilityData || []);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    }
+  };
+
   // Fetch doctor's schedule
   useEffect(() => {
-    const fetchDoctorSchedule = async () => {
-      if (!user) {
-        return; // Don't fetch if we don't have user yet
-      }
-      try {
-        // Fetch doctor's ID based on user
-        const { data: doctorData, error: doctorError } = await supabase
-          .from('doctors')
-          .select('id')
-          .eq('id', user.id)
-          .single();
-
-        if (doctorError || !doctorData) {
-          console.error('Error fetching doctor profile:', doctorError);
-          return;
-        }
-
-        const fetchedDoctorId = doctorData.id;
-        setDoctorId(fetchedDoctorId);
-
-        // Fetch appointments and availability using doctorId
-        const { data: appointmentsData, error: appointmentsError } = await supabase
-          .from('appointments')
-          .select('*, patient:profiles(*)')
-          .eq('doctor_id', fetchedDoctorId)
-          .gte('appointment_date', new Date().toISOString().split('T')[0])
-          .order('appointment_date', { ascending: true })
-          .order('appointment_time', { ascending: true });
-
-        if (appointmentsError) {
-          console.error('Error fetching appointments:', appointmentsError);
-        } else {
-          setAppointments(appointmentsData || []);
-        }
-
-        const { data: availabilityData, error: availabilityError } = await supabase
-          .from('availability')
-          .select('*')
-          .eq('doctor_id', fetchedDoctorId);
-
-        if (availabilityError) {
-          console.error('Error fetching availability:', availabilityError);
-        } else {
-          setAvailability(availabilityData || []);
-        }
-      } catch (error) {
-        console.error('Unexpected error:', error);
-      }
-    };
-
     fetchDoctorSchedule();
   }, [user]);
 
@@ -179,6 +180,8 @@ export default function DoctorSchedulePage() {
     } catch (error) {
       console.error('Error adding availability:', error);
     }
+
+    await fetchDoctorSchedule();
   };
 
   // Handle editing availability
@@ -230,6 +233,8 @@ export default function DoctorSchedulePage() {
 
       // Reset the editing state
       setEditingAvailability(null);
+
+      await fetchDoctorSchedule();
     } catch (error) {
       console.error('Error updating availability:', error);
     }
@@ -266,6 +271,8 @@ export default function DoctorSchedulePage() {
 
       // Update state to remove the deleted availability
       setAvailability(availability.filter((avail) => avail.id !== id));
+
+      await fetchDoctorSchedule();
     } catch (error) {
       console.error('Error deleting availability:', error);
     }

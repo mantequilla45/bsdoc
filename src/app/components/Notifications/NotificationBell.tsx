@@ -8,11 +8,11 @@ import NotificationPanel from './NotificationPanel';
 import { Notification } from './NotificationItem'; // Import the interface
 import { FiBell } from 'react-icons/fi'; // Example icon
 import toast from 'react-hot-toast';
-import { useProfileCompletion } from '@/app/context/ProfileCompletionContext';
+// import { useProfileCompletion } from '@/app/context/ProfileCompletionContext';
 
 const NotificationBell = () => {
-    const { user, isLoadingStatus: isLoadingUserContext } = useProfileCompletion();
-    //const [user, setUser] = useState<User | null>(null);
+    //const { user, isLoadingStatus: isLoadingUserContext } = useProfileCompletion();
+    const [user, setUser] = useState<User | null>(null);
     const [unreadCount, setUnreadCount] = useState(0);
     const [showPanel, setShowPanel] = useState(false);
     const [isLoadingCount, setIsLoadingCount] = useState(true);
@@ -21,24 +21,23 @@ const NotificationBell = () => {
     const channelRef = useRef<RealtimeChannel | null>(null); // Ref to store the channel
 
 
-    const fetchUnreadCount = useCallback(async (currentUser: User | null) => {
-        if (!currentUser) {
-            console.log('[NotificationBell] fetchUnreadCount: No user, skipping fetch.');
-            setUnreadCount(0);
-            setIsLoadingCount(false);
-            return; // Don't fetch if no user
-        }
-        console.log('[NotificationBell] fetchUnreadCount: User found, fetching count...');
+    const fetchUnreadCount = useCallback(async (accessToken: string) => {
+        // if (!currentUser) {
+        //     console.log('[NotificationBell] fetchUnreadCount: No user, skipping fetch.');
+        //     setUnreadCount(0);
+        //     setIsLoadingCount(false);
+        //     return; // Don't fetch if no user
+        // }
+        // console.log('[NotificationBell] fetchUnreadCount: User found, fetching count...');
         setIsLoadingCount(true);
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const token = session?.access_token;
-            if (!token) {
+            //const { data: { session } } = await supabase.auth.getSession();
+            if (!accessToken) {
                 throw new Error("No access token found for authenticated user.");
             }
             const response = await fetch(`/api/notifications?filter=unread&limit=0`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${accessToken}`
                 }
             });
             if (!response.ok) {
@@ -62,126 +61,126 @@ const NotificationBell = () => {
         setUnreadCount(currentUnread);
     }, []);
 
-    useEffect(() => {
-        console.log("[NotificationBell] User context changed:", user?.id);
-        // Fetch count when user becomes available or changes
-        fetchUnreadCount(user);
-
-        // Also reset count if user becomes null (logout)
-        if (!user) {
-            setUnreadCount(0);
-            setShowPanel(false);
-            setIsLoadingCount(false); // Stop loading on logout
-        }
-    }, [user, fetchUnreadCount]);
-
     // useEffect(() => {
-    //     const { data: authListener } = supabase.auth.onAuthStateChange(
-    //         async (event, session) => {
-    //             const currentUser = session?.user ?? null;
-    //             const currentToken = session?.access_token ?? null;
-    //             setUser(currentUser);
+    //     console.log("[NotificationBell] User context changed:", user?.id);
+    //     // Fetch count when user becomes available or changes
+    //     fetchUnreadCount(user);
 
-    //             // Unsubscribe from previous user's channel if user changes
-    //             if (channelRef.current && channelRef.current.state === 'joined') {
-    //                 console.log('Auth change: Unsubscribing from previous channel');
-    //                 supabase.removeChannel(channelRef.current).catch(err => console.error("Error removing channel on auth change:", err));
-    //                 channelRef.current = null;
-    //             }
-
-
-    //             if (currentUser && currentToken) {
-    //                 fetchUnreadCount(currentToken);
-    //                 // Subscribe to the new user's channel (logic moved to separate effect below)
-    //             } else {
-    //                 setUnreadCount(0);
-    //                 setShowPanel(false);
-    //                 setIsLoadingCount(false);
-    //             }
-    //         }
-    //     );
-
-    //     supabase.auth.getSession().then(({ data: { session } }) => {
-    //         const currentUser = session?.user ?? null;
-    //         const currentToken = session?.access_token ?? null;
-    //         setUser(currentUser);
-    //         if (currentUser && currentToken) {
-    //             fetchUnreadCount(currentToken);
-    //         } else {
-    //             setIsLoadingCount(false);
-    //         }
-    //     });
-
-    //     return () => {
-    //         authListener?.subscription.unsubscribe();
-    //         // Ensure cleanup on component unmount
-    //         if (channelRef.current) {
-    //             supabase.removeChannel(channelRef.current).catch(err => console.error("Error removing channel on unmount:", err));
-    //         }
-    //     };
-    // }, [fetchUnreadCount]);
-
-    // Separate Effect for Real-time Subscription based on User
-    // useEffect(() => {
+    //     // Also reset count if user becomes null (logout)
     //     if (!user) {
-    //         // If user becomes null, ensure any existing channel is removed
-    //         if (channelRef.current) {
-    //             supabase.removeChannel(channelRef.current).catch(err => console.error("Error removing channel on user logout:", err));
-    //             channelRef.current = null;
-    //         }
-    //         return;
+    //         setUnreadCount(0);
+    //         setShowPanel(false);
+    //         setIsLoadingCount(false); // Stop loading on logout
     //     }
+    // }, [user, fetchUnreadCount]);
 
-    //     // Only create a new channel if one doesn't exist for the current user
-    //     if (!channelRef.current || channelRef.current.state !== 'joined') {
-    //         const newChannel = supabase
-    //             .channel(`notifications:${user.id}`) // Unique channel per user
-    //             .on<Notification>( // Directly use the Notification type for the payload's 'new' property
-    //                 'postgres_changes',
-    //                 { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-    //                 (payload) => {
-    //                     // Access properties directly on payload.new
-    //                     const newNotification = payload.new;
-    //                     console.log('Realtime: New notification received!', newNotification);
+    useEffect(() => {
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                const currentUser = session?.user ?? null;
+                const currentToken = session?.access_token ?? null;
+                setUser(currentUser);
 
-    //                     const isAlreadyInPanelAndRead = notificationsInPanel.some(n => n.id === newNotification.id && n.is_read);
-    //                     if (!isAlreadyInPanelAndRead) {
-    //                         setUnreadCount(prev => prev + 1);
-    //                     }
-
-    //                     // Use the message from the new notification object
-    //                     toast(`New notification: ${newNotification.message.substring(0, 50)}...`, { icon: '🔔' });
-
-    //                     if (showPanel) {
-    //                         // If panel is open, prepend the new notification to the list displayed
-    //                         // This provides a more immediate update than requiring a full refresh
-    //                         setNotificationsInPanel(prev => [newNotification, ...prev]);
-    //                         // Update the count based on the *new* panel state
-    //                         setUnreadCount(prevCount => { //eslint-disable-line
-    //                             const currentUnread = [newNotification, ...notificationsInPanel].filter(n => !n.is_read).length;
-    //                             return currentUnread;
-    //                         });
-    //                     }
-    //                 }
-    //             )
-    //             .subscribe((status, err) => {
-    //                 if (status === 'SUBSCRIBED') {
-    //                     console.log(`Subscribed to notifications channel for user ${user.id}!`);
-    //                 }
-    //                 if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-    //                     console.error('Notifications channel error:', err);
-    //                     toast.error('Real-time notification connection issue.');
-    //                 }
-    //                 if (status === 'CLOSED') {
-    //                     console.log('Notifications channel closed.');
-    //                 }
-    //             });
-    //         channelRef.current = newChannel; // Store the reference
-    //     }
+                // Unsubscribe from previous user's channel if user changes
+                if (channelRef.current && channelRef.current.state === 'joined') {
+                    console.log('Auth change: Unsubscribing from previous channel');
+                    supabase.removeChannel(channelRef.current).catch(err => console.error("Error removing channel on auth change:", err));
+                    channelRef.current = null;
+                }
 
 
-    //     // No return function needed here as cleanup is handled in the auth effect and unmount
-    // }, [user, showPanel, notificationsInPanel]); // Re-evaluate when user, panel visibility, or panel content changes
+                if (currentUser && currentToken) {
+                    fetchUnreadCount(currentToken);
+                    // Subscribe to the new user's channel (logic moved to separate effect below)
+                } else {
+                    setUnreadCount(0);
+                    setShowPanel(false);
+                    setIsLoadingCount(false);
+                }
+            }
+        );
+
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            const currentUser = session?.user ?? null;
+            const currentToken = session?.access_token ?? null;
+            setUser(currentUser);
+            if (currentUser && currentToken) {
+                fetchUnreadCount(currentToken);
+            } else {
+                setIsLoadingCount(false);
+            }
+        });
+
+        return () => {
+            authListener?.subscription.unsubscribe();
+            // Ensure cleanup on component unmount
+            if (channelRef.current) {
+                supabase.removeChannel(channelRef.current).catch(err => console.error("Error removing channel on unmount:", err));
+            }
+        };
+    }, [fetchUnreadCount]);
+
+    //Separate Effect for Real-time Subscription based on User
+    useEffect(() => {
+        if (!user) {
+            // If user becomes null, ensure any existing channel is removed
+            if (channelRef.current) {
+                supabase.removeChannel(channelRef.current).catch(err => console.error("Error removing channel on user logout:", err));
+                channelRef.current = null;
+            }
+            return;
+        }
+
+        // Only create a new channel if one doesn't exist for the current user
+        if (!channelRef.current || channelRef.current.state !== 'joined') {
+            const newChannel = supabase
+                .channel(`notifications:${user.id}`) // Unique channel per user
+                .on<Notification>( // Directly use the Notification type for the payload's 'new' property
+                    'postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+                    (payload) => {
+                        // Access properties directly on payload.new
+                        const newNotification = payload.new;
+                        console.log('Realtime: New notification received!', newNotification);
+
+                        const isAlreadyInPanelAndRead = notificationsInPanel.some(n => n.id === newNotification.id && n.is_read);
+                        if (!isAlreadyInPanelAndRead) {
+                            setUnreadCount(prev => prev + 1);
+                        }
+
+                        // Use the message from the new notification object
+                        toast(`New notification: ${newNotification.message.substring(0, 50)}...`, { icon: '🔔' });
+
+                        if (showPanel) {
+                            // If panel is open, prepend the new notification to the list displayed
+                            // This provides a more immediate update than requiring a full refresh
+                            setNotificationsInPanel(prev => [newNotification, ...prev]);
+                            // Update the count based on the *new* panel state
+                            setUnreadCount(prevCount => { //eslint-disable-line
+                                const currentUnread = [newNotification, ...notificationsInPanel].filter(n => !n.is_read).length;
+                                return currentUnread;
+                            });
+                        }
+                    }
+                )
+                .subscribe((status, err) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log(`Subscribed to notifications channel for user ${user.id}!`);
+                    }
+                    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                        console.error('Notifications channel error:', err);
+                        toast.error('Real-time notification connection issue.');
+                    }
+                    if (status === 'CLOSED') {
+                        console.log('Notifications channel closed.');
+                    }
+                });
+            channelRef.current = newChannel; // Store the reference
+        }
+
+
+        // No return function needed here as cleanup is handled in the auth effect and unmount
+    }, [user, showPanel, notificationsInPanel]); // Re-evaluate when user, panel visibility, or panel content changes
 
     useEffect(() => {
         // Unsubscribe logic needs to be robust
@@ -247,7 +246,7 @@ const NotificationBell = () => {
         };
     }, []);
 
-    const displayLoading = isLoadingUserContext ?? isLoadingCount;
+    //const displayLoading = isLoadingUserContext ?? isLoadingCount;
 
     if (!user) {
         return null;
@@ -261,12 +260,12 @@ const NotificationBell = () => {
                 aria-label="Toggle Notifications"
             >
                 <FiBell className="h-6 w-6" />
-                {!displayLoading && unreadCount > 0 && (
+                {!isLoadingCount && unreadCount > 0 && (
                     <span className="absolute top-0 right-0 block h-4 w-4 transform -translate-y-1/2 translate-x-1/2 rounded-full ring-2 ring-white bg-red-500 text-white text-xs flex items-center justify-center">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
-                {displayLoading && (
+                {isLoadingCount && (
                     <span className="absolute top-0 right-0 block h-4 w-4 transform -translate-y-1/2 translate-x-1/2 rounded-full ring-2 ring-white bg-gray-400 animate-pulse"></span>
                 )}
             </button>
