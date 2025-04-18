@@ -119,7 +119,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
     const handleAuthSuccess = async () => {
         window.location.reload();
-        setIsLoginOpen(false);
+        //setIsLoginOpen(false);
         setLoggedIn(true);
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user?.id) {
@@ -176,6 +176,17 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                             className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md `}>
                             Home
                         </Link>
+
+                        {/* == Conditional "My Appointments" Link == */}
+                        {loggedIn && ( // <-- Check if logged in
+                            <Link
+                                href="/appointments" // <-- Link to the appointments page
+                                className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" || pathname === '/' && !scrolled ? "text-white" : ""} text-md`}
+                            >
+                                My Appointments
+                            </Link>
+                        )}
+                        {/* ======================================== */}
 
                         {userRole === 'doctor' && (
                             <Link
@@ -262,12 +273,12 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                                         exit={{ opacity: 0, y: -10 }}
                                                         transition={{ duration: 0.2, delay: index * 0.05 }}
                                                         className={`block w-full text-left px-4 py-2 ${item === "/account"
-                                                                ? pathname === "/account"
-                                                                    ? "pointer-events-none text-[#62B6B8] cursor-not-allowed" // Style for current page
-                                                                    : "hover:bg-gray-100 cursor-pointer"
-                                                                : item === "Logout"
-                                                                    ? "hover:bg-red-100 cursor-pointer text-red-500"
-                                                                    : "hover:bg-gray-100 cursor-pointer"
+                                                            ? pathname === "/account"
+                                                                ? "pointer-events-none text-[#62B6B8] cursor-not-allowed" // Style for current page
+                                                                : "hover:bg-gray-100 cursor-pointer"
+                                                            : item === "Logout"
+                                                                ? "hover:bg-red-100 cursor-pointer text-red-500"
+                                                                : "hover:bg-gray-100 cursor-pointer"
                                                             }`}
                                                         // Use button for logout for better semantics
                                                         onClick={item === "Logout" ? handleLogout : () => setMenuOpen(false)} // Close menu on item click
@@ -276,7 +287,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                                             <Link href="/account" className="block w-full h-full">Account</Link>
                                                         ) : item === "Settings" ? (
                                                             <Link href="/settings" className="block w-full h-full">Settings</Link> // Assuming /settings route
-                                                         ) : (
+                                                        ) : (
                                                             item // Just display "Logout" text
                                                         )}
                                                     </motion.li>
@@ -293,7 +304,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                     background === "rgba(0,0,0,0.4)" || pathname === '/' && !scrolled
                                         ? "bg-white text-gray-800 border-transparent"
                                         : "bg-transparent text-gray-800 border-gray-800 hover:bg-gray-100"
-                                }`}
+                                    }`}
                             >
                                 Sign in
                             </div>
@@ -303,6 +314,19 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
 
                 {/* Mobile Menu */}
+                <div className="md:hidden flex items-center gap-3 sm:gap-4"> {/* Wrapper for mobile right icons */}
+                    {loggedIn && (
+                        <NotificationBell />
+                    )}
+                    {loggedIn && (
+                        <div className="relative"> {/* Use same profile icon as desktop */}
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-300 cursor-pointer flex items-center justify-center hover:bg-gray-400 transition active:scale-95 overflow-hidden">
+                                {profileImageUrl ? (<Image src={profileImageUrl} alt="Profile" width={40} height={40} objectFit="cover" className="rounded-full" />) : (<span className="text-lg sm:text-xl text-gray-600">👤</span>)}
+                            </div>
+                            {/* The actual menu opens below via AnimatePresence */}
+                        </div>
+                    )}
+                </div>
                 <AnimatePresence>
                     {mobileMenuOpen && (
                         <motion.div
@@ -312,25 +336,35 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                             transition={{ duration: 0.2 }}
                             className="absolute top-full left-0 w-full bg-white shadow-lg rounded-b-lg md:hidden" // Changed position/rounding
                         >
-                             <ul className="py-2 flex flex-col items-center"> {/* Center items */}
-                                 <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
-                                     <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block">Home</Link>
-                                 </li>
+                            <ul className="py-2 flex flex-col items-center"> {/* Center items */}
+                                <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
+                                    <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block">Home</Link>
+                                </li>
+
                                 <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
                                     <Link href="/appointment-page" onClick={() => setMobileMenuOpen(false)} className="block">
                                         Schedule Appointment
                                     </Link>
                                 </li>
-                                 {userRole === 'doctor' && (
-                                     <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
-                                         <Link href="/doctors/doctor-schedule" onClick={() => setMobileMenuOpen(false)} className="block">My Schedule</Link>
-                                     </li>
-                                 )}
-                                 {userRole === 'admin' && (
-                                     <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
-                                         <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="block">Administrator</Link>
-                                     </li>
-                                 )}
+
+                                {/* == Conditional "My Appointments" Link (Mirrors Desktop) == */}
+                                {loggedIn && (
+                                    <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
+                                        <Link href="/appointments" onClick={() => setMobileMenuOpen(false)} className="block">My Appointments</Link>
+                                    </li>
+                                )}
+
+                                {userRole === 'doctor' && (
+                                    <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
+                                        <Link href="/doctors/doctor-schedule" onClick={() => setMobileMenuOpen(false)} className="block">My Schedule</Link>
+                                    </li>
+                                )}
+                                {userRole === 'admin' && (
+                                    <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
+                                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="block">Administrator</Link>
+                                    </li>
+                                )}
+
                                 {loggedIn ? (
                                     <>
                                         <li className="px-4 py-3 hover:bg-gray-100 w-full text-center border-t mt-2 pt-3"> {/* Separator */}

@@ -1,3 +1,4 @@
+// src\app\(pages)\doctors\doctor-schedule\components\Calendar.tsx
 'use client';
 
 import React from 'react';
@@ -20,9 +21,10 @@ type CalendarProps = {
   selectedMonth: number;
   selectedYear: number;
   changeMonth: (direction: 'next' | 'prev') => void;
+  onAppointmentClick: (appointment: Appointment) => void;
 };
 
-export default function Calendar({ appointments, selectedMonth, selectedYear, changeMonth }: CalendarProps) {
+export default function Calendar({ appointments, selectedMonth, selectedYear, changeMonth, onAppointmentClick }: CalendarProps) {
   // Generate calendar days for the selected month
   const generateCalendarDays = () => {
     const days = [];
@@ -69,7 +71,7 @@ export default function Calendar({ appointments, selectedMonth, selectedYear, ch
           selectedYear={selectedYear}
           changeMonth={changeMonth}
         />
-        <CalendarGrid calendarDays={calendarDays} />
+        <CalendarGrid calendarDays={calendarDays} onAppointmentClick={onAppointmentClick}/>
       </div>
     </div>
   );
