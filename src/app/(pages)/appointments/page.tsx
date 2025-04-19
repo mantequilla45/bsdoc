@@ -197,9 +197,9 @@ export default function UserAppointmentsPage() {
 
 
     return (
-        <div className="overflow-x-hidden">
-            <Header background="rgba(0,0,0,0.4)" title="Scheduled Appointments" />
-            <div className="max-w-[1300px] mx-auto h-screen md:pt-[100px] pt-[100px] justify-start md:flex-col">
+        <div className="overflow-x-hidden bg-[#EEFFFE]">
+            <Header background="#EEFFFE" title="Scheduled Appointments" />
+            <div className="max-w-[1300px] mx-auto min-h-screen md:pt-[100px] pt-[100px] justify-start md:flex-col">
                 <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
                     <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center text-gray-800">
                         My Appointments
@@ -254,16 +254,13 @@ export default function UserAppointmentsPage() {
                                 // Optional: Add time check - const isPast = new Date(`${appt.appointment_date}T${appt.appointment_time}`) < new Date();
 
                                 return (
-                                    <div key={appt.id} className={`bg-white p-5 rounded-lg shadow-md border-l-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${appt.status === 'cancelled' ? 'border-red-300 opacity-75' : appt.status === 'completed' ? 'border-green-400' : 'border-blue-400'}`}>
+                                    <div key={appt.id} className={`bg-white relative p-5 rounded-lg shadow-md border-l-4 md:h-[120px] h-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${appt.status === 'cancelled' ? 'border-red-300' : appt.status === 'completed' ? 'border-green-400' : 'border-blue-400'}`}>
                                         {/* Appointment Info */}
-                                        <div className="flex-grow">
+                                        <div className="flex-grow h-full ">
                                             <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
-                                                <h2 className="text-lg font-semibold text-gray-800 mb-1 sm:mb-0">
+                                                <h2 className="text-lg font-semibold text-black mb-1 sm:mb-0">
                                                     {doctorName}
                                                 </h2>
-                                                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusClass}`}>
-                                                    {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
-                                                </span>
                                             </div>
                                             <p className="text-gray-700 text-sm mb-1">
                                                 <span className="font-medium">Time:</span> {formatDateTime(appt.appointment_date, appt.appointment_time)}
@@ -273,10 +270,13 @@ export default function UserAppointmentsPage() {
                                                     <span className="font-medium">Specialization:</span> {appt.doctor.specialization}
                                                 </p>
                                             )}
+                                            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full absolute top-5 right-5 ${statusClass}`}>
+                                                {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
+                                            </span>
                                         </div>
 
                                         {/* Action Button */}
-                                        <div className="flex-shrink-0 md:ml-4 mt-3 md:mt-0">
+                                        <div className="flex flex-col justify-end h-full">
                                             {isCancellable && ( // Only show Cancel button if applicable
                                                 <button
                                                     onClick={() => handleCancelAppointment(appt.id)}
@@ -299,8 +299,8 @@ export default function UserAppointmentsPage() {
                         </div>
                     )}
                 </main>
-                <Footer />
             </div>
+            <Footer />
         </div>
     );
 }

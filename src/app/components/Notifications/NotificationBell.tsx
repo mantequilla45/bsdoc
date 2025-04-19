@@ -10,7 +10,7 @@ import { FiBell } from 'react-icons/fi'; // Example icon
 import toast from 'react-hot-toast';
 // import { useProfileCompletion } from '@/app/context/ProfileCompletionContext';
 
-const NotificationBell = () => {
+const NotificationBell = ({ color = "dark" }) => {
     //const { user, isLoadingStatus: isLoadingUserContext } = useProfileCompletion();
     const [user, setUser] = useState<User | null>(null);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -20,7 +20,7 @@ const NotificationBell = () => {
     const panelRef = useRef<HTMLDivElement>(null);
     const channelRef = useRef<RealtimeChannel | null>(null); // Ref to store the channel
 
-
+    const bellColor = color === "light" ? "text-[#333333]" : "text-white";
     const fetchUnreadCount = useCallback(async (accessToken: string) => {
         // if (!currentUser) {
         //     console.log('[NotificationBell] fetchUnreadCount: No user, skipping fetch.');
@@ -256,12 +256,12 @@ const NotificationBell = () => {
         <div className="relative" ref={panelRef}>
             <button
                 onClick={() => setShowPanel(!showPanel)}
-                className="relative p-2 rounded-full text-gray-600 hover:bg-gray-100 hover:text-gray-800 focus:outline-none"
+                className="relative p-2 rounded-full text-gray-600 hover:bg-[#62B6B8] hover:text-gray-800 focus:outline-none"
                 aria-label="Toggle Notifications"
             >
-                <FiBell className="h-6 w-6" />
+                <FiBell className={`h-6 w-6 ${bellColor}`} />
                 {!isLoadingCount && unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-4 w-4 transform -translate-y-1/2 translate-x-1/2 rounded-full ring-2 ring-white bg-red-500 text-white text-xs flex items-center justify-center">
+                    <span className="absolute top-0 right-0 h-4 w-4 transform -translate-y-1/2 translate-x-1/2 rounded-full ring-2 ring-white bg-red-500 text-white text-xs flex items-center justify-center">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}

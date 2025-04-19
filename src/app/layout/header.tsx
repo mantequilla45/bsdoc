@@ -144,7 +144,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
             console.error('Error during logout:', error);
         }
     };
-
+    console.log("Background is:", background);
     return (
         <header
             ref={headerRef}
@@ -153,6 +153,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
             ${scrolled ? "py-0 h-[70px]" : "py-4 md:h-[10vh] h-[80px]"}
             flex items-center max-w-[1300px] min-w-[100%]`}
         >
+            <link rel="icon" href="/favicon.ico" />
             <title>{title}</title>
             <nav className="relative mx-auto flex justify-center items-center md:px-16 px-6 w-full md:h-full">
                 {/* Mobile Menu Button */}
@@ -207,16 +208,18 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                     </div>
 
                     <div
-                        className={`transform header-transition  relative w-[70px] transition-all duration-300
-                                ${scrolled ? "scale-[1] translate-y-0 hover:scale-[1.1]" : "scale-[1.8] hover:scale-[1.5]"}`}
+                        className={`transform header-transition relative w-[70px] transition-all duration-300 md:block hidden
+                                ${scrolled ? "scale-[1] translate-y-0 hover:scale-[1.1]" : "scale-[1.5] hover:scale-[1.3]"}`}
                     >
-                        {/* Changed Link to point to / for logo click */}
                         <Link href="/">
                             <Image
-                                fill
-                                src={`/logo/${background === "rgba(0,0,0,0.4)" || pathname === '/' && !scrolled ? "logo-white" : "logo-clear"}.svg`} // Adjusted logo logic slightly
+                                // Removed fill prop
+                                width={70} // Set explicit width
+                                height={70} // Set explicit height (adjust if aspect ratio is different)
+                                src={`/logo/${background === "rgba(0,0,0,0.4)" || pathname === '/' && !scrolled ? "logo-white" : "logo-clear"}.svg`}
                                 alt="BSDOC Logo"
-                                className="object-contain"
+                                className="object-contain" // Keep object-contain
+                                priority // Add priority if it's LCP (Largest Contentful Paint)
                             />
                         </Link>
                     </div>
@@ -231,7 +234,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
                         {/* --> Add NotificationBell here <-- */}
                         {/* It will only render if loggedIn is true (handled internally by NotificationBell) */}
-                        <NotificationBell />
+                        <NotificationBell color={background === "#EEFFFE" || background === "white"  ? "light" : "dark"} />
 
                         {loggedIn ? (
                             <div className="relative"> {/* Wrapper for profile menu */}

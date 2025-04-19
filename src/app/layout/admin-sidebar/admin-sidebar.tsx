@@ -12,6 +12,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import NavItem from './components/NavItem';
+import { FaCheckDouble } from 'react-icons/fa6';
 
 interface SideBarProps {
   onContentChange?: (contentId: string) => void;
@@ -31,7 +32,7 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange }) => {
   };
 
   return (
-    <aside 
+    <aside
       className={`
         flex flex-col h-screen sticky top-0 bg-gray-800 shadow-lg
         transition-all duration-300 ease-in-out
@@ -45,7 +46,7 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange }) => {
             Admin Panel
           </span>
         )}
-        
+
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="p-2 rounded-md hover:bg-gray-700 text-white transition-colors"
@@ -54,7 +55,7 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange }) => {
           {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
       </div>
-      
+
       {/* User profile */}
       {!collapsed && (
         <div className="flex items-center p-4 border-b border-gray-700">
@@ -90,10 +91,10 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange }) => {
         />
 
         <NavItem
-          href="/admin/users"
+          href="/admin/user-management"
           icon={<Users size={20} />}
           title="User Management"
-          active={activeItem === 'users'}
+          active={activeItem === 'user-management'}
           onClick={handleNavClick}
           collapsed={collapsed}
         />
@@ -107,6 +108,15 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange }) => {
           collapsed={collapsed}
         />
 
+        <NavItem
+          href="/admin/doctor-verification"
+          icon={<FaCheckDouble size={20} />}
+          title="Doctor Verification"
+          active={activeItem === 'doctor-verification'}
+          onClick={handleNavClick}
+          collapsed={collapsed}
+        />
+        
         {!collapsed && (
           <div className="pt-6 mb-2 px-3 text-xs uppercase text-white font-semibold tracking-wider opacity-80">
             System

@@ -5,6 +5,7 @@ import UserManagement from "./user-management/user-management";
 import BugManagement from './bugs/bug-reports';
 import { AdminPanelProvider } from '@/app/context/AdminPanelContext';
 import { useSearchParams } from 'next/navigation';
+import AdminDoctorVerificationPage from './doctor-verifications/doctor-verification';
 // Import other content components as needed
 
 function AdminPageContent() {
@@ -49,13 +50,15 @@ function AdminPageContent() {
         // }
         console.log(`[AdminPageContent] Rendering content for activeContentId: ${activeContentId}`);
         switch (activeContentId) {
-            case 'users':
+            case 'user-management':
                 return <UserManagement />; // Render your User Management component
             case 'bug-reports':
                 return <BugManagement />; // Render your Bug Reports component
             // Add cases for 'database', 'notifications', 'help' etc.
             case 'dashboard':
                 return <div className="p-6 text-gray-600">Dashboard content will go here.</div>;
+            case 'doctor-verification':
+                return <AdminDoctorVerificationPage />; // Render your Bug Reports component
             default:
                 console.warn(`[AdminPageContent] Unknown content ID in render: ${activeContentId}. Falling back.`);
                 return <div className="p-6 text-gray-600">Select an option from the sidebar to get started.</div>; // Fallback to dashboard
