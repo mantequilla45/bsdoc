@@ -126,7 +126,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
             setIsSaving(false);
         }
     };
-
+    const [profileWidth, setProfileWidth] = useState("50%");
     const handleCancel = () => {
         setFormData(profile ?? {});
         setIsEditing(false);
@@ -134,7 +134,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
         setImagePreview(profile?.profile_image_url ?? null);
     };
     return (
-        <div className="bg-white shadow-lg md:w-[40%] md:min-w-[300px] w-full overflow-hidden">
+        <div className={`}bg-white shadow-lg md:w-[${profileWidth}] md:min-w-[300px] w-full overflow-hidden`}>
             <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white py-4 px-4 flex items-center justify-between">
                 <h2 className="md:text-lg pl-4 text-md font-semibold">Account Details</h2>
                 {isEditing ? (
@@ -246,6 +246,10 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                         </button>
                     </div>
                 )}
+                <a className="cursor-pointer w-full right-0"onClick={() => setProfileWidth(profileWidth === "40%" ? "80%" : "40%")}>
+                    more
+                </a>
+
             </div>
         </div>
     );
