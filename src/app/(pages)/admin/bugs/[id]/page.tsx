@@ -1,6 +1,5 @@
 // src/app/(pages)/admin/bugs/[id]/page.tsx
 import React from 'react';
-import Header from '@/app/layout/header';
 import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
 import BugReportView from './components/BugReportView';
@@ -51,10 +50,9 @@ export default async function AdminViewBugReport({ params }: Readonly<AdminViewB
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <Header title={`Bug Report: ${bugReport.id.substring(0, 5)}`} background="bg-white" />
             <div className="container mx-auto py-6">
                 <h1 className="text-2xl font-semibold mb-4">Bug Report Details</h1>
-                <BugReportView bugReport={bugReport} userEmail={bugReport.email}/>
+                <BugReportView bugReport={bugReport} userEmail={bugReport.email} />
             </div>
         </div>
     );

@@ -1,10 +1,13 @@
-// Example file path: src/app/(pages)/admin/doctor-verifications/components/PendingVerificationsList.tsx
+// src/app/(pages)/admin/doctor-verifications/components/PendingVerificationsList.tsx
 'use client'; // Mark this as a Client Component
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { Loader, AlertCircle } from 'lucide-react';
+// Assuming SearchInput is in a shared location, adjust path if needed
+// e.g., import SearchInput from '@/app/components/SearchInput';
+import SearchInput from '../../components/SearchInput'; // Adjust path as necessary
 
 // Define a type for the data expected from the API
 interface VerificationRequest {
@@ -20,6 +23,10 @@ interface VerificationRequest {
 
 function PendingVerificationsList() {
     const [requests, setRequests] = useState<VerificationRequest[]>([]);
+    // State for the filtered list based on search
+    const [filteredRequests, setFilteredRequests] = useState<VerificationRequest[]>([]);
+    // State for the search term
+    const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [viewingProofId, setViewingProofId] = useState<string | null>(null);
@@ -31,11 +38,11 @@ function PendingVerificationsList() {
         fetchVerificationRequests();
     }, []); // Empty dependency array means run once on mount
 
-    // Function to fetch verification requests
+    // Function to fetch verification requests (remains the same)
     const fetchVerificationRequests = async () => {
         setIsLoading(true);
         setError(null);
-        
+
         try {
             // 1. Check Session first
             const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -46,7 +53,7 @@ function PendingVerificationsList() {
                 router.push('/');
                 return;
             }
-            
+
             // 2. Make API request with token
             const response = await fetch('/api/admin/doctor-verifications', {
                 headers: {
@@ -56,16 +63,24 @@ function PendingVerificationsList() {
             });
 
             if (!response.ok) {
-                const errorResult = await response.json();
-                throw new Error(errorResult.error || `HTTP error! status: ${response.status}`);
+                let errorMsg = `HTTP error! status: ${response.status}`;
+                try {
+                    const errorResult = await response.json();
+                    errorMsg = errorResult.error || errorMsg;
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                } catch (e) { /* ignore json parse error if body isn't json */ }
+                throw new Error(errorMsg);
             }
 
             const result = await response.json();
             if (Array.isArray(result.data)) {
                 setRequests(result.data);
+                setFilteredRequests(result.data); // Initialize filtered list
             } else {
                 console.error("API response is not an array:", result.data);
                 setError("Invalid data format received from API");
+                setRequests([]); // Set to empty array on error
+                setFilteredRequests([]);
             }
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error has occurred.';
@@ -76,11 +91,29 @@ function PendingVerificationsList() {
         }
     };
 
+    // *** useEffect for filtering based on searchTerm ***
+    useEffect(() => {
+        if (searchTerm.trim() === '') {
+            setFilteredRequests(requests); // If search is empty, show all requests
+        } else {
+            const lowerCaseSearchTerm = searchTerm.toLowerCase();
+            const filtered = requests.filter(req =>
+                (req.verificationId.toLowerCase().includes(lowerCaseSearchTerm)) ||
+                (req.userId.toLowerCase().includes(lowerCaseSearchTerm)) ||
+                (req.firstName?.toLowerCase() ?? '').includes(lowerCaseSearchTerm) ||
+                (req.lastName?.toLowerCase() ?? '').includes(lowerCaseSearchTerm) ||
+                (req.email?.toLowerCase() ?? '').includes(lowerCaseSearchTerm)
+            );
+            setFilteredRequests(filtered);
+        }
+    }, [searchTerm, requests]); // Re-filter when searchTerm or the original requests list changes
+
+    // --- Handler functions (handleViewProof, handleApprove, handleReject) remain the same ---
     // Handler for viewing proof
     const handleViewProof = async (verificationId: string) => {
         setViewingProofId(verificationId);
         setError(null);
-        
+
         try {
             // Get current session
             const { data: { session } } = await supabase.auth.getSession();
@@ -89,7 +122,7 @@ function PendingVerificationsList() {
                 setError("Authentication error: Not logged in");
                 return;
             }
-            
+
             // Make API request with token
             const response = await fetch(`/api/admin/doctor-verifications/${verificationId}/proof-url`, {
                 headers: {
@@ -113,6 +146,8 @@ function PendingVerificationsList() {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error has occurred.';
             console.error('Error retrieving proof URL:', err);
             setError(errorMessage || 'Could not retrieve proof URL.');
+            // Display error as alert or toast if desired
+            alert(`Error viewing proof: ${errorMessage}`);
         } finally {
             setViewingProofId(null);
         }
@@ -123,10 +158,10 @@ function PendingVerificationsList() {
         if (!confirm("Are you sure you want to approve this doctor?")) {
             return;
         }
-        
+
         setProcessingId(verificationId);
         setError(null);
-        
+
         try {
             // Get current session
             const { data: { session } } = await supabase.auth.getSession();
@@ -135,7 +170,7 @@ function PendingVerificationsList() {
                 setError("Authentication error: Not logged in");
                 return;
             }
-            
+
             const response = await fetch(`/api/admin/doctor-verifications/${verificationId}/approve`, {
                 method: 'POST',
                 headers: {
@@ -144,18 +179,19 @@ function PendingVerificationsList() {
                 },
                 body: JSON.stringify({ userId })
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
             }
-            
+
             // Refresh the list after approval
             fetchVerificationRequests();
             alert("Doctor verification approved successfully");
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
             setError(errorMessage);
+            alert(`Error approving: ${errorMessage}`); // Show error in alert
             console.error("Error approving doctor:", err);
         } finally {
             setProcessingId(null);
@@ -167,10 +203,10 @@ function PendingVerificationsList() {
         if (!confirm("Are you sure you want to reject this verification?")) {
             return;
         }
-        
+
         setProcessingId(verificationId);
         setError(null);
-        
+
         try {
             // Get current session
             const { data: { session } } = await supabase.auth.getSession();
@@ -179,7 +215,7 @@ function PendingVerificationsList() {
                 setError("Authentication error: Not logged in");
                 return;
             }
-            
+
             const response = await fetch(`/api/admin/doctor-verifications/${verificationId}/reject`, {
                 method: 'POST',
                 headers: {
@@ -188,38 +224,39 @@ function PendingVerificationsList() {
                 },
                 body: JSON.stringify({ userId })
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
             }
-            
+
             // Refresh the list after rejection
             fetchVerificationRequests();
             alert("Doctor verification rejected");
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
             setError(errorMessage);
+            alert(`Error rejecting: ${errorMessage}`); // Show error in alert
             console.error("Error rejecting verification:", err);
         } finally {
             setProcessingId(null);
         }
     };
 
-    // Render loading state
+
+    // --- Loading and Error states (remain the same) ---
     if (isLoading) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <div className="flex flex-col items-center">
                     <Loader className="h-12 w-12 animate-spin text-blue-600" />
-                    <p className="mt-4 text-lg text-gray-700">Loading verification requests...</p>
+                    <p className="mt-4 text-lg text-gray-700">Loading Applications...</p>
                 </div>
             </div>
         );
     }
 
-    // Display general error for loading list
-    if (error) {
+    if (error && requests.length === 0) { // Only show full page error if list couldn't load initially
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <div className="flex flex-col items-center bg-red-50 p-8 rounded-lg shadow-md">
@@ -237,16 +274,37 @@ function PendingVerificationsList() {
         );
     }
 
-    return (
-        <div className="p-4">
-            <h2 className="text-2xl font-semibold mb-6">Pending Doctor Verifications</h2>
 
-            {requests.length === 0 ? (
+    // --- Component Return JSX ---
+    return (
+        <div className="h-full">
+            {/* Add the Search Input */}
+            <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-6">
+                <SearchInput
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    placeholder="Search by ID, name, email..."
+                    className="w-full md:w-72" // Adjust width as needed
+                />
+            </div>
+
+            {/* Display error message if fetch failed but some data might still be shown */}
+            {error && requests.length > 0 && (
+                <div className="mb-4 p-4 bg-red-100 text-red-700 border border-red-300 rounded-md">
+                    Error: {error} (List might be outdated)
+                </div>
+            )}
+
+
+            {/* Use filteredRequests for the table */}
+            {filteredRequests.length === 0 && !isLoading ? ( // Check filtered length
                 <div className="bg-white p-6 rounded-lg shadow text-center">
-                    <p className="text-gray-700">No pending verification requests found.</p>
+                    <p className="text-gray-700">
+                        {searchTerm ? 'No matching verification requests found.' : 'No pending verification requests found.'}
+                    </p>
                 </div>
             ) : (
-                <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="bg-white rounded-lg shadow overflow-x-auto"> {/* Added overflow-x-auto */}
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
@@ -257,30 +315,31 @@ function PendingVerificationsList() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {requests.map((req) => (
+                            {/* Map over filteredRequests */}
+                            {filteredRequests.map((req) => (
                                 <tr key={req.verificationId} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">{req.firstName || ''} {req.lastName || ''}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{req.email || 'N/A'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{new Date(req.submittedAt).toLocaleString()}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{req.firstName || ''} {req.lastName || ''}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{req.email || 'N/A'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(req.submittedAt).toLocaleString()}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap space-x-2 text-sm font-medium">
                                         <button
                                             onClick={() => handleViewProof(req.verificationId)}
                                             disabled={viewingProofId === req.verificationId || processingId === req.verificationId}
-                                            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
+                                            className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
                                             {viewingProofId === req.verificationId ? 'Loading...' : 'View Proof'}
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={() => handleApprove(req.verificationId, req.userId)}
                                             disabled={processingId === req.verificationId}
-                                            className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed transition-colors"
+                                            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
                                             {processingId === req.verificationId ? 'Processing...' : 'Approve'}
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={() => handleReject(req.verificationId, req.userId)}
                                             disabled={processingId === req.verificationId}
-                                            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed transition-colors"
+                                            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
                                             {processingId === req.verificationId ? 'Processing...' : 'Reject'}
                                         </button>
