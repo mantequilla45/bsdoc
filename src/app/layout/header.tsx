@@ -371,7 +371,9 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                         href="/doctors" onClick={() => setMobileMenuOpen(false)} className='block'>
                                         Doctors
                                     </Link>
-
+                                </li>
+                                
+                                <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
                                     <Link href="/appointment-page" onClick={() => setMobileMenuOpen(false)} className="block">
                                         Schedule Appointment
                                     </Link>
