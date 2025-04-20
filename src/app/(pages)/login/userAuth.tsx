@@ -54,6 +54,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
       if (error instanceof Error) {
         if (isLogin && error.message.toLowerCase().includes('email not confirmed')) {
           setErrorMessage("Please verify your email before logging in. Check your inbox for the verification link.");
+          alert("Please verify your email before logging in. Check your inbox for the verification link.");
         }
         else {
           console.log('Error: ', error);
