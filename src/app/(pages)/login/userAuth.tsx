@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { FcGoogle } from "react-icons/fc";
+//import { FcGoogle } from "react-icons/fc";
 import { FaArrowRightLong, FaArrowLeftLong } from "react-icons/fa6";
 import { IoIosCloseCircle } from "react-icons/io";
 import { login, signup } from "@/services/Auth/serverauth";
-import { signInWithGoogle } from "@/services/Auth/auth";
+//import { signInWithGoogle } from "@/services/Auth/auth";
 import InputField from "@/app/components/input-box"; // Import the new InputField component
 
 interface AuthModalProps {
@@ -70,24 +70,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      await signInWithGoogle();
-      onAuthSuccess();
-    }
-    catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      }
-      else {
-        setErrorMessage('An unknown error has occurred with Google sign in.');
-      }
-    }
-    finally {
-      setLoading(false);
-    }
-  };
+  // const handleGoogleLogin = async () => {
+  //   setLoading(true);
+  //   try {
+  //     await signInWithGoogle();
+  //     onAuthSuccess();
+  //   }
+  //   catch (error) {
+  //     if (error instanceof Error) {
+  //       setErrorMessage(error.message);
+  //     }
+  //     else {
+  //       setErrorMessage('An unknown error has occurred with Google sign in.');
+  //     }
+  //   }
+  //   finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const getButtonText = () => {
     if (loading) {
@@ -183,13 +183,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                         {isLogin ? "Welcome Back!" : "Create an Account"}
                       </h2>
 
-                      <button
+                      {/* <button
                         onClick={handleGoogleLogin}
                         className="py-2 md:py-3 w-full border-[1px] bg-white rounded-full flex justify-center items-center gap-4 md:gap-6 active:scale-95 duration-300"
                       >
                         <FcGoogle className="w-[20px] h-[20px] md:w-[25px] md:h-[25px]" />
                         {isLogin ? "Login with Google" : "Sign up with Google"}
-                      </button>
+                      </button> */}
 
                       <div className="w-full border-t border-gray-300" />
 
