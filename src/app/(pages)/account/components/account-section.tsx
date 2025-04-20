@@ -3,7 +3,7 @@ import ProfileImageUpload from './profile';
 import { supabase } from '@/lib/supabaseClient';
 import { Profile } from './index';
 import LoadingPlaceholder from './loading';
-import { MdEdit, MdSave, MdCancel, MdEmail, MdPhone, MdPerson } from "react-icons/md";
+import { MdEdit, MdSave, MdCancel, MdEmail, MdPhone, MdPerson, MdHome, MdVpnKey, MdChevronRight, MdChevronLeft, MdLocationCity, MdMarkunreadMailbox } from "react-icons/md";
 import { GrClose } from 'react-icons/gr';
 
 interface AccountSectionProps {
@@ -18,6 +18,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [profileImage, setProfileImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -126,15 +127,111 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
             setIsSaving(false);
         }
     };
-    const [profileWidth, setProfileWidth] = useState("50%");
+
     const handleCancel = () => {
         setFormData(profile ?? {});
         setIsEditing(false);
         setProfileImage(null);
         setImagePreview(profile?.profile_image_url ?? null);
     };
+
+    const toggleExpand = () => {
+        setIsExpanded(!isExpanded);
+    };
+
+    // Primary fields (left column)
+    const primaryFields = [
+        {
+            label: 'First Name',
+            name: 'first_name',
+            icon: <MdPerson className="text-teal-500" />,
+            type: 'text'
+        },
+        {
+            label: 'Last Name',
+            name: 'last_name',
+            icon: <MdPerson className="text-teal-500" />,
+            type: 'text'
+        },
+        {
+            label: 'Email',
+            name: 'email',
+            icon: <MdEmail className="text-teal-500" />,
+            type: 'email'
+        },
+        {
+            label: 'Phone',
+            name: 'phone_number',
+            icon: <MdPhone className="text-teal-500" />,
+            type: 'tel'
+        }
+    ];
+
+    // Secondary fields (right column when expanded)
+    const secondaryFields = [
+        {
+            label: 'Address',
+            name: 'address',
+            icon: <MdHome className="text-teal-500" />,
+            type: 'text'
+        },
+        {
+            label: 'City',
+            name: 'city',
+            icon: <MdLocationCity className="text-teal-500" />,
+            type: 'text'
+        },
+        {
+            label: 'Zip Code',
+            name: 'zip_code',
+            icon: <MdMarkunreadMailbox className="text-teal-500" />,
+            type: 'text'
+        },
+        {
+            label: 'Password',
+            name: 'password',
+            icon: <MdVpnKey className="text-teal-500" />,
+            type: 'password',
+            placeholder: '••••••••'
+        }
+    ];
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const renderFieldSection = (fields: any[]) => {
+        return (
+            <div className="space-y-4">
+                {fields.map(({ label, name, icon, type, placeholder }) => (
+                    <div key={name} className="flex items-start space-x-4">
+                        <div className="w-10 flex justify-center pt-2">
+                            {icon}
+                        </div>
+                        <div className="flex-grow min-w-0">
+                            <label className="text-xs text-gray-500 block mb-1">{label}</label>
+                            {loading ? (
+                                <LoadingPlaceholder />
+                            ) : isEditing ? (
+                                <input
+                                    type={type}
+                                    name={name}
+                                    value={formData?.[name as keyof Partial<Profile>] ?? ''}
+                                    onChange={handleInputChange}
+                                    placeholder={placeholder}
+                                    className="w-full border-b border-gray-300 focus:border-teal-500 outline-none transition-colors truncate"
+                                />
+                            ) : (
+                                <p className="text-gray-800 break-words overflow-hidden">
+                                    {name === 'password' ? '••••••••' : profile?.[name as keyof Profile] ?? '-'}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
     return (
-        <div className={`}bg-white shadow-lg md:w-[${profileWidth}] md:min-w-[300px] w-full overflow-hidden`}>
+        <div className={`bg-white shadow-lg w-${isExpanded ? 'full' : '1/2'} transition-all duration-300 ease-in-out`}>
             <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white py-4 px-4 flex items-center justify-between">
                 <h2 className="md:text-lg pl-4 text-md font-semibold">Account Details</h2>
                 {isEditing ? (
@@ -154,7 +251,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                 )}
             </div>
 
-            <div className="p-6 py-16">
+            <div className="p-6">
                 <div className="flex flex-col items-center mb-6">
                     <ProfileImageUpload
                         imagePreview={imagePreview}
@@ -170,58 +267,19 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                         </h3>
                     )}
                 </div>
-
-                <div className="space-y-4">
-                    {[
-                        {
-                            label: 'First Name',
-                            name: 'first_name',
-                            icon: <MdPerson className="text-teal-500" />,
-                            type: 'text'
-                        },
-                        {
-                            label: 'Last Name',
-                            name: 'last_name',
-                            icon: <MdPerson className="text-teal-500" />,
-                            type: 'text'
-                        },
-                        {
-                            label: 'Email',
-                            name: 'email',
-                            icon: <MdEmail className="text-teal-500" />,
-                            type: 'email'
-                        },
-                        {
-                            label: 'Phone',
-                            name: 'phone_number',
-                            icon: <MdPhone className="text-teal-500" />,
-                            type: 'tel'
-                        }
-                    ].map(({ label, name, icon, type }) => (
-                        <div key={name} className="flex items-start space-x-4">
-                            <div className="w-10 flex justify-center pt-2">
-                                {icon}
-                            </div>
-                            <div className="flex-grow min-w-0">
-                                <label className="text-xs text-gray-500 block mb-1">{label}</label>
-                                {loading ? (
-                                    <LoadingPlaceholder />
-                                ) : isEditing ? (
-                                    <input
-                                        type={type}
-                                        name={name}
-                                        value={formData?.[name as keyof Partial<Profile>] ?? ''}
-                                        onChange={handleInputChange}
-                                        className="w-full border-b border-gray-300 focus:border-teal-500 outline-none transition-colors truncate"
-                                    />
-                                ) : (
-                                    <p className="text-gray-800 break-words overflow-hidden">
-                                        {profile?.[name as keyof Profile] ?? '-'}
-                                    </p>
-                                )}
-                            </div>
+                
+                <div className="flex flex-col md:flex-row gap-6">
+                    {/* Left Column - Always visible */}
+                    <div className={`${isExpanded ? 'md:w-1/2' : 'w-full'}`}>
+                        {renderFieldSection(primaryFields)}
+                    </div>
+                    
+                    {/* Right Column - Only visible when expanded */}
+                    {isExpanded && (
+                        <div className="md:w-1/2 w-full border-l pl-6">
+                            {renderFieldSection(secondaryFields)}
                         </div>
-                    ))}
+                    )}
                 </div>
 
                 {isEditing && (
@@ -246,10 +304,21 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                         </button>
                     </div>
                 )}
-                <a className="cursor-pointer w-full right-0"onClick={() => setProfileWidth(profileWidth === "40%" ? "80%" : "40%")}>
-                    more
-                </a>
 
+                <button 
+                    onClick={toggleExpand}
+                    className="mt-6 w-full flex items-center justify-center py-2 text-teal-500 hover:text-teal-600 transition-colors font-medium"
+                >
+                    {isExpanded ? (
+                        <>
+                            <MdChevronLeft className="mr-1 text-xl" /> Show Less
+                        </>
+                    ) : (
+                        <>
+                            <MdChevronRight className="mr-1 text-xl" /> Show More Details
+                        </>
+                    )}
+                </button>
             </div>
         </div>
     );

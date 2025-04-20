@@ -158,7 +158,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="w-full md:min-w-[500px] md:w-[30%] bg-white md:rounded-[25px] rounded-none h-full md:h-auto md:m-10 md:shadow-2xl z-10 flex flex-col justify-center relative overflow-hidden"
+              className="h-full flex items-center md:w-[30%] md:pr-10 w-full"
             >
               {/* Desktop Close Button */}
               <button
@@ -168,16 +168,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                 <IoIosCloseCircle className="w-[40px] h-[40px]" />
               </button>
 
-              <div className="relative w-full h-full overflow-hidden p-6 md:p-12 items-center justify-center flex">
+              <div className="relative w-full overflow-hidden p-6 md:p-12 items-center justify-center flex bg-white md:rounded-2xl md:h-[700px] h-full">
                 <AnimatePresence mode="wait">
-                  <div className="flex flex-col h-full justify-between w-full">
+                  <div className="flex flex-col h-full justify-center w-full">
                     <motion.div
                       key={isLogin ? "login" : "signup"}
                       variants={slideVariants}
                       initial="initial"
                       animate="animate"
                       exit="exit"
-                      className="flex flex-col justify-center items-center gap-4 md:gap-6 w-full mt-[30%]"
+                      className="flex flex-col justify-center items-center gap-4 md:gap-6 w-full"
                     >
                       <h2 className="text-2xl md:text-3xl mb-3 text-center">
                         {isLogin ? "Welcome Back!" : "Create an Account"}
@@ -233,7 +233,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                       </button>
 
                     </motion.div>
-                    <a href="/doctor-registration" className="text-center underline">
+                    <a
+                      href="/doctor-registration"
+                      className="text-center underline absolute bottom-10 left-1/2 transform -translate-x-1/2"
+                    >
                       Register as Doctor
                     </a>
                   </div>
