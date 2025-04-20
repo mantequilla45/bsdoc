@@ -241,6 +241,12 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
                     {/* Right side items grouped together */}
                     <div className="hidden md:flex flex-row items-center gap-5 text-sm relative justify-end w-[400px]">
+                        <Link
+                            href="/doctors"
+                            className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md `}>
+                            Doctors
+                        </Link>
+
                         <Link // Changed from <a> to <Link> for client-side navigation
                             href="/appointment-page" // Make sure this route exists
                             className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" || pathname === '/' && !scrolled ? "text-white" : ""}  text-md `}>
@@ -361,6 +367,12 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                 </li>
 
                                 <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
+                                    <Link
+                                        href="/doctors"
+                                        className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md `}>
+                                        Doctors
+                                    </Link>
+
                                     <Link href="/appointment-page" onClick={() => setMobileMenuOpen(false)} className="block">
                                         Schedule Appointment
                                     </Link>
