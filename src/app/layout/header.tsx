@@ -368,8 +368,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
                                 <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
                                     <Link
-                                        href="/doctors"
-                                        className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md `}>
+                                        href="/doctors" onClick={() => setMobileMenuOpen(false)} className='block'>
                                         Doctors
                                     </Link>
 
