@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient'; // For user auth check
 import { supabaseAdmin } from '@/lib/supabaseAdmin'; // For DB operations
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-    const appointmentId = params.id;
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const appointmentId = (await params).id;
     console.log(`[API Appointments PATCH /${appointmentId}/hide] Request received.`);
 
     if (!appointmentId) {
