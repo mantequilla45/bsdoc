@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabaseClient";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import NotificationBell from '@/app/components/Notifications/NotificationBell'; // Adjust path if needed
+import LogoutConfirmationModal from "../components/modals/LogoutConfirmationModal";
 
 const Header = ({ background, title }: { background: string; title: string }) => {
     const router = useRouter();
@@ -24,6 +25,8 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
     const [userRole, setUserRole] = useState<string | null>(null);
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
     const fetchUserProfile = async (userId: string) => {
         try {
@@ -131,7 +134,19 @@ const Header = ({ background, title }: { background: string; title: string }) =>
         setIsLoginOpen(false);
     };
 
+    // --- Modal Control Functions ---
+    const openLogoutModal = () => {
+        setMenuOpen(false); // Close profile menu if open
+        setMobileMenuOpen(false); // Close mobile menu if open
+        setIsLogoutModalOpen(true);
+    };
+
+    const closeLogoutModal = () => {
+        setIsLogoutModalOpen(false);
+    };
+
     const handleLogout = async () => {
+        closeLogoutModal();
         try {
             setUserRole(null);
             setProfileImageUrl(null);
@@ -226,6 +241,12 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
                     {/* Right side items grouped together */}
                     <div className="hidden md:flex flex-row items-center gap-5 text-sm relative justify-end w-[400px]">
+                        <Link
+                            href="/doctors"
+                            className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md `}>
+                            Doctors
+                        </Link>
+
                         <Link // Changed from <a> to <Link> for client-side navigation
                             href="/appointment-page" // Make sure this route exists
                             className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" || pathname === '/' && !scrolled ? "text-white" : ""}  text-md `}>
@@ -234,7 +255,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
                         {/* --> Add NotificationBell here <-- */}
                         {/* It will only render if loggedIn is true (handled internally by NotificationBell) */}
-                        <NotificationBell color={background === "#EEFFFE" || background === "white"  ? "light" : "dark"} />
+                        <NotificationBell color={background === "#EEFFFE" || background === "white" ? "light" : "dark"} />
 
                         {loggedIn ? (
                             <div className="relative"> {/* Wrapper for profile menu */}
@@ -284,7 +305,8 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                                                 : "hover:bg-gray-100 cursor-pointer"
                                                             }`}
                                                         // Use button for logout for better semantics
-                                                        onClick={item === "Logout" ? handleLogout : () => setMenuOpen(false)} // Close menu on item click
+                                                        //onClick={item === "Logout" ? handleLogout : () => setMenuOpen(false)} // Close menu on item click
+                                                        onClick={item === 'Logout' ? openLogoutModal : () => setMenuOpen(false)}
                                                     >
                                                         {item === "/account" ? (
                                                             <Link href="/account" className="block w-full h-full">Account</Link>
@@ -345,6 +367,13 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                 </li>
 
                                 <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
+                                    <Link
+                                        href="/doctors" onClick={() => setMobileMenuOpen(false)} className='block'>
+                                        Doctors
+                                    </Link>
+                                </li>
+                                
+                                <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
                                     <Link href="/appointment-page" onClick={() => setMobileMenuOpen(false)} className="block">
                                         Schedule Appointment
                                     </Link>
@@ -377,7 +406,8 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                             <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="block">Settings</Link>
                                         </li>
                                         <li
-                                            onClick={handleLogout} // Logout closes menu automatically
+                                            //onClick={handleLogout} // Logout closes menu automatically
+                                            onClick={openLogoutModal}
                                             className="px-4 py-3 hover:bg-red-100 text-red-500 w-full text-center cursor-pointer"
                                         >
                                             Logout
@@ -407,6 +437,12 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                     onAuthSuccess={handleAuthSuccess}
                 />
             </AnimatePresence>
+            {/* Logout Confirmation Modal */}
+            <LogoutConfirmationModal
+                isOpen={isLogoutModalOpen}
+                onClose={closeLogoutModal}
+                onConfirmLogout={handleLogout} // Pass the original logout function as the confirm action
+            />
         </header>
     );
 };

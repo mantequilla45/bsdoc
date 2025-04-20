@@ -15,6 +15,7 @@ type UserAppointment = {
     appointment_time: string;
     status: 'booked' | 'cancelled' | 'completed' | string; // Allow other statuses if needed
     created_at: string;
+    is_hidden_by_patient: boolean;
     doctor: {
         // Assuming 'doctors' table has these fields joined from 'profiles'
         id: string; // Doctor's ID (from doctors table)
@@ -38,6 +39,8 @@ export default function UserAppointmentsPage() {
 
     const [showCancelled, setShowCancelled] = useState(true);
     const [cancellingId, setCancellingId] = useState<string | null>(null); // Track cancelling state
+
+    const [hidingId, setHidingId] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUserAndAppointments = async () => {
@@ -63,9 +66,10 @@ export default function UserAppointmentsPage() {
                 const token = session.access_token;
                 // Call your existing API endpoint, filtering by patient_id
                 // The API route already handles joining doctor/profile data
-                const response = await fetch(`/api/appointments?patient_id=${currentUserId}`, {
+                const response = await fetch(`/api/appointments?patient_id=${currentUserId}&include_hidden=false`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
+                        'Cache-Control': 'no-cache, no-store',
                     },
                 });
 
@@ -85,7 +89,11 @@ export default function UserAppointmentsPage() {
                     return b.appointment_time.localeCompare(a.appointment_time);
                 });
 
-                setAppointments(sortedAppointments);
+                const visibleAppointments = sortedAppointments.filter(
+                    (appt: UserAppointment) => !appt.is_hidden_by_patient
+                );
+
+                setAppointments(visibleAppointments);
 
             } catch (fetchError) {
                 console.error("Error fetching appointments:", fetchError);
@@ -158,16 +166,57 @@ export default function UserAppointmentsPage() {
     };
 
     // --- Function to Handle Removing Cancelled Appointment from List ---
-    const handleRemoveFromList = (appointmentId: string) => {
+    const handleRemoveFromList = async (appointmentId: string) => {
         // Optional: Confirm before removing
         // if (!window.confirm("Remove this cancelled appointment from the list? This action only hides it for this session.")) {
         //     return;
         // }
         console.log("Removing appointment ID from list:", appointmentId);
+        setHidingId(appointmentId);
+        setError(null);
+
+        try {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            const token = session?.access_token;
+            if (sessionError || !token) {
+                throw new Error("Authentication error. Please log in again.");
+            }
+
+            // Call the new API endpoint to mark as hidden
+            const response = await fetch(`/api/appointments/${appointmentId}/hide`, {
+                method: 'PATCH', // Use PATCH
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                    // No body needed if the endpoint only does one thing (hides)
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to hide appointment');
+            }
+
+            // Success: Remove from local state for immediate feedback
+            console.log("Hiding appointment ID from list:", appointmentId);
+            setAppointments(prevAppointments =>
+                prevAppointments.filter(appt => appt.id !== appointmentId)
+            );
+            alert("Appointment hidden from list."); // Feedback
+
+            console.log("API response for hiding:", await response.json());
+
+        } catch (hideError) {
+            console.error("Error hiding appointment:", hideError);
+            setError(hideError instanceof Error ? hideError.message : "Could not hide appointment.");
+            alert(`Error: ${hideError instanceof Error ? hideError.message : 'Could not hide appointment.'}`);
+        } finally {
+            setHidingId(null); // Reset loading state
+        }
+        router.refresh();
         // Filter the appointment out of the main state array
-        setAppointments(prevAppointments =>
-            prevAppointments.filter(appt => appt.id !== appointmentId)
-        );
+        // setAppointments(prevAppointments =>
+        //     prevAppointments.filter(appt => appt.id !== appointmentId)
+        // );
         // Note: This does not delete from the database. Refreshing the page
         // without persistent storage for hidden items would bring it back.
     };
@@ -251,6 +300,7 @@ export default function UserAppointmentsPage() {
                                 const doctorName = doctorProfile ? `Dr. ${doctorProfile.first_name || ''} ${doctorProfile.last_name || ''}`.trim() : 'Doctor details unavailable';
                                 const statusClass = getStatusClass(appt.status);
                                 const isCancellable = appt.status === 'booked'; // Define if cancellable
+                                const isCancelled = appt.status === 'cancelled';
                                 // Optional: Add time check - const isPast = new Date(`${appt.appointment_date}T${appt.appointment_time}`) < new Date();
 
                                 return (
@@ -287,9 +337,14 @@ export default function UserAppointmentsPage() {
                                                 </button>
                                             )}
                                             {/* Add Delete button if needed later for cancelled appointments */}
-                                            {appt.status === 'cancelled' && (
-                                                <button onClick={() => handleRemoveFromList(appt.id)} className="px-3 py-1.5 text-xs font-medium rounded bg-gray-400 hover:bg-gray-500 text-white transition-colors">
-                                                    Remove from list
+                                            {isCancelled && (
+                                                <button
+                                                    onClick={() => handleRemoveFromList(appt.id)}
+                                                    disabled={hidingId === appt.id} // Disable while hiding this specific one
+                                                    className={`px-3 py-1.5 text-xs font-medium rounded ${hidingId === appt.id ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-400 hover:bg-gray-500 focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50'} text-white transition-colors duration-150`}
+                                                    title="Remove this cancelled appointment from your list"
+                                                >
+                                                    {hidingId === appt.id ? 'Removing...' : 'Remove from List'}
                                                 </button>
                                             )}
                                         </div>
