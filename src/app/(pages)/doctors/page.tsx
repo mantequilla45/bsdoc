@@ -1,6 +1,6 @@
 // src/app/(pages)/doctors/page.tsx
 import React from 'react';
-import DoctorList from '../../components/booking/DoctorList'; // Assuming this path is correct
+import DoctorList from './components/DoctorList'; // Assuming this path is correct
 import Header from '@/app/layout/header'; // Make sure path is correct
 
 const DoctorsPage: React.FC = () => {
