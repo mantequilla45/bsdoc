@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Edit, Trash2, XCircle, Save, Eye } from 'lucide-react';
 import { Button } from '../../user-management/components/Button';
+import { FaCheck } from 'react-icons/fa6';
 
 interface BugReport {
     id: string;
@@ -359,8 +360,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                         size="sm"
                                                         className="flex items-center font-normal text-xs"
                                                     >
-                                                        <Eye className="w-3 h-3 mr-1" />
-                                                        View
+                                                        <Eye className="w-3 h-3" />
                                                     </Button>
                                                     <Button
                                                         onClick={() => startEditing(bug)}
@@ -368,8 +368,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                         size="sm"
                                                         className="flex items-center text-xs"
                                                     >
-                                                        <Edit className="w-3 h-3 mr-1" />
-                                                        Edit
+                                                        <Edit className="w-3 h-3" />
                                                     </Button>
                                                     <Button
                                                         onClick={() => deleteBug(bug.id)}
@@ -377,8 +376,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                         size="sm"
                                                         className="flex items-center text-xs"
                                                     >
-                                                        <Trash2 className="w-3 h-3 mr-1" />
-                                                        Delete
+                                                        <Trash2 className="w-3 h-3" />
                                                     </Button>
                                                 </div>
                                             )}
@@ -592,8 +590,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                                 size="sm"
                                                                 className="flex items-center"
                                                             >
-                                                                <Trash2 className="h-4 w-4 mr-1" />
-                                                                Confirm
+                                                                <FaCheck className="h-4 w-3" />
                                                             </Button>
                                                             <Button
                                                                 onClick={cancelDelete}
@@ -601,8 +598,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                                 size="sm"
                                                                 className="flex items-center"
                                                             >
-                                                                <XCircle className="h-4 w-4 mr-1" />
-                                                                Cancel
+                                                                <XCircle className="h-4 w-4" />
                                                             </Button>
                                                         </div>
                                                     ) : (
@@ -613,8 +609,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                                 size="sm"
                                                                 className="flex items-center font-normal text-xs"
                                                             >
-                                                                <Eye className="h-4 w-4 mr-1" />
-                                                                View
+                                                                <Eye className="h-4 w-4" />
                                                             </Button>
 
                                                             <Button

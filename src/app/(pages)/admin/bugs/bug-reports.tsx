@@ -3,26 +3,30 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { Search, Loader, AlertCircle } from 'lucide-react';
+import { Loader, AlertCircle } from 'lucide-react'; // Added Eye
 import { Button } from '../user-management/components/Button';
 import { Card } from '../user-management/components/Card';
 import { Toast } from '../user-management/components/Toast';
 import BugTable from './components/BugTable';
+import SearchInput from '../components/SearchInput'; // Adjust path if necessary
+import BugDetailModal from './components/BugModal';
 
-interface BugReport {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  severity: string | null;
-  status: string;
-  user_id: string | null;
-  created_at: string;
-  updated_at: string | null;
-  profiles: {
-    email: string | null;
-  } | null;
+// Keep BugReport interface definition here or import if moved
+export interface BugReport {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    severity: string | null;
+    status: string;
+    user_id: string | null;
+    created_at: string;
+    updated_at: string | null;
+    profiles: {
+      email: string | null;
+    } | null;
 }
+
 
 const BugManagement = () => {
     const [bugs, setBugs] = useState<BugReport[]>([]);
@@ -37,18 +41,26 @@ const BugManagement = () => {
     });
     const router = useRouter();
 
-    // Show toast notification
+    // *** State for Modal ***
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedBug, setSelectedBug] = useState<BugReport | null>(null);
+    // *** End Modal State ***
+
+    // --- showToast, fetchBugs, filtering useEffect ---
+    // ... (These functions remain the same as the previous working version) ...
+     // Show toast notification
     const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
         setToast({ show: true, message, type });
         setTimeout(() => setToast({ ...toast, show: false }), 3000);
     };
 
+    // *** Reverted fetchBugs to use direct Supabase client call ***
     useEffect(() => {
         const fetchBugs = async () => {
             setLoading(true);
             setError(null);
 
-            // 1. Check Session and Admin Role
+            // 1. Check Session (still important)
             const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
             if (sessionError || !session) {
@@ -57,38 +69,45 @@ const BugManagement = () => {
                 return;
             }
 
+            // *** Make the direct Supabase call like originally ***
             try {
-                const { data, error } = await supabase
+                const { data, error: fetchDbError } = await supabase
                     .from('bugs')
                     .select('*, profiles(email)')
                     .order('created_at', { ascending: false });
 
-                if (error) {
-                    console.error("Error fetching bug reports:", error);
-                    setError("Failed to fetch bug reports");
-                }
-
-                if (data) {
+                if (fetchDbError) {
+                    console.error("Error fetching bug reports:", fetchDbError);
+                    setError(`Failed to fetch bug reports: ${fetchDbError.message}`);
+                } else if (data) {
+                    // Ensure data is treated as BugReport[]
                     setBugs(data as BugReport[]);
                     setFilteredBugs(data as BugReport[]);
+                } else {
+                     // Handle case where data is null without error
+                     setBugs([]);
+                     setFilteredBugs([]);
                 }
-            } catch (error) {
-                console.error("Error fetching bugs:", error);
-                setError("Failed to fetch bugs");
+            } catch (catchError) {
+                // Catch any unexpected errors during the process
+                console.error("Error fetching bugs (catch block):", catchError);
+                setError(catchError instanceof Error ? catchError.message : "An unexpected error occurred");
             } finally {
                 setLoading(false);
             }
         };
 
         fetchBugs();
-    }, [router]);
+    }, [router]); // Dependency array remains the same
 
+    // Filtering useEffect remains the same
     useEffect(() => {
         if (searchTerm.trim() === '') {
             setFilteredBugs(bugs);
         } else {
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
             const filtered = bugs.filter(bug =>
+                (bug?.id ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
                 (bug?.title ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
                 (bug?.description ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
                 (bug?.category ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
@@ -99,87 +118,87 @@ const BugManagement = () => {
         }
     }, [searchTerm, bugs]);
 
-    // Function to handle viewing a bug detail
-    const handleViewBug = (id: string) => {
-        router.push(`/admin/bugs/${id}`);
-    };
-    
-    // Function to handle updating a bug
-    const handleUpdateBug = async (id: string, updatedBugData: Partial<BugReport>) => {
-        // Get the current session first
+
+    // --- handleUpdateBug, handleDeleteBug ---
+    // ... (These functions remain the same, using API calls or direct supabase) ...
+    const handleUpdateBug = async (id: string, updatedBugData: Partial<Pick<BugReport, 'status'>>) => {
         const { data: { session } } = await supabase.auth.getSession();
-    
-        if (!session) {
-            setError("Not authenticated");
-            router.push('/');
-            return;
-        }
-    
+        if (!session) { setError("Not authenticated"); router.push('/'); return; }
+
         try {
-            const { data, error } = await supabase
-                .from('bugs')
-                .update(updatedBugData)
-                .eq('id', id)
-                .select();
-    
-            if (error) {
-                console.error("Error updating bug:", error);
-                setError("Failed to update bug");
-                showToast("Failed to update bug", 'error');
-                return;
-            }
-    
-            if (data) {
-                // Update the local state
-                setBugs(prevBugs => 
-                    prevBugs.map(bug => 
-                        bug.id === id ? { ...bug, ...updatedBugData } : bug
-                    )
-                );
-                
-                showToast('Bug updated successfully', 'success');
-            }
+            const response = await fetch(`/api/admin/bugs/${id}`, {
+                 method: 'PUT',
+                 headers: {
+                     'Authorization': `Bearer ${session.access_token}`,
+                     'Content-Type': 'application/json'
+                 },
+                 body: JSON.stringify(updatedBugData)
+            });
+             const result = await response.json();
+
+             if (response.ok && result.data) {
+                 setBugs(prevBugs =>
+                     prevBugs.map(bug =>
+                         bug.id === id ? { ...bug, ...result.data } : bug
+                     )
+                 );
+                 showToast('Bug status updated successfully', 'success');
+             } else {
+                 console.error("Error updating bug:", result.error);
+                 setError(result.error || "Failed to update bug status");
+                 showToast(result.error || "Failed to update bug status", 'error');
+             }
+
         } catch (error) {
-            console.error("Error updating bug:", error);
-            setError("Failed to update bug");
-            showToast("Failed to update bug", 'error');
+             console.error("Error updating bug status:", error);
+             setError("Failed to update bug status");
+             showToast("Failed to update bug status", 'error');
         }
     };
 
-    // Function to handle deleting a bug
     const handleDeleteBug = async (id: string) => {
-        // Get the current session first
+        if (!window.confirm("Are you sure you want to delete this bug report?")) return;
         const { data: { session } } = await supabase.auth.getSession();
-    
-        if (!session) {
-            setError("Not authenticated");
-            router.push('/');
-            return;
-        }
-    
+        if (!session) { setError("Not authenticated"); router.push('/'); return; }
+
         try {
-            const { error } = await supabase
-                .from('bugs')
-                .delete()
-                .eq('id', id);
-    
-            if (error) {
-                console.error("Error deleting bug:", error);
-                setError("Failed to delete bug");
-                showToast("Failed to delete bug", 'error');
-                return;
-            }
-    
-            // Update the bug list after deletion
-            setBugs(prevBugs => prevBugs.filter(bug => bug.id !== id));
-            showToast('Bug deleted successfully', 'success');
+            const response = await fetch(`/api/admin/bugs/${id}`, {
+                 method: 'DELETE',
+                 headers: {
+                     'Authorization': `Bearer ${session.access_token}`
+                 },
+            });
+              const result = await response.json();
+
+             if (response.ok) {
+                 setBugs(prevBugs => prevBugs.filter(bug => bug.id !== id));
+                 showToast(result.message || 'Bug deleted successfully', 'success');
+             } else {
+                  console.error("Error deleting bug:", result.error);
+                  setError(result.error || "Failed to delete bug");
+                  showToast(result.error || "Failed to delete bug", 'error');
+             }
         } catch (error) {
-            console.error("Error deleting bug:", error);
-            setError("Failed to delete bug");
-            showToast("Failed to delete bug", 'error');
+             console.error("Error deleting bug:", error);
+             setError("Failed to delete bug");
+             showToast("Failed to delete bug", 'error');
         }
     };
 
+    // *** MODIFIED handleViewBug to open modal ***
+    const handleViewBug = (id: string) => {
+        const bugToShow = bugs.find(bug => bug.id === id); // Find the bug in the full list
+        if (bugToShow) {
+            setSelectedBug(bugToShow);
+            setIsModalOpen(true);
+            // router.push(`/admin/bugs/${id}`); // Remove navigation
+        } else {
+             showToast("Could not find bug details.", "error");
+        }
+    };
+
+    // --- Loading and Error states ---
+    // ... (Loading and Error JSX remains the same) ...
     if (loading) {
         return (
             <div className="flex h-full w-full items-center justify-center">
@@ -199,7 +218,7 @@ const BugManagement = () => {
                     <h2 className="mt-4 text-xl font-semibold text-red-900">Error</h2>
                     <p className="mt-2 text-center text-red-700">{error}</p>
                     <Button
-                        onClick={() => window.location.reload()}
+                        onClick={() => window.location.reload()} // Or call fetchBugs()
                         variant="primary"
                         className="mt-4"
                     >
@@ -210,28 +229,26 @@ const BugManagement = () => {
         );
     }
 
+
+    // --- Component Return JSX ---
     return (
         <div className="">
             <div className="">
                 <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-6">
-                    <div className="flex items-center relative w-full md:w-64">
-                        <input
-                            type="text"
-                            placeholder="Search bugs..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#00909A]"
-                        />
-                        <Search className="w-5 h-5 absolute left-3 text-gray-400" />
-                    </div>
+                    <SearchInput
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                        placeholder="Search bugs (ID, title, desc, email...)"
+                        className="w-full md:w-72"
+                    />
                 </div>
 
                 <Card>
-                    <BugTable 
+                    <BugTable
                         bugs={filteredBugs}
                         totalBugs={bugs.length}
                         searchTerm={searchTerm}
-                        onViewBug={handleViewBug}
+                        onViewBug={handleViewBug} // Pass the modified handler
                         onUpdateBug={handleUpdateBug}
                         onDeleteBug={handleDeleteBug}
                     />
@@ -245,6 +262,13 @@ const BugManagement = () => {
                     onClose={() => setToast({ ...toast, show: false })}
                 />
             )}
+
+            {/* Render the Modal */}
+            <BugDetailModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)} // Function to close the modal
+                bug={selectedBug} // Pass the selected bug data
+            />
         </div>
     );
 };

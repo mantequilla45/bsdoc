@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { Search, Loader, AlertCircle } from 'lucide-react';
-import { ProfileUser } from './components/ProfileUser';
+import { Loader, AlertCircle } from 'lucide-react';
+import { ProfileUser } from './components/ProfileUser'; // - Defines the user structure including 'id'
 import UserTable from './components/UserTable';
 import { Button } from './components/Button';
 import { Card } from './components/Card';
 import { Toast } from './components/Toast';
+import SearchInput from '../components/SearchInput';
 
 const UserManagement = () => {
     const [users, setUsers] = useState<ProfileUser[]>([]);
@@ -24,7 +25,9 @@ const UserManagement = () => {
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
     const router = useRouter();
 
-    // Show toast notification
+    // --- showToast, useEffect (fetchUsers), handleDeleteUser, handleSaveUser, cancelDelete ---
+    // ... (Keep all your existing functions for fetching, deleting, saving, toast, etc.) ...
+     // Show toast notification
     const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
         setToast({ show: true, message, type });
         setTimeout(() => setToast({ ...toast, show: false }), 3000);
@@ -78,12 +81,15 @@ const UserManagement = () => {
         fetchUsers();
     }, [router]);
 
+    // This useEffect handles the filtering based on searchTerm
     useEffect(() => {
         if (searchTerm.trim() === '') {
             setFilteredUsers(users);
         } else {
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
             const filtered = users.filter(user =>
+                // Check if user ID includes the search term (case-insensitive)
+                (user?.id ?? '').toLowerCase().includes(lowerCaseSearchTerm) || // <-- ADD THIS LINE
                 (user?.email ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
                 (user?.first_name ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
                 (user?.last_name ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
@@ -91,9 +97,9 @@ const UserManagement = () => {
             );
             setFilteredUsers(filtered);
         }
-    }, [searchTerm, users]);
+    }, [searchTerm, users]); // Dependency array is correct
 
-    // Function to handle user deletion
+     // Function to handle user deletion
     const handleDeleteUser = async (id: string) => {
         // If not confirming, show confirmation first
         if (confirmDelete !== id) {
@@ -140,13 +146,13 @@ const UserManagement = () => {
     const handleSaveUser = async (id: string, updatedUserData: Partial<ProfileUser>) => {
         // Get the current session first
         const { data: { session } } = await supabase.auth.getSession();
-    
+
         if (!session) {
             setError("Not authenticated");
             router.push('/');
             return;
         }
-    
+
         try {
             const response = await fetch(`/api/admin/users/${id}`, {
                 method: 'PUT', // Changed from 'PATCH'
@@ -156,15 +162,15 @@ const UserManagement = () => {
                 },
                 body: JSON.stringify(updatedUserData)
             });
-    
+
             if (response.ok) {
                 // Instead of parsing JSON response, just update state with the data we sent
-                setUsers(prevUsers => 
-                    prevUsers.map(user => 
+                setUsers(prevUsers =>
+                    prevUsers.map(user =>
                         user.id === id ? { ...user, ...updatedUserData } : user
                     )
                 );
-                
+
                 showToast('User updated successfully', 'success');
             } else {
                 // For error responses, try to parse JSON if available
@@ -191,8 +197,11 @@ const UserManagement = () => {
     const cancelDelete = () => {
         setConfirmDelete(null);
     };
+    // --- End of existing functions ---
 
-    if (loading) {
+
+    // --- Loading and Error states ---
+     if (loading) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <div className="flex flex-col items-center">
@@ -221,25 +230,23 @@ const UserManagement = () => {
             </div>
         );
     }
+    // --- End of Loading and Error states ---
+
 
     return (
         <div className="">
             <div className="">
                 <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-6">
-                    <div className="flex items-center relative w-full md:w-64">
-                        <input
-                            type="text"
-                            placeholder="Search users..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md md:text-base text-sm focus:outline-none focus:border-[#00909A]"
-                        />
-                        <Search className="md:w-5 w-4 md:h-5 h-4 absolute left-3 text-gray-400" />
-                    </div>
+                    <SearchInput
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                        placeholder="Search users..." // Updated placeholder
+                        className="w-full md:w-72" // Maybe slightly wider
+                    />
                 </div>
 
                 <Card>
-                    <UserTable 
+                    <UserTable
                         users={filteredUsers}
                         totalUsers={users.length}
                         searchTerm={searchTerm}

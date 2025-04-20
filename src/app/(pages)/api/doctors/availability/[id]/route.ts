@@ -212,7 +212,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
                     user_id: appt.patient_id, // Target patient
                     type: 'APPOINTMENT_CANCELLED_BY_DOCTOR', // Same type as single cancel
                     message: `Your appointment with ${doctorName} on ${appt.appointment_date} at ${appt.appointment_time} has been cancelled due to a schedule change.`,
-                    link_url: '/appointments',
+                    link_url: '/my-appointments',
                     metadata: { appointment_id: appt.id, doctor_id: availability.doctor_id }
                 };
                 return supabaseAdmin.from('notifications').insert(notificationPayload);
