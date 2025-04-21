@@ -60,8 +60,8 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
     };
 
     return (
-        <div className="md:w-[85%] md:min-w-[150px] w-[250px] mx-auto relative">
-            <div className="w-full aspect-square rounded-full border border-gray-300 relative group">
+        <div className="w-24 h-24 relative">
+            <div className="w-full h-full rounded-full border border-gray-300 relative overflow-hidden">
                 {/* Loading Overlay */}
                 {isImageLoading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
@@ -74,8 +74,8 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
                 <Image
                     alt="Profile Picture"
                     src={forcedImagePreview || profile?.profile_image_url || profile?.profile_picture || defaultPlaceholder}
-                    width={450}
-                    height={450}
+                    width={96}
+                    height={96}
                     className="w-full h-full object-cover rounded-full"
                     onLoadingComplete={handleImageLoadingComplete}
                     onError={(e) => {
@@ -85,49 +85,43 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
                     }}
                 />
 
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 rounded-full">
-                    {/* Edit/Upload Button or Save Button */}
-                    {!forcedImagePreview ? (
-                        <label className="absolute bottom-[21px] right-[21px] hover:bg-[#4B8C8D] duration-300 cursor-pointer bg-[#62B6B8] text-white rounded-full p-3 shadow-lg z-20">
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                className="hidden"
-                            />
-                            <MdEdit className="w-5 h-5" />
-                        </label>
-                    ) : (
-                        <button
-                            onClick={handleSaveAndReset}
-                            disabled={isSaving}
-                            className="absolute bottom-[21px] right-[21px] hover:bg-[#4B8C8D] duration-300 bg-[#62B6B8] text-white rounded-full p-3 shadow-lg z-20 cursor-pointer disabled:opacity-50"
-                        >
-                            {isSaving ? (
-                                <div className="animate-spin">
-                                    <FaCheck className="w-5 h-5 text-white" />
-                                </div>
-                            ) : (
-                                <FaCheck className="w-5 h-5" />
-                            )}
-                        </button>
-                    )}
-                </div>
+                {/* Edit/Upload Button or Save Button */}
+                {!forcedImagePreview ? (
+                    <label className="absolute bottom-0 right-0 hover:bg-teal-600 duration-300 cursor-pointer bg-teal-500 text-white rounded-full p-2 shadow-md z-20">
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="hidden"
+                        />
+                        <MdEdit className="w-4 h-4" />
+                    </label>
+                ) : (
+                    <button
+                        onClick={handleSaveAndReset}
+                        disabled={isSaving}
+                        className="absolute bottom-0 right-0 hover:bg-teal-600 duration-300 bg-teal-500 text-white rounded-full p-2 shadow-md z-20 cursor-pointer disabled:opacity-50"
+                    >
+                        {isSaving ? (
+                            <div className="animate-spin">
+                                <FaCheck className="w-4 h-4 text-white" />
+                            </div>
+                        ) : (
+                            <FaCheck className="w-4 h-4" />
+                        )}
+                    </button>
+                )}
             </div>
 
-            {/* Buttons Container */}
+            {/* Cancel Button */}
             {forcedImagePreview && forcedImagePreview !== profile?.profile_image_url && (
-                <div className="absolute bottom-0 right-0">
-                    {/* Cancel Button */}
-                    <button
-                        onClick={handleCancelUpload}
-                        className="absolute bottom-[63px] right-[3px] bg-gray-400 hover:bg-[#747474] text-white duration-300 rounded-full w-8 h-8 flex items-center justify-center shadow-lg cursor-pointer z-30"
-                    >
-                        <MdClose className="w-5 h-5" />
-                    </button>
-                </div>
+                <button
+                    onClick={handleCancelUpload}
+                    className="absolute top-0 right-0 bg-gray-400 hover:bg-gray-500 text-white duration-300 rounded-full w-6 h-6 flex items-center justify-center shadow-lg cursor-pointer z-30"
+                >
+                    <MdClose className="w-3 h-3" />
+                </button>
             )}
         </div>
     );
