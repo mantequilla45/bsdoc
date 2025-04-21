@@ -6,60 +6,32 @@ import BugManagement from './bugs/bug-reports';
 import { AdminPanelProvider } from '@/app/context/AdminPanelContext';
 import { useSearchParams } from 'next/navigation';
 import AdminDoctorVerificationPage from './doctor-verifications/doctor-verification';
-import AdminNotificationsPage from './notifications/notifications';
-// Import other content components as needed
 
 function AdminPageContent() {
     const searchParams = useSearchParams();
-    // Initialize state *once* based on the initial URL.
-    // Note: useState's initializer function runs only on the first render.
-    const [activeContentId, setactiveContentId] = useState<string>(() => {
-        const initialSection = searchParams.get('section') ?? 'dashboard';
-        console.log(`[AdminPageContent Initial State] Setting initial section from URL: ${initialSection}`);
-        return initialSection;
-    });
+    const [activeContentId, setactiveContentId] = useState<string>(() => searchParams.get('section') ?? 'dashboard');
 
-    // Effect to sync state ONLY if URL param changes *after* initial load
-    useEffect(() => {
-        const sectionFromUrl = searchParams.get('section') ?? 'dashboard';
-        console.log(`[AdminPageContent EFFECT Sync] URL params changed. Syncing state to: ${sectionFromUrl}`);
-        // Directly set the state based on the URL parameter when it changes.
-        // This avoids reading activeContentId inside the effect.
-        setactiveContentId(sectionFromUrl);
-    }, [searchParams]); // Depend only on searchParams
-
-    // Handler passed to Sidebar and Context
     const handleContentChange = useCallback((contentId: string) => {
-        console.log(`[AdminPageContent] handleContentChange called with: ${contentId}`);
         setactiveContentId(contentId);
-        // Optional: Update URL to match state changes from clicks.
-        // You might want to implement this for better UX (bookmarking, back/forward).
-        // Consider using next/navigation's router.push or router.replace here.
-        // e.g., router.push(`/admin?section=${contentId}`, { scroll: false });
-    }, []); // Empty dependency array is correct IF this callback doesn't depend on changing props/state
+    }, []);
 
-    // Function to render the appropriate content based on activeContentId
     const renderContent = () => {
-        console.log(`[AdminPageContent] Rendering content for activeContentId: ${activeContentId}`);
         switch (activeContentId) {
             case 'user-management':
                 return <UserManagement />;
             case 'bug-reports':
                 return <BugManagement />;
             case 'dashboard':
-                return <div className="p-6 text-gray-600">Dashboard content will go here.</div>;
+                return <AdminDashboard />; // Render the dashboard component
             case 'doctor-verification':
                 return <AdminDoctorVerificationPage />; // Render your Bug Reports component
             case 'notifications':
                 return <AdminNotificationsPage/>
             default:
-                console.warn(`[AdminPageContent] Unknown content ID in render: ${activeContentId}. Falling back.`);
-                // Fallback to a default view or dashboard if the section is unknown
                 return <div className="p-6 text-gray-600">Select an option from the sidebar or check the URL section.</div>;
         }
     };
 
-    // Debug logging to check the activeContentId value when it changes
     useEffect(() => {
         console.log("[AdminPageContent State Change] Active content changed to:", activeContentId);
     }, [activeContentId]);
@@ -88,9 +60,8 @@ function AdminPageContent() {
 
 export default function AdminPage() {
     return (
-        // Suspense is needed because useSearchParams() might suspend
         <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading Admin...</div>}>
             <AdminPageContent />
         </Suspense>
     );
-};
+}
