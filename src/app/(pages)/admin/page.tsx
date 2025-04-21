@@ -6,7 +6,6 @@ import BugManagement from './bugs/bug-reports';
 import { AdminPanelProvider } from '@/app/context/AdminPanelContext';
 import { useSearchParams } from 'next/navigation';
 import AdminDoctorVerificationPage from './doctor-verifications/doctor-verification';
-import AdminDashboard from './components/AdminDashboard'; // Import the dashboard
 
 function AdminPageContent() {
     const searchParams = useSearchParams();
@@ -25,7 +24,9 @@ function AdminPageContent() {
             case 'dashboard':
                 return <AdminDashboard />; // Render the dashboard component
             case 'doctor-verification':
-                return <AdminDoctorVerificationPage />;
+                return <AdminDoctorVerificationPage />; // Render your Bug Reports component
+            case 'notifications':
+                return <AdminNotificationsPage/>
             default:
                 return <div className="p-6 text-gray-600">Select an option from the sidebar or check the URL section.</div>;
         }
