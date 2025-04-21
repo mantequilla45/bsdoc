@@ -6,6 +6,7 @@ import BugManagement from './bugs/bug-reports';
 import { AdminPanelProvider } from '@/app/context/AdminPanelContext';
 import { useSearchParams } from 'next/navigation';
 import AdminDoctorVerificationPage from './doctor-verifications/doctor-verification';
+import AdminNotificationsPage from './notifications/notifications';
 // Import other content components as needed
 
 function AdminPageContent() {
@@ -48,7 +49,9 @@ function AdminPageContent() {
             case 'dashboard':
                 return <div className="p-6 text-gray-600">Dashboard content will go here.</div>;
             case 'doctor-verification':
-                return <AdminDoctorVerificationPage />;
+                return <AdminDoctorVerificationPage />; // Render your Bug Reports component
+            case 'notifications':
+                return <AdminNotificationsPage/>
             default:
                 console.warn(`[AdminPageContent] Unknown content ID in render: ${activeContentId}. Falling back.`);
                 // Fallback to a default view or dashboard if the section is unknown
