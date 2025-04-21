@@ -1,7 +1,7 @@
 // src\app\components\ClientWrapper.tsx
 'use client'; // <-- Make this a Client Component
 
-import React, { useEffect, useState } from 'react'; //eslint-disable-line
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
