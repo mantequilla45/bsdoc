@@ -98,7 +98,8 @@ const Footer = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="/doctors" className="text-white/80 hover:text-white hover:pl-2 transition-all duration-300 block">
+                  {/*eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                  <a href="/doctors" className="text-white/80 hover:text-white hover:pl-2 transition-all duration-300 block"> 
                     Find Doctors
                   </a>
                 </li>
