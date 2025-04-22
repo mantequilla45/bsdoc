@@ -204,7 +204,7 @@ const BugManagement = () => {
             <div className="flex h-full w-full items-center justify-center">
                 <div className="flex flex-col items-center">
                     <Loader className="h-12 w-12 animate-spin text-blue-600" />
-                    <p className="mt-4 text-lg text-gray-700">Loading bug reports...</p>
+                    <p className="mt-4 text-lg text-gray-700">Loading user feedback...</p>
                 </div>
             </div>
         );

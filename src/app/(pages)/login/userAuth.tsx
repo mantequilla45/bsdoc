@@ -36,35 +36,64 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
     setLoading(true);
     setErrorMessage("");
 
+    let result;
+
     try {
       if (isLogin) {
-        await login(email, password);
-        onAuthSuccess();
+        // await login(email, password);
+        // onAuthSuccess();
+        result = await login(email, password);
       } else {
         if (password !== confirmPassword) {
           setErrorMessage("Passwords do not match!");
           setLoading(false);
           return;
         }
-        await signup(email, password);
-        alert("Please verify your email before logging in. Check your inbox for the verification link.");
+        result = await signup(email, password);
+        if (result.success) {
+          alert("Sign up successful! Please verify your email before logging in. Check your inbox for the verification link.");
+        }
+        //onAuthSuccess();
+      }
+
+      if (result.success) {
         onAuthSuccess();
+      }
+      else if (result.error) {
+        // Set specific error messages based on the returned error
+        console.error("Auth Error Received from Server Action:", result.error);
+        if (isLogin && result.error.message.toLowerCase().includes('invalid login credentials')) {
+          setErrorMessage("Invalid email or password. Please check and try again.");
+        } else if (isLogin && result.error.message.toLowerCase().includes('email not confirmed')) {
+          setErrorMessage("Please verify your email before logging in. Check your inbox for the verification link.");
+        } else if (!isLogin && result.error.message.toLowerCase().includes('user already registered')) {
+          setErrorMessage("This email is already registered. Please try logging in.");
+        }
+        else {
+          // Generic fallback
+          setErrorMessage(result.error.message);
+        }
+      } else {
+        // Should not happen if server action always returns success/error
+        setErrorMessage('An unexpected error occurred.');
       }
     }
     catch (error) {
-      if (error instanceof Error) {
-        if (isLogin && error.message.toLowerCase().includes('email not confirmed')) {
-          setErrorMessage("Please verify your email before logging in. Check your inbox for the verification link.");
-          alert("Please verify your email before logging in. Check your inbox for the verification link.");
-        }
-        else {
-          console.log('Error: ', error);
-          setErrorMessage(error.message);
-        }
-      }
-      else {
-        setErrorMessage('An unknown error has occurred.');
-      }
+      // if (error instanceof Error) {
+      //   if (isLogin && error.message.toLowerCase().includes('email not confirmed')) {
+      //     setErrorMessage("Please verify your email before logging in. Check your inbox for the verification link.");
+      //     alert("Please verify your email before logging in. Check your inbox for the verification link.");
+      //   }
+      //   else {
+      //     console.log('Error: ', error);
+      //     setErrorMessage(error.message);
+      //   }
+      // }
+      // else {
+      //   setErrorMessage('An unknown error has occurred.');
+      // }
+      console.error('Unexpected error calling server action:', error);
+      setErrorMessage('An unexpected network or server error occurred.');
     }
     finally {
       setLoading(false);

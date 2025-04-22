@@ -180,7 +180,7 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange, activeContentId }) =
         <NavItem
           href="/admin/bug-reports"
           icon={<MessageSquare size={20} />}
-          title="Bug Reports"
+          title="User Feedback"
           active={activeItem === 'bug-reports'}
           onClick={handleNavClick}
           collapsed={collapsed}

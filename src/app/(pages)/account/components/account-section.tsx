@@ -5,6 +5,7 @@ import { Profile } from './index';
 import LoadingPlaceholder from './loading';
 import { MdEdit, MdSave, MdCancel, MdEmail, MdPhone, MdPerson, MdHome, MdVpnKey, MdChevronRight, MdChevronLeft, MdLocationCity, MdMarkunreadMailbox } from "react-icons/md";
 import { GrClose } from 'react-icons/gr';
+import toast from 'react-hot-toast';
 
 interface AccountSectionProps {
     userId: string;
@@ -19,6 +20,12 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
     const [profileImage, setProfileImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
+
+    const [newPassword, setNewPassword] = useState<string>('');
+    const [confirmPassword, setConfirmPassword] = useState<string>('');
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [isUpdatingPassword, setIsUpdatingPassword] = useState<boolean>(false);
+    const [currentPassword, setCurrentPassword] = useState<string>('');
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -188,11 +195,25 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
             type: 'text'
         },
         {
-            label: 'Password',
-            name: 'password',
+            label: 'Current Password', // Add this field
+            name: 'currentPassword',
+            icon: <MdVpnKey className="text-gray-500" />, // Maybe different color for current?
+            type: 'password',
+            placeholder: 'Enter your current password'
+        },
+        {
+            label: 'New Password',
+            name: 'newPassword', // Unique name for state handling
             icon: <MdVpnKey className="text-teal-500" />,
             type: 'password',
-            placeholder: '••••••••'
+            placeholder: 'Enter new password'
+        },
+        {
+            label: 'Confirm Password',
+            name: 'confirmPassword', // Unique name for state handling
+            icon: <MdVpnKey className="text-teal-500" />,
+            type: 'password',
+            placeholder: 'Confirm new password'
         }
     ];
 
@@ -202,14 +223,39 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
             <div className="space-y-4">
                 {fields.map(({ label, name, icon, type, placeholder }) => (
                     <div key={name} className="flex items-start space-x-4">
-                        <div className="w-10 flex justify-center pt-2">
-                            {icon}
-                        </div>
+                        <div className="w-10 flex justify-center pt-2">{icon}</div>
                         <div className="flex-grow min-w-0">
                             <label className="text-xs text-gray-500 block mb-1">{label}</label>
                             {loading ? (
                                 <LoadingPlaceholder />
+                            ) : name === 'newPassword' || name === 'confirmPassword' || name === 'currentPassword' ? ( // Add currentPassword here
+                                // --- Password Field Specific Logic ---
+                                isEditing ? (
+                                    <input
+                                        type={type}
+                                        name={name}
+                                        // Bind value based on name
+                                        value={
+                                            name === 'currentPassword' ? currentPassword :
+                                                name === 'newPassword' ? newPassword :
+                                                    confirmPassword
+                                        }
+                                        // Update state based on name
+                                        onChange={(e) => {
+                                            if (name === 'currentPassword') setCurrentPassword(e.target.value);
+                                            if (name === 'newPassword') setNewPassword(e.target.value);
+                                            if (name === 'confirmPassword') setConfirmPassword(e.target.value);
+                                        }}
+                                        placeholder={placeholder}
+                                        className="w-full border-b border-gray-300 focus:border-teal-500 outline-none transition-colors"
+                                        disabled={isSaving || isUpdatingPassword}
+                                    />
+                                ) : (
+                                    <p className="text-gray-800">••••••••</p>
+                                )
+                                // --- End Password Field Specific Logic ---
                             ) : isEditing ? (
+                                // --- Regular Field Logic (Editable) ---
                                 <input
                                     type={type}
                                     name={name}
@@ -217,17 +263,157 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                                     onChange={handleInputChange}
                                     placeholder={placeholder}
                                     className="w-full border-b border-gray-300 focus:border-teal-500 outline-none transition-colors truncate"
+                                    disabled={isSaving || isUpdatingPassword} // Also disable if password is being updated
                                 />
                             ) : (
+                                // --- Regular Field Logic (Display) ---
                                 <p className="text-gray-800 break-words overflow-hidden">
-                                    {name === 'password' ? '••••••••' : profile?.[name as keyof Profile] ?? '-'}
+                                    {/* No need for password check here anymore */}
+                                    {profile?.[name as keyof Profile] ?? '-'}
                                 </p>
                             )}
                         </div>
                     </div>
                 ))}
+
+                {/* --- Add Password Feedback & Button INSIDE the secondaryFields section --- */}
+                {/* Check if this section contains password fields - a bit rudimentary check */}
+                {fields.some(f => f.name === 'newPassword') && isEditing && (
+                    <div className="mt-4 pt-2">
+                        {passwordError && <p className="text-red-500 text-sm text-center mb-2">{passwordError}</p>}
+                        <div className="flex justify-end">
+                            <button
+                                onClick={handleChangePassword}
+                                disabled={
+                                    isSaving ||
+                                    isUpdatingPassword ||
+                                    !currentPassword || // Add check for current password
+                                    !newPassword ||
+                                    !confirmPassword ||
+                                    newPassword !== confirmPassword // Keep match check for immediate feedback
+                                }
+                                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+                            >
+                                {isUpdatingPassword ? 'Updating Password...' : 'Update Password'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+                {/* --- End Password Feedback & Button --- */}
             </div>
         );
+    };
+
+    // Add this function inside the AccountSection component
+
+    const handleChangePassword = async () => {
+        setPasswordError(null);
+        setIsUpdatingPassword(true); // Set loading state at the beginning
+
+        // 1. Basic Validation (moved before loading state if preferred, but okay here too)
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            setPasswordError("Please fill in all password fields.");
+            setIsUpdatingPassword(false); // Turn off loading before returning
+            return;
+        }
+        if (newPassword.length < 6) {
+            setPasswordError("New password must be at least 6 characters long.");
+            setIsUpdatingPassword(false);
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setPasswordError("New passwords do not match.");
+            setIsUpdatingPassword(false);
+            return;
+        }
+        if (currentPassword === newPassword) {
+            setPasswordError("New password cannot be the same as the current password.");
+            setIsUpdatingPassword(false);
+            return;
+        }
+
+        let isPasswordVerified = false; // Flag to track verification success
+
+        try {
+            // 2. Verify Current Password
+            console.log("Attempting re-authentication...");
+            const { error: reauthError } = await supabase.auth.reauthenticate();
+
+            if (reauthError) {
+                console.warn("Re-authentication failed (this might be expected), trying signIn to verify current password.", reauthError);
+
+                if (!profile?.email) {
+                    setPasswordError("Could not verify current password. User email not found.");
+                    throw new Error("User email not found for password verification."); // Throw to exit try block
+                }
+
+                // Try verifying by signing in with the current password
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                    email: profile.email,
+                    password: currentPassword
+                });
+
+                if (signInError) {
+                    // If signIn fails, the entered current password was WRONG.
+                    console.error('Current password verification failed:', signInError);
+                    setPasswordError("Incorrect current password.");
+                    // No need to set flag, will be caught by finally or check below
+                    throw signInError; // Throw to exit try block
+                } else {
+                    // If signIn succeeds, the current password is CORRECT.
+                    console.log("Current password verified via signIn.");
+                    isPasswordVerified = true;
+                }
+            } else {
+                // If reauthenticate() itself succeeds, consider password verified for this session.
+                console.log("Re-authentication successful.");
+                isPasswordVerified = true;
+            }
+
+
+            // 3. Proceed ONLY if password was verified
+            if (!isPasswordVerified) {
+                // This case should ideally not be reached if errors are thrown above, but acts as a safeguard
+                console.error("Password verification flag not set, aborting update.");
+                setPasswordError("Could not verify current credentials. Please try again.");
+                throw new Error("Password verification failed unexpectedly."); // Exit try block
+            }
+
+            // 4. Update to New Password
+            console.log("Updating user password...");
+            const { data: updateData, error: updateError } = await supabase.auth.updateUser({ // Capture data too
+                password: newPassword
+            });
+
+            if (updateError) {
+                console.error('Error updating password:', updateError);
+                setPasswordError(`Update failed: ${updateError.message}`);
+                throw updateError; // Exit try block
+            }
+
+            // If update successful:
+            console.log("Password update successful:", updateData);
+            toast.success("Password updated successfully!");
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+            setIsEditing(false);
+
+        } catch (error: unknown) {
+            // Catch errors thrown from verification or update steps
+            console.error('Password update process error caught:', error);
+            // Ensure a user-facing error is set if not already done
+            if (!passwordError) {
+                const message = error instanceof Error ? error.message : 'An unknown error occurred';
+                // Avoid setting generic message if a specific one was already set
+                if (message !== "Incorrect current password.") { // Example check
+                    setPasswordError(`Update failed: ${message}`);
+                }
+            }
+        } finally {
+            // Always turn off loading state
+            setIsUpdatingPassword(false);
+        }
     };
 
     return (
@@ -267,13 +453,13 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                         </h3>
                     )}
                 </div>
-                
+
                 <div className="flex flex-col md:flex-row gap-6">
                     {/* Left Column - Always visible */}
                     <div className={`${isExpanded ? 'md:w-1/2' : 'w-full'}`}>
                         {renderFieldSection(primaryFields)}
                     </div>
-                    
+
                     {/* Right Column - Only visible when expanded */}
                     {isExpanded && (
                         <div className="md:w-1/2 w-full border-l pl-6">
@@ -305,7 +491,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                     </div>
                 )}
 
-                <button 
+                <button
                     onClick={toggleExpand}
                     className="mt-6 w-full flex items-center justify-center py-2 text-teal-500 hover:text-teal-600 transition-colors font-medium"
                 >
