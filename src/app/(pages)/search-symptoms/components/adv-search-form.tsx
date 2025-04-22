@@ -50,12 +50,10 @@ const AdvancedSearchForm = ({
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) {
-        console.warn('[Debug] No user is signed in.');
         setIsLoadingProfile(false);
         return;
       }
 
-      console.info(`[Debug] Fetching data for user ID: ${user.id}`);
       setIsLoadingProfile(true);
 
       const { data: profile } = await supabase
@@ -71,8 +69,7 @@ const AdvancedSearchForm = ({
         .single();
 
       if (profile) {
-        const fullName = `${profile.first_name} ${profile.last_name}`;
-        setName(fullName);
+        setName(`${profile.first_name} ${profile.last_name}`);
       }
 
       if (medical) {
@@ -88,7 +85,7 @@ const AdvancedSearchForm = ({
 
   const handleAssess = async () => {
     const allSelected = [...selectedSymptoms, ...selectedConditions];
-    if (allSelected.length === 0) return;
+    if (allSelected.length === 0 || !user) return;
 
     try {
       setLoading(true);
@@ -98,6 +95,17 @@ const AdvancedSearchForm = ({
       setResult(data);
       setSelectedSymptoms([]);
       setSelectedConditions([]);
+
+      // ✅ Store result to Supabase
+      if (user && data) {
+        await supabase.from('symptom_results').insert({
+          user_id: user.id,
+          input_symptoms: allSelected,
+          likely_conditions: data.likely_common_conditions,
+          other_conditions: data.other_possible_conditions,
+        });
+        console.log('[Symptom Result Stored] ✔️');
+      }
     } catch (err) {
       console.error(err);
       setError('An error occurred while fetching predictions.');
