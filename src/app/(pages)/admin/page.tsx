@@ -7,6 +7,7 @@ import { AdminPanelProvider } from '@/app/context/AdminPanelContext';
 import { useSearchParams } from 'next/navigation';
 import AdminDoctorVerificationPage from './doctor-verifications/doctor-verification';
 import AdminDashboard from './components/AdminDashboard'; // Import the dashboard
+import AdminNotificationsPage from './notifications/notifications';
 
 function AdminPageContent() {
     const searchParams = useSearchParams();
@@ -26,6 +27,8 @@ function AdminPageContent() {
                 return <AdminDashboard />; // Render the dashboard component
             case 'doctor-verification':
                 return <AdminDoctorVerificationPage />;
+            case 'notifications':
+                return <AdminNotificationsPage />
             default:
                 return <div className="p-6 text-gray-600">Select an option from the sidebar or check the URL section.</div>;
         }
