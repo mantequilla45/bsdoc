@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabaseClient";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import NotificationBell from '@/app/components/Notifications/NotificationBell'; // Adjust path if needed
+import LogoutConfirmationModal from "../components/modals/LogoutConfirmationModal";
 
 const Header = ({ background, title }: { background: string; title: string }) => {
     const router = useRouter();
@@ -24,6 +25,8 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
     const [userRole, setUserRole] = useState<string | null>(null);
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
     const fetchUserProfile = async (userId: string) => {
         try {
@@ -131,7 +134,19 @@ const Header = ({ background, title }: { background: string; title: string }) =>
         setIsLoginOpen(false);
     };
 
+    // --- Modal Control Functions ---
+    const openLogoutModal = () => {
+        setMenuOpen(false); // Close profile menu if open
+        setMobileMenuOpen(false); // Close mobile menu if open
+        setIsLogoutModalOpen(true);
+    };
+
+    const closeLogoutModal = () => {
+        setIsLogoutModalOpen(false);
+    };
+
     const handleLogout = async () => {
+        closeLogoutModal();
         try {
             setUserRole(null);
             setProfileImageUrl(null);
@@ -144,7 +159,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
             console.error('Error during logout:', error);
         }
     };
-
+    console.log("Background is:", background);
     return (
         <header
             ref={headerRef}
@@ -153,6 +168,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
             ${scrolled ? "py-0 h-[70px]" : "py-4 md:h-[10vh] h-[80px]"}
             flex items-center max-w-[1300px] min-w-[100%]`}
         >
+            <link rel="icon" href="/favicon.ico" />
             <title>{title}</title>
             <nav className="relative mx-auto flex justify-center items-center md:px-16 px-6 w-full md:h-full">
                 {/* Mobile Menu Button */}
@@ -207,22 +223,30 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                     </div>
 
                     <div
-                        className={`transform header-transition  relative w-[70px] transition-all duration-300
-                                ${scrolled ? "scale-[1] translate-y-0 hover:scale-[1.1]" : "scale-[1.8] hover:scale-[1.5]"}`}
+                        className={`transform header-transition relative w-[70px] transition-all duration-300 md:block hidden
+                                ${scrolled ? "scale-[1] translate-y-0 hover:scale-[1.1]" : "scale-[1.5] hover:scale-[1.3]"}`}
                     >
-                        {/* Changed Link to point to / for logo click */}
                         <Link href="/">
                             <Image
-                                fill
-                                src={`/logo/${background === "rgba(0,0,0,0.4)" || pathname === '/' && !scrolled ? "logo-white" : "logo-clear"}.svg`} // Adjusted logo logic slightly
+                                // Removed fill prop
+                                width={70} // Set explicit width
+                                height={70} // Set explicit height (adjust if aspect ratio is different)
+                                src={`/logo/${background === "rgba(0,0,0,0.4)" || pathname === '/' && !scrolled ? "logo-white" : "logo-clear"}.svg`}
                                 alt="BSDOC Logo"
-                                className="object-contain"
+                                className="object-contain" // Keep object-contain
+                                priority // Add priority if it's LCP (Largest Contentful Paint)
                             />
                         </Link>
                     </div>
 
                     {/* Right side items grouped together */}
                     <div className="hidden md:flex flex-row items-center gap-5 text-sm relative justify-end w-[400px]">
+                        <Link
+                            href="/doctors"
+                            className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" ? "text-white" : ""}  text-md `}>
+                            Doctors
+                        </Link>
+
                         <Link // Changed from <a> to <Link> for client-side navigation
                             href="/appointment-page" // Make sure this route exists
                             className={`hover:underline cursor-pointer ${background === "rgba(0,0,0,0.4)" || pathname === '/' && !scrolled ? "text-white" : ""}  text-md `}>
@@ -231,7 +255,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
                         {/* --> Add NotificationBell here <-- */}
                         {/* It will only render if loggedIn is true (handled internally by NotificationBell) */}
-                        <NotificationBell />
+                        <NotificationBell color={background === "#EEFFFE" || background === "white" ? "light" : "dark"} />
 
                         {loggedIn ? (
                             <div className="relative"> {/* Wrapper for profile menu */}
@@ -281,7 +305,8 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                                                 : "hover:bg-gray-100 cursor-pointer"
                                                             }`}
                                                         // Use button for logout for better semantics
-                                                        onClick={item === "Logout" ? handleLogout : () => setMenuOpen(false)} // Close menu on item click
+                                                        //onClick={item === "Logout" ? handleLogout : () => setMenuOpen(false)} // Close menu on item click
+                                                        onClick={item === 'Logout' ? openLogoutModal : () => setMenuOpen(false)}
                                                     >
                                                         {item === "/account" ? (
                                                             <Link href="/account" className="block w-full h-full">Account</Link>
@@ -342,6 +367,13 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                 </li>
 
                                 <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
+                                    <Link
+                                        href="/doctors" onClick={() => setMobileMenuOpen(false)} className='block'>
+                                        Doctors
+                                    </Link>
+                                </li>
+                                
+                                <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
                                     <Link href="/appointment-page" onClick={() => setMobileMenuOpen(false)} className="block">
                                         Schedule Appointment
                                     </Link>
@@ -374,7 +406,8 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                             <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="block">Settings</Link>
                                         </li>
                                         <li
-                                            onClick={handleLogout} // Logout closes menu automatically
+                                            //onClick={handleLogout} // Logout closes menu automatically
+                                            onClick={openLogoutModal}
                                             className="px-4 py-3 hover:bg-red-100 text-red-500 w-full text-center cursor-pointer"
                                         >
                                             Logout
@@ -404,6 +437,12 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                     onAuthSuccess={handleAuthSuccess}
                 />
             </AnimatePresence>
+            {/* Logout Confirmation Modal */}
+            <LogoutConfirmationModal
+                isOpen={isLogoutModalOpen}
+                onClose={closeLogoutModal}
+                onConfirmLogout={handleLogout} // Pass the original logout function as the confirm action
+            />
         </header>
     );
 };

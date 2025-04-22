@@ -4,6 +4,83 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient'; // For user auth check
 import { supabaseAdmin } from '@/lib/supabaseAdmin'; // For DB operations and notifications
 
+export async function GET(req: NextRequest) {
+    console.log("[API Appointments GET] Request received");
+
+    try {
+        // 1. Authentication check
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401 });
+        }
+        const token = authHeader.split(' ')[1];
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) {
+            return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
+        }
+        const requesterId = user.id;
+        console.log(`[API Appointments GET] Authenticated user: ${requesterId}`);
+
+        // 2. Parse query parameters
+        const url = new URL(req.url);
+        const patientId = url.searchParams.get('patient_id');
+        const doctorId = url.searchParams.get('doctor_id');
+        const includeHidden = url.searchParams.get('include_hidden') === 'true';
+        
+        console.log(`[API Appointments GET] Query params - patient_id: ${patientId}, doctor_id: ${doctorId}, include_hidden: ${includeHidden}`);
+
+        // 3. Authorization check - user must be requesting their own data
+        if (patientId && patientId !== requesterId && doctorId !== requesterId) {
+            // Can only view appointments where the user is either the patient or doctor
+            return NextResponse.json({ error: 'Forbidden: You can only view your own appointments' }, { status: 403 });
+        }
+
+        // 4. Build the query
+        let query = supabaseAdmin
+            .from('appointments')
+            .select(`
+                *,
+                doctor:doctors(
+                    id,
+                    specialization,
+                    profiles(first_name, last_name, profile_image_url)
+                ),
+                patient:profiles(id, first_name, last_name)
+            `);
+
+        // Add filters
+        if (patientId) {
+            query = query.eq('patient_id', patientId);
+            
+            // Filter out hidden appointments unless explicitly requested
+            if (!includeHidden) {
+                query = query.eq('is_hidden_by_patient', false);
+            }
+        }
+        
+        if (doctorId) {
+            query = query.eq('doctor_id', doctorId);
+        }
+
+        // 5. Execute the query
+        const { data: appointments, error: fetchError } = await query;
+
+        if (fetchError) {
+            console.error("[API Appointments GET] Error fetching appointments:", fetchError);
+            return NextResponse.json({ error: 'Database query error', details: fetchError.message }, { status: 500 });
+        }
+
+        // 6. Return the appointments
+        console.log(`[API Appointments GET] Successfully fetched ${appointments?.length || 0} appointments`);
+        return NextResponse.json({ data: appointments }, { status: 200 });
+
+    } catch (error) {
+        console.error("[API Appointments GET] Unexpected error:", error);
+        const details = error instanceof Error ? error.message : String(error);
+        return NextResponse.json({ error: 'Internal server error', details }, { status: 500 });
+    }
+}
+
 // --- Handler to update a specific appointment (e.g., cancel by doctor OR patient) ---
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const appointmentId = (await params).id;
@@ -46,16 +123,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         console.log(`[API Appointments PUT /${appointmentId}] Fetching appointment details...`);
         const { data: appointment, error: fetchError } = await supabaseAdmin
             .from('appointments')
-             // Select fields needed for authorization and notifications
+            // Select fields needed for authorization and notifications
             .select('*, doctor_id, patient_id, doctor:doctors(id, profiles(first_name, last_name)), patient:profiles(id, first_name, last_name)')
             .eq('id', appointmentId)
             .single();
 
         if (fetchError || !appointment) {
-             console.error(`[API Appointments PUT /${appointmentId}] Error fetching appointment:`, fetchError);
-             const status = fetchError?.message.includes('0 rows') ? 404 : 500;
-             return NextResponse.json({ error: 'Appointment not found or query error' }, { status });
-         }
+            console.error(`[API Appointments PUT /${appointmentId}] Error fetching appointment:`, fetchError);
+            const status = fetchError?.message.includes('0 rows') ? 404 : 500;
+            return NextResponse.json({ error: 'Appointment not found or query error' }, { status });
+        }
         console.log(`[API Appointments PUT /${appointmentId}] Appointment found. Doctor ID: ${appointment.doctor_id}, Patient ID: ${appointment.patient_id}`);
 
         // 4. Authorization: Check if the requester is EITHER the patient OR the doctor for this appointment
@@ -71,9 +148,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
         // Optional: Prevent cancelling appointments that are already cancelled or completed
         if (appointment.status === 'cancelled' || appointment.status === 'completed') {
-             return NextResponse.json({ error: `Appointment is already ${appointment.status}.` }, { status: 409 }); // 409 Conflict
+            return NextResponse.json({ error: `Appointment is already ${appointment.status}.` }, { status: 409 }); // 409 Conflict
         }
-         // Optional: Prevent cancelling past appointments (adjust tolerance as needed)
+        // Optional: Prevent cancelling past appointments (adjust tolerance as needed)
         // const appointmentDateTime = new Date(`${appointment.appointment_date}T${appointment.appointment_time}`);
         // if (appointmentDateTime < new Date(Date.now() - 5 * 60 * 1000)) { // Allow cancelling up to 5 mins past
         //     return NextResponse.json({ error: `Cannot cancel past appointments.` }, { status: 400 });
@@ -88,7 +165,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                 updated_at: new Date().toISOString()
             })
             .eq('id', appointmentId)
-             // Select necessary fields for the response/notification
+            // Select necessary fields for the response/notification
             .select('*, doctor_id, patient_id, appointment_date, appointment_time')
             .single();
 
@@ -107,7 +184,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             if (isPatient) {
                 // --- Notify Doctor ---
                 const doctorId = appointment.doctor_id;
-                 // Get patient name from fetched appointment data
+                // Get patient name from fetched appointment data
                 const patientProfile = appointment.patient?.profiles; // Using optional chaining
                 const patientName = patientProfile ? `${patientProfile.first_name || ''} ${patientProfile.last_name || ''}`.trim() : 'A patient';
 

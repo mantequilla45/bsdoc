@@ -17,6 +17,15 @@ interface Profile {
     is_profile_complete: boolean;
 }
 
+const LoadingOverlay: React.FC<{ message?: string }> = ({ message = "Saving..." }) => (
+    <div className="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-[1000]">
+        <div className="text-center p-5 bg-white rounded shadow-lg">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-3"></div>
+            <p className="text-teal-600 font-medium">{message}</p>
+        </div>
+    </div>
+);
+
 const AccountPage = () => {
     const [userId, setUserId] = useState<string | null>(null);
     //const [userRole, setUserRole] = useState<string | null>(null);
@@ -24,6 +33,7 @@ const AccountPage = () => {
     const [loading, setLoading] = useState(true);
     const [isCompletingProfile, setIsCompletingProfile] = useState(false);
     //const { isProfileComplete, markProfileComplete, isLoadingStatus } = useProfileCompletion(); //eslint-disable-line
+    const [isFinalizing, setIsFinalizing] = useState(false);
 
     const fetchUserData = useCallback(async (showLoading = true) => {
         if (showLoading) setLoading(true);
@@ -43,7 +53,8 @@ const AccountPage = () => {
                 if (profileError) {
                     console.error('Error fetching profile: ', profileError);
                     console.log('Error fetching profile: ', profileError);
-                    setProfile(null);
+                    //setProfile(null);
+                    throw profileError;
                 }
                 else {
                     console.log('[AccountPage] Profile fetched: ', profileData);
@@ -110,7 +121,7 @@ const AccountPage = () => {
         //    toast.error("Please fill in your first and last name first.");
         //    return;
         // }
-
+        setIsFinalizing(true);
         setIsCompletingProfile(true);
         const toastId = toast.loading("Finalizing profile setup...");
         try {
@@ -125,14 +136,19 @@ const AccountPage = () => {
             if (!response.ok) throw new Error(result.error ?? "Failed to mark profile complete");
 
             //markProfileComplete();
+            setProfile(prev => prev ? { ...prev, is_profile_complete: true } : null);
 
             toast.success("Profile setup complete!", { id: toastId });
             // Refetch profile data to update UI (hide button/prompt)
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
             await fetchUserData(false);
 
         } catch (err) {
             console.error("Error marking profile complete:", err);
             toast.error(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`, { id: toastId });
+            setIsFinalizing(false);
         } finally {
             setIsCompletingProfile(false);
         }
@@ -150,8 +166,11 @@ const AccountPage = () => {
         return () => window.removeEventListener('resize', updateCssVariable);
     }, []);
 
-    if (loading) { return <div>Loading Account...</div>; /* Better loading UI */ }
+    if (loading) { return <LoadingOverlay message='Loading Account'/> /* Better loading UI */ }
     if (!userId || !profile) { return <div>Please log in.</div>; /* Better no-user UI */ }
+    if (isFinalizing) {
+        return <LoadingOverlay message='Finalizing Profile Setup...'/>
+    }
 
     return (
         <div className="flex flex-col bg-[#62B6B8]">

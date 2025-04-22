@@ -27,6 +27,7 @@ export const config = {
     '/doctors/doctor-schedule',
     '/doctors/profile',
     '/appointments',
+    '/admin',
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
