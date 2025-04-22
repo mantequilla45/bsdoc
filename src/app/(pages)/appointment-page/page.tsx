@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 //import { useRouter } from 'next/navigation'; // Not used currently
 import { supabase } from '@/lib/supabaseClient';
 import { Loader } from 'lucide-react'; // Added Loader for consistency
+import DoctorAvailabilityOverview from './components/DoctorAvailabilityOverview';
 
 // Define proper types (keep as is)
 interface Doctor {
@@ -244,6 +245,10 @@ const AppointmentPage = () => {
                 fill="transparent"
               />
             </svg>
+
+            <div className="border-2 border-[#64B5B7] rounded-lg p-4 sm:p-6 w-full bg-white shadow-lg">
+              <DoctorAvailabilityOverview/>
+            </div>
 
             <div className="border-2 border-[#64B5B7] rounded-lg p-4 sm:p-6 w-full bg-white shadow-lg">
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Book your appointment</h2>

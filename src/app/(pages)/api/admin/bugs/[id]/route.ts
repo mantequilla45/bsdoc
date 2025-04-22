@@ -86,11 +86,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         return NextResponse.json({ error: 'Invalid request body'}, { status: 400 });
     }
 
-    const { status } = reqBody;
+    const { title, category, severity, status } = reqBody;
 
     const { data: updatedStatus, error: updateError } = await supabaseAdmin
         .from('bugs')
-        .update({ status })
+        .update({ title, category, severity, status })
         .eq('id', bugId)
         .select()
         .single();

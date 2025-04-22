@@ -71,6 +71,9 @@ const DoctorDetailModal: React.FC<DoctorDetailModalProps> = ({ isOpen, onClose, 
               <p className="text-gray-600">
                 <span className="font-medium">Address:</span> {doctor.clinic_address || 'N/A'}
               </p>
+              <p className="text-gray-600">
+                <span className="font-medium">Available Days:</span> {doctor.availableDays?.join(', ') || 'N/A'}
+              </p>
             </div>
 
             {/* Bio */}

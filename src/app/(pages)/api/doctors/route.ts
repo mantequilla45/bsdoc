@@ -30,6 +30,9 @@ export async function GET(req: NextRequest) {
               phone_number,
               role,
               profile_image_url
+            ),
+            availability (
+              day_of_week
             )
         `)
       // Ensure the join condition correctly targets profiles with role 'doctor'
@@ -59,11 +62,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Error fetching doctors' }, { status: 500 });
     }
 
-    // Return only doctors whose profile join was successful and are complete (optional)
-    const completeDoctors = data?.filter(d => d.profiles && d.is_profile_complete) || [];
+    // Process data to get unique days per doctor
+    const processedData = data?.map(doctor => {
+      // Ensure availability is an array and handle potential null/undefined
+      const availabilityArray = Array.isArray(doctor.availability) ? doctor.availability : [];
+      // Get unique days
+      const availableDays = [...new Set(availabilityArray.map((a) => a.day_of_week))];
+      return {
+        ...doctor,
+        availability: undefined, // Remove original availability array if desired
+        availableDays: availableDays, // Add the processed list of days
+      };
+    }) || [];
 
-    console.log(`Returning ${completeDoctors.length} doctors.`);
-    return NextResponse.json({ data }, { status: 200 });
+    // Return only doctors whose profile join was successful and are complete (optional)
+    const completeDoctors = processedData?.filter(d => d.profiles && d.is_profile_complete) || [];
+
+    console.log(`[API Doctors GET] Processed data being sent (first item):`, JSON.stringify(completeDoctors[0], null, 2));
+
+    console.log(`[API Doctors GET] Final structure being sent:`, { data: completeDoctors }); 
+    return NextResponse.json({ data: completeDoctors }, { status: 200 });
   } catch (error) {
     console.error('Error in doctors GET route:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
