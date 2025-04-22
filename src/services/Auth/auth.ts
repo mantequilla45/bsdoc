@@ -6,9 +6,11 @@ export async function signUpWithEmail(email: string, password: string) {
         password,
     });
 
-    if (error) throw error;
+    // if (error) throw error;
 
-    return data.user;
+    // return data.user;
+
+    return { data, error };
 }
 
 export async function signInWithEmail(email: string, password: string) {
