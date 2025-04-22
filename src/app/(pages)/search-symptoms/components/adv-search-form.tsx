@@ -42,6 +42,7 @@ const AdvancedSearchForm = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [addRecord, setAddRecord] = useState(false);
 
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
@@ -68,10 +69,7 @@ const AdvancedSearchForm = ({
         .eq('user_id', user.id)
         .single();
 
-      if (profile) {
-        setName(`${profile.first_name} ${profile.last_name}`);
-      }
-
+      if (profile) setName(`${profile.first_name} ${profile.last_name}`);
       if (medical) {
         setAge(medical.age?.toString() || '');
         setWeight(medical.weight?.toString() || '');
@@ -85,19 +83,20 @@ const AdvancedSearchForm = ({
 
   const handleAssess = async () => {
     const allSelected = [...selectedSymptoms, ...selectedConditions];
-    if (allSelected.length === 0 || !user) return;
+    if (allSelected.length === 0) return;
 
     try {
       setLoading(true);
       setError('');
       const data = await getSymptomInfo(allSelected);
+
       setSubmittedSymptoms(selectedSymptoms);
       setResult(data);
       setSelectedSymptoms([]);
       setSelectedConditions([]);
 
-      // ✅ Store result to Supabase
-      if (user && data) {
+      // Save only if user is signed in and wants to add record
+      if (user && addRecord) {
         await supabase.from('symptom_results').insert({
           user_id: user.id,
           input_symptoms: allSelected,
@@ -217,7 +216,11 @@ const AdvancedSearchForm = ({
       </div>
 
       <div className="flex justify-end items-center gap-6 mt-10">
-        <CheckBox item="Add Record" />
+        <CheckBox
+          item="Add Record"
+          checked={addRecord}
+          onChange={() => setAddRecord(!addRecord)}
+        />
         <button
           onClick={handleAssess}
           className="px-6 py-3 bg-[#A3E7EA] hover:bg-[#9AE0E3] active:bg-[#91D7DA] rounded-md font-semibold transition-all duration-200 active:scale-95"
