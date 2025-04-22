@@ -1,7 +1,7 @@
 import React from 'react';
 // Adjust the import path based on where you define the Doctor type
 import { Doctor } from '../type';
-
+import Image from 'next/image';
 interface DoctorDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -36,15 +36,16 @@ const DoctorDetailModal: React.FC<DoctorDetailModalProps> = ({ isOpen, onClose, 
         <div className="flex flex-col items-center sm:flex-row sm:items-start">
           {/* Profile Picture */}
           <div className="mb-4 flex-shrink-0 sm:mb-0 sm:mr-6">
-            <img
-              src={profileImageUrl}
-              alt={`${doctor.profiles.first_name || ''} ${doctor.profiles.last_name || ''}`}
-              className="h-32 w-32 rounded-full border-2 border-gray-200 object-cover shadow-md"
-              onError={(e) => {
-                  // Handle image loading errors, e.g., show default
-                  (e.target as HTMLImageElement).src = '/default-profile.png'; 
-              }}
-            />
+            <Image
+            src={profileImageUrl || '/default-profile.png'}
+            alt={`${doctor.profiles.first_name || ''} ${doctor.profiles.last_name || ''}`}
+            fill
+            className="rounded-full border-2 border-gray-200 object-cover shadow-md"
+            onError={() => {
+              // With Next/Image, we handle fallbacks differently
+              // Using a conditional src above is cleaner
+            }} /> 
+
           </div>
 
           {/* Text Info */}
@@ -81,11 +82,11 @@ const DoctorDetailModal: React.FC<DoctorDetailModalProps> = ({ isOpen, onClose, 
               </div>
             )}
 
-             {/* Contact & License */}
+            {/* Contact & License */}
             <div className="text-sm text-gray-500">
-                {doctor.profiles.email && <p>Email: {doctor.profiles.email}</p>}
-                {doctor.profiles.phone_number && <p>Phone: {doctor.profiles.phone_number}</p>}
-                {doctor.license_number && <p>License No: {doctor.license_number}</p>}
+              {doctor.profiles.email && <p>Email: {doctor.profiles.email}</p>}
+              {doctor.profiles.phone_number && <p>Phone: {doctor.profiles.phone_number}</p>}
+              {doctor.license_number && <p>License No: {doctor.license_number}</p>}
             </div>
 
           </div>

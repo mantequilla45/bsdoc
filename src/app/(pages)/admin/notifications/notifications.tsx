@@ -57,10 +57,10 @@ const AdminNotificationItem: React.FC<{ notification: Notification; onMarkRead: 
 
         } else if (notification.link_url && !isAdminLink) {
             // Standard link - navigation handled by <Link>, click just marks read.
-             console.log(`[AdminNotificationItem] Standard link. Navigation handled by <Link>.`);
+            console.log(`[AdminNotificationItem] Standard link. Navigation handled by <Link>.`);
         } else {
             // No link - click just marks read.
-             console.log(`[AdminNotificationItem] No link.`);
+            console.log(`[AdminNotificationItem] No link.`);
         }
     };
 
@@ -69,11 +69,10 @@ const AdminNotificationItem: React.FC<{ notification: Notification; onMarkRead: 
     // Common content block
     const itemContent = (
         <div
-            className={`p-3 border-b border-gray-200 transition-colors duration-150 ${
-                notification.is_read
-                    ? 'opacity-70 bg-gray-50' // Style for read
-                    : 'bg-white hover:bg-indigo-50 font-medium' // Style for unread + hover
-            }`}
+            className={`p-3 border-b border-gray-200 transition-colors duration-150 ${notification.is_read
+                ? 'opacity-70 bg-gray-50' // Style for read
+                : 'bg-white hover:bg-indigo-50 font-medium' // Style for unread + hover
+                }`}
         >
             <p className="text-sm text-gray-800 mb-1">{notification.message}</p>
             <div className="flex justify-between items-center mt-1">
@@ -108,9 +107,9 @@ const AdminNotificationItem: React.FC<{ notification: Notification; onMarkRead: 
 
     // If no link, render a div allowing click just for marking read
     return (
-         // Added focus styles
+        // Added focus styles
         <div onClick={handleClick} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 rounded">
-             {itemContent}
+            {itemContent}
         </div>
     );
 };
@@ -167,7 +166,7 @@ function AdminNotificationsPage() {
         console.log(`[AdminNotificationsPage] Fetching notifications...`);
         try {
             // **Using fetch to call the dedicated admin API endpoint**
-             // Construct URL without specific type filter param unless needed
+            // Construct URL without specific type filter param unless needed
             const url = new URL('/api/admin/notifications', window.location.origin);
 
             const response = await fetch(url.toString(), { // Use toString() here
@@ -203,7 +202,6 @@ function AdminNotificationsPage() {
             }
         }
     }, [authToken, fetchNotifications]);
-
 
     // Function to mark a single notification as read
     const handleMarkRead = useCallback(async (notificationId: string) => {
@@ -317,7 +315,7 @@ function AdminNotificationsPage() {
                 </div>
             )}
 
-             {/* Error State */}
+            {/* Error State */}
             {!isLoading && error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative flex items-center" role="alert">
                     <AlertCircle className="h-5 w-5 mr-2" />
@@ -328,7 +326,7 @@ function AdminNotificationsPage() {
                 </div>
             )}
 
-             {/* Not Authenticated State */}
+            {/* Not Authenticated State */}
             {!isLoading && !error && !authToken && (
                 <div className="text-center py-10 bg-gray-50 rounded-lg border">
                     <p className="text-gray-500">Please log in to view notifications.</p>
@@ -337,17 +335,17 @@ function AdminNotificationsPage() {
 
             {/* Empty State (considering filters) */}
             {!isLoading && !error && authToken && filteredNotifications.length === 0 && (
-                 <div className="text-center py-16 bg-gray-50 rounded-lg border">
-                     <BellOff className="mx-auto h-12 w-12 text-gray-400" />
-                     <h3 className="mt-2 text-sm font-medium text-gray-900">No notifications found</h3>
-                     <p className="mt-1 text-sm text-gray-500">
-                         {selectedType !== 'all' || !showRead
-                         ? 'There are no notifications matching your current filters.'
-                         : 'You currently have no admin notifications.'}
+                <div className="text-center py-16 bg-gray-50 rounded-lg border">
+                    <BellOff className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No notifications found</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                        {selectedType !== 'all' || !showRead
+                            ? 'There are no notifications matching your current filters.'
+                            : 'You currently have no admin notifications.'}
 
-                     </p>
-                 </div>
-             )}
+                    </p>
+                </div>
+            )}
 
             {/* Display Notifications List */}
             {!isLoading && !error && authToken && filteredNotifications.length > 0 && (
