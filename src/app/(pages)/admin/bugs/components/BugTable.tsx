@@ -196,9 +196,9 @@ const BugTable: React.FC<BugTableProps> = ({
             {bugs.length === 0 ? (
                 <div className="text-center py-8">
                     {searchTerm ? (
-                        <p className="text-gray-600">No bugs found matching "{searchTerm}"</p>
+                        <p className="text-gray-600">No user feedback matching "{searchTerm}"</p>
                     ) : (
-                        <p className="text-gray-600">No bug reports available</p>
+                        <p className="text-gray-600">No user feedback available</p>
                     )}
                 </div>
             ) : (
@@ -255,9 +255,9 @@ const BugTable: React.FC<BugTableProps> = ({
                                                         onChange={handleInputChange}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-sm text-xs"
                                                     >
-                                                        <option value="Low">Low</option>
-                                                        <option value="Medium">Medium</option>
-                                                        <option value="High">High</option>
+                                                        <option value="Trivial">Trivial</option>
+                                                        <option value="Minor">Minor</option>
+                                                        <option value="Major">Major</option>
                                                         <option value="Critical">Critical</option>
                                                     </select>
                                                 </div>
@@ -491,11 +491,10 @@ const BugTable: React.FC<BugTableProps> = ({
                                                         onChange={handleInputChange}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-sm text-sm"
                                                     >
-                                                        <option value="UI">UI</option>
-                                                        <option value="Functionality">Functionality</option>
-                                                        <option value="Performance">Performance</option>
-                                                        <option value="Security">Security</option>
-                                                        <option value="Other">Other</option>
+                                                        <option value="Bug Report">Bug Report</option>
+                                                        <option value="Feature Request/Feedback">Feature Request/Feedback</option>
+                                                        <option value="General Inquiry">General Inquiry</option>
+
                                                     </select>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap w-[120px]">
@@ -505,9 +504,9 @@ const BugTable: React.FC<BugTableProps> = ({
                                                         onChange={handleInputChange}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-sm text-sm"
                                                     >
-                                                        <option value="Low">Low</option>
-                                                        <option value="Medium">Medium</option>
-                                                        <option value="High">High</option>
+                                                        <option value="Trivial">Trivial</option>
+                                                        <option value="Minor">Minor</option>
+                                                        <option value="Major">Major</option>
                                                         <option value="Critical">Critical</option>
                                                     </select>
                                                 </td>
