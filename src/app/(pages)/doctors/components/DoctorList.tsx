@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import DoctorDetailModal from './DoctorDetailModal'; // Assuming modal is in the same folder
 import { Doctor } from '../type'; // Import the more complete Doctor type
+import Image from 'next/image';
 
 type SortKey = 'lastName' | 'firstName' | 'specialization';
 type SortOrder = 'asc' | 'desc';
@@ -95,7 +96,7 @@ const DoctorList: React.FC = () => {
         setSortKey(e.target.value as SortKey);
     };
 
-     const toggleSortOrder = () => {
+    const toggleSortOrder = () => {
         setSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
     };
 
@@ -115,7 +116,7 @@ const DoctorList: React.FC = () => {
         <div className="doctor-list p-1">
             {/* Sorting Controls */}
             <div className="mb-4 flex items-center justify-end space-x-2 rounded-md bg-gray-50 p-3 shadow-sm">
-                 <label htmlFor="sort-select" className="text-sm font-medium text-gray-700">Sort by:</label>
+                <label htmlFor="sort-select" className="text-sm font-medium text-gray-700">Sort by:</label>
                 <select
                     id="sort-select"
                     value={sortKey}
@@ -125,13 +126,13 @@ const DoctorList: React.FC = () => {
                     <option value="lastName">Name (Last)</option>
                     <option value="firstName">Name (First)</option>
                     <option value="specialization">Specialization</option>
-                     {/* Add other sortable fields here if needed */}
+                    {/* Add other sortable fields here if needed */}
                 </select>
-                 <button
+                <button
                     onClick={toggleSortOrder}
                     className="rounded border border-gray-300 bg-white p-1.5 text-gray-600 hover:bg-gray-100"
                     aria-label={`Sort order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
-                 >
+                >
                     {sortOrder === 'asc' ? (
                         <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L10 12.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" /><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-7-8a7 7 0 1114 0 7 7 0 01-14 0z" clipRule="evenodd" /></svg>
                     ) : (
@@ -142,7 +143,7 @@ const DoctorList: React.FC = () => {
 
             {/* Grid using the sorted list */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-                 {/* Map over sortedDoctors instead of doctors */}
+                {/* Map over sortedDoctors instead of doctors */}
                 {sortedDoctors.map((doctor) => (
                     doctor && doctor.profiles ? (
                         <div
@@ -150,11 +151,15 @@ const DoctorList: React.FC = () => {
                             className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm transition duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1"
                             onClick={() => handleDoctorClick(doctor)}
                         >
-                            <img
+                            <Image
                                 src={doctor.profiles.profile_image_url || '/default-profile.png'}
-                                alt={`Dr. ${doctor.profiles.first_name || ''} ${doctor.profiles.last_name || ''}`}
-                                className="mx-auto mb-3 h-24 w-24 rounded-full border-2 border-gray-100 object-cover shadow-md"
-                                onError={(e) => { (e.target as HTMLImageElement).src = '/default-profile.png'; }}
+                                alt={`${doctor.profiles.first_name || ''} ${doctor.profiles.last_name || ''}`}
+                                fill
+                                className="rounded-full border-2 border-gray-200 object-cover shadow-md"
+                                onError={() => {
+                                    // With Next/Image, we handle fallbacks differently
+                                    // Using a conditional src above is cleaner
+                                }}
                             />
                             <div className="mb-1 truncate text-lg font-semibold text-gray-800">
                                 Dr. {doctor.profiles.first_name} {doctor.profiles.last_name}
@@ -166,7 +171,7 @@ const DoctorList: React.FC = () => {
                                 {doctor.bio || `Providing expert care at ${doctor.clinic_name || 'the clinic'}.`}
                             </p>
                         </div>
-                     ) : null
+                    ) : null
                 ))}
             </div>
 

@@ -13,7 +13,7 @@ interface NotificationPanelProps {
     onNotificationsUpdate: (notifications: Notification[]) => void; // Callback to update parent state if needed
 }
 
-const NotificationPanel: React.FC<NotificationPanelProps> = ({ userId, onClose, onNotificationsUpdate }) => { //eslint-disable-line
+const NotificationPanel: React.FC<NotificationPanelProps> = ({ userId, onClose, onNotificationsUpdate }) => { 
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

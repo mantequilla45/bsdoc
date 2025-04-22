@@ -193,7 +193,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
 
                       <div className="w-full border-t border-gray-300" />
 
-                      <form onSubmit={handleAuth} className="space-y-3 md:space-y-8 w-full">
+                      <form onSubmit={handleAuth} className="space-y-8 md:space-y-8 w-full">
                         <InputField
                           label="Email"
                           type="email"
@@ -217,7 +217,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                         {errorMessage && <p className="text-red-500 text-sm text-center">{errorMessage}</p>}
                         <button
                           type="submit"
-                          className="py-2 md:py-3 px-4 md:px-5 w-full rounded-full bg-[#78DDD3] text-white hover:bg-[#55a19a] active:scale-95 duration-300"
+                          className="py-3.5 md:py-3 px-4 md:px-5 w-full rounded-2xl bg-[#78DDD3] text-white hover:bg-[#55a19a] active:scale-95 duration-300"
                         >
                           {getButtonText()}
                         </button>
