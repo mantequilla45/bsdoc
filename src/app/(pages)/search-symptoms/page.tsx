@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import Header from "@/app/layout/header";
 import React, { useState } from 'react';
 import { IoSearch } from "react-icons/io5";
@@ -28,7 +28,8 @@ interface SymptomResponse {
 const SearchSymptomsPage = () => {
   const [isAdvancedSearchEnabled, setIsAdvancedSearchEnabled] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [result, setResult] = useState<SymptomResponse | null>(null);
+  const [manualResult, setManualResult] = useState<SymptomResponse | null>(null);
+  const [advancedResult, setAdvancedResult] = useState<SymptomResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -36,12 +37,12 @@ const SearchSymptomsPage = () => {
     if (!inputValue.trim()) return;
     setLoading(true);
     setError("");
-    setResult(null);
+    setManualResult(null);
 
     try {
       const symptoms = inputValue.split(",").map((s) => s.trim().toLowerCase());
       const data: SymptomResponse = await getSymptomInfo(symptoms);
-      setResult(data);
+      setManualResult(data);
     } catch (err) {
       console.error(err);
       setError("Could not fetch results. Make sure the AI backend is running.");
@@ -50,16 +51,21 @@ const SearchSymptomsPage = () => {
     }
   };
 
+  const handleToggleSearch = () => {
+    setIsAdvancedSearchEnabled((prev) => {
+      if (prev) {
+        setAdvancedResult(null);
+      } else {
+        setManualResult(null);
+      }
+      return !prev;
+    });
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#EEFFFE]">
-      <motion.div
-        className="bg-[#EEFFFE] flex-grow relative"
-        animate={{ height: isAdvancedSearchEnabled ? '100%' : 'auto' }}
-        transition={{
-          duration: 0.5,
-          ease: "easeInOut"
-        }}
-      >
+      {/* ✅ REMOVED height animation here to fix scroll issue */}
+      <motion.div className="bg-[#EEFFFE] flex-grow relative">
         <Header background='#EEFFFE' title="Search Symptoms" />
 
         <div className="absolute inset-0">
@@ -68,24 +74,25 @@ const SearchSymptomsPage = () => {
           </div>
         </div>
 
-
         <div className="md:mx-auto min-h-screen flex max-w-[1300px] py-28 md:px-10 px-[25px]">
           <main className="z-10 w-full flex flex-col md:mt-[200px] mt-[100px] gap-4">
             <h1 className="md:text-7xl text-4xl">
               Welcome to <span className="text-[#519496]">BSDOC</span>
             </h1>
+
             <div className="flex items-center gap-4">
               <p className="md:pl-7 pl-4">Advanced Search</p>
               <button
-                onClick={() => setIsAdvancedSearchEnabled(!isAdvancedSearchEnabled)}
+                onClick={handleToggleSearch}
                 className={`w-12 h-6 rounded-full transition duration-300 border-[1px] ${isAdvancedSearchEnabled ? 'bg-blue-500 border-blue-800' : 'bg-gray-300 border-[#777777]'} relative`}
               >
                 <span
                   className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full transform transition-transform duration-300 ease-in-out
-                ${isAdvancedSearchEnabled ? 'translate-x-1 bg-white' : '-translate-x-5 bg-[#777777]'}`}
+                  ${isAdvancedSearchEnabled ? 'translate-x-1 bg-white' : '-translate-x-5 bg-[#777777]'}`}
                 />
               </button>
             </div>
+
             <AnimatePresence mode="wait">
               {isAdvancedSearchEnabled ? (
                 <motion.div
@@ -93,34 +100,28 @@ const SearchSymptomsPage = () => {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{
-                    duration: 0.5,
-                    ease: "easeInOut"
-                  }}
-                  className="w-[100%] bg-white shadow-md rounded-xl border-[1px]"
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  className="w-full bg-white shadow-md rounded-xl border"
                 >
-                  <AdvancedSearchForm />
+                  <AdvancedSearchForm setResult={setAdvancedResult} />
                 </motion.div>
               ) : (
                 <motion.div
                   key="basic-search"
-                  initial={{ height: "full", opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  transition={{
-                    duration: 0.5,
-                    ease: "easeInOut"
-                  }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
                   <div className="space-y-3">
-                    <div className="relative md:py-4 py-1 md:pl-10 shadow-md border-[1px] rounded-xl px-6 bg-white text-gray-500 text-[35px] flex items-center">
+                    <div className="relative md:py-4 py-1 md:pl-10 shadow-md border rounded-xl px-6 bg-white text-gray-500 text-[35px] flex items-center">
                       <input
                         type="text"
                         placeholder="Search Symptoms..."
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                        className={`w-full h-12 border-none placeholder:text-base md:placeholder:text-xl outline-none text-lg flex items-center ${inputValue ? 'text-[#2D383D] font-normal' : 'text-gray-500 font-light'}`}
+                        className={`w-full h-12 border-none placeholder:text-base md:placeholder:text-xl outline-none text-lg flex items-center ${inputValue ? 'text-[#2D383D]' : 'text-gray-500'}`}
                         style={{ lineHeight: "2rem" }}
                       />
                       <button onClick={handleSearch}>
@@ -128,9 +129,7 @@ const SearchSymptomsPage = () => {
                       </button>
                     </div>
                   </div>
-                  <p className="text-gray-600 mt-4">
-                    Introducing a new way to search.
-                  </p>
+                  <p className="text-gray-600 mt-4">Introducing a new way to search.</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -138,37 +137,14 @@ const SearchSymptomsPage = () => {
             {loading && <p className="text-blue-500 mt-4">Analyzing symptoms...</p>}
             {error && <p className="text-red-500 mt-4">{error}</p>}
 
-            {result && (
-              <div className="bg-white shadow-lg p-8 mt-8 rounded-xl border space-y-6">
-                <h2 className="text-2xl font-bold text-gray-800">Search Results</h2>
-                <p className="text-gray-600">{result.recommendation_note}</p>
+            {/* Manual Search Results */}
+            {!isAdvancedSearchEnabled && manualResult && (
+              <ResultDisplay result={manualResult} />
+            )}
 
-                {/* Likely Common Conditions */}
-                <div>
-                  <h3 className="text-xl font-semibold text-green-700 border-b-2 pb-2">
-                    🏥 Most Likely Conditions
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4 mt-4">
-                    {result.likely_common_conditions.map((condition, index) => (
-                      <ConditionCard key={index} condition={condition} highlight="blue" />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Other Possible Conditions */}
-                <div>
-                  <h3 className="text-xl font-semibold text-yellow-700 border-b-2 pb-2">
-                    🤔 Other Possible Conditions
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4 mt-4">
-                    {result.other_possible_conditions.map((condition, index) => (
-                      <ConditionCard key={index} condition={condition} highlight="orange" />
-                    ))}
-                  </div>
-                </div>
-
-                <p className="text-gray-500 text-sm mt-6 italic">{result.note}</p>
-              </div>
+            {/* Advanced Search Results */}
+            {isAdvancedSearchEnabled && advancedResult && (
+              <ResultDisplay result={advancedResult} />
             )}
           </main>
         </div>
@@ -180,6 +156,37 @@ const SearchSymptomsPage = () => {
     </div>
   );
 };
+
+const ResultDisplay = ({ result }: { result: SymptomResponse }) => (
+  <div className="bg-white shadow-lg p-8 mt-8 rounded-xl border space-y-6">
+    <h2 className="text-2xl font-bold text-gray-800">Search Results</h2>
+    <p className="text-gray-600">{result.recommendation_note}</p>
+
+    <div>
+      <h3 className="text-xl font-semibold text-green-700 border-b-2 pb-2">
+        🏥 Most Likely Conditions
+      </h3>
+      <div className="grid md:grid-cols-2 gap-4 mt-4">
+        {result.likely_common_conditions.map((condition, index) => (
+          <ConditionCard key={index} condition={condition} highlight="blue" />
+        ))}
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-xl font-semibold text-yellow-700 border-b-2 pb-2">
+        🤔 Other Possible Conditions
+      </h3>
+      <div className="grid md:grid-cols-2 gap-4 mt-4">
+        {result.other_possible_conditions.map((condition, index) => (
+          <ConditionCard key={index} condition={condition} highlight="orange" />
+        ))}
+      </div>
+    </div>
+
+    <p className="text-gray-500 text-sm mt-6 italic">{result.note}</p>
+  </div>
+);
 
 const ConditionCard = ({
   condition,
