@@ -19,4 +19,5 @@ export interface DoctorProfile {
     years_of_experience: number | null;
     is_profile_complete: boolean | null;
     profiles: DoctorProfile | null; // Assuming the join returns a single profile object
+    availableDays?: string[];
   }

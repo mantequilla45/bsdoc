@@ -47,6 +47,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
           return;
         }
         await signup(email, password);
+        alert("Please verify your email before logging in. Check your inbox for the verification link.");
         onAuthSuccess();
       }
     }

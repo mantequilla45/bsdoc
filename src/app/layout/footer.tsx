@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 import { FaFacebook, FaGithub, FaTwitter, FaInstagram } from "react-icons/fa";
 import { HiMail, HiPhone } from "react-icons/hi";
 import Image from "next/image";
@@ -98,7 +99,6 @@ const Footer = () => {
                   </a>
                 </li>
                 <li>
-                  {/*eslint-disable-next-line @next/next/no-html-link-for-pages */}
                   <a href="/doctors" className="text-white/80 hover:text-white hover:pl-2 transition-all duration-300 block"> 
                     Find Doctors
                   </a>

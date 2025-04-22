@@ -242,11 +242,9 @@ const BugTable: React.FC<BugTableProps> = ({
                                                         onChange={handleInputChange}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-sm text-xs"
                                                     >
-                                                        <option value="UI">UI</option>
-                                                        <option value="Functionality">Functionality</option>
-                                                        <option value="Performance">Performance</option>
-                                                        <option value="Security">Security</option>
-                                                        <option value="Other">Other</option>
+                                                        <option value="Bug Report">Bug Report</option>
+                                                        <option value="Feature Request/Feedback">Feature Request/Feedback</option>
+                                                        <option value="General Inquiry">General Inquiry</option>
                                                     </select>
                                                 </div>
                                                 <div>
