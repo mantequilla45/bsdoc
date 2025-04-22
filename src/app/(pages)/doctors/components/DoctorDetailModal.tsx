@@ -1,7 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react';
 // Adjust the import path based on where you define the Doctor type
 import { Doctor } from '../type';
-import Image from 'next/image';
+//import Image from 'next/image';
 interface DoctorDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -36,7 +37,7 @@ const DoctorDetailModal: React.FC<DoctorDetailModalProps> = ({ isOpen, onClose, 
         <div className="flex flex-col items-center sm:flex-row sm:items-start">
           {/* Profile Picture */}
           <div className="mb-4 flex-shrink-0 sm:mb-0 sm:mr-6">
-            <Image
+            {/* <Image
             src={profileImageUrl || '/default-profile.png'}
             alt={`${doctor.profiles.first_name || ''} ${doctor.profiles.last_name || ''}`}
             fill
@@ -44,7 +45,16 @@ const DoctorDetailModal: React.FC<DoctorDetailModalProps> = ({ isOpen, onClose, 
             onError={() => {
               // With Next/Image, we handle fallbacks differently
               // Using a conditional src above is cleaner
-            }} /> 
+            }} />  */}
+            <img
+              src={profileImageUrl}
+              alt={`${doctor.profiles.first_name || ''} ${doctor.profiles.last_name || ''}`}
+              className="h-32 w-32 rounded-full border-2 border-gray-200 object-cover shadow-md"
+              onError={(e) => {
+                // Handle image loading errors, e.g., show default
+                (e.target as HTMLImageElement).src = '/default-profile.png';
+              }}
+            />
 
           </div>
 

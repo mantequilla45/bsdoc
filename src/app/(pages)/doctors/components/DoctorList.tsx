@@ -1,9 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 // src/app/(pages)/doctors/components/DoctorList.tsx
 'use client'
 import React, { useState, useEffect, useMemo } from 'react';
 import DoctorDetailModal from './DoctorDetailModal'; // Assuming modal is in the same folder
 import { Doctor } from '../type'; // Import the more complete Doctor type
-import Image from 'next/image';
+//import Image from 'next/image';
 
 type SortKey = 'lastName' | 'firstName' | 'specialization';
 type SortOrder = 'asc' | 'desc';
@@ -151,7 +152,7 @@ const DoctorList: React.FC = () => {
                             className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm transition duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1"
                             onClick={() => handleDoctorClick(doctor)}
                         >
-                            <Image
+                            {/* <Image
                                 src={doctor.profiles.profile_image_url || '/default-profile.png'}
                                 alt={`${doctor.profiles.first_name || ''} ${doctor.profiles.last_name || ''}`}
                                 fill
@@ -160,6 +161,12 @@ const DoctorList: React.FC = () => {
                                     // With Next/Image, we handle fallbacks differently
                                     // Using a conditional src above is cleaner
                                 }}
+                            /> */}
+                            <img
+                                src={doctor.profiles.profile_image_url || '/default-profile.png'}
+                                alt={`Dr. ${doctor.profiles.first_name || ''} ${doctor.profiles.last_name || ''}`}
+                                className="mx-auto mb-3 h-24 w-24 rounded-full border-2 border-gray-100 object-cover shadow-md"
+                                onError={(e) => { (e.target as HTMLImageElement).src = '/default-profile.png'; }}
                             />
                             <div className="mb-1 truncate text-lg font-semibold text-gray-800">
                                 Dr. {doctor.profiles.first_name} {doctor.profiles.last_name}
