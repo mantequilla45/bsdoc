@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
                 user_id: admin.id,
                 type: 'VERIFICATION_SUBMITTED',
                 message: `New doctor verification request from ${firstName} ${lastName} (${email}) needs review.`,
-                link_url: '/admin/doctor-verifications',
+                link_url: 'admin:doctor-verification',
                 metadata: { applicant_user_id: userId }
             }));
 
