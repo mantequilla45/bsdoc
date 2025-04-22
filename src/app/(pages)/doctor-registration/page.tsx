@@ -1,57 +1,72 @@
 "use client";
-import Link from 'next/link';
 import Image from 'next/image';
 import RegistrationCard from './components/registration-card';
+import Header from '@/app/layout/header';
+import Footer from '@/app/layout/footer';
 
 const DoctorRegistration = () => {
     return (
         <div className='bg-[#C3EFEB] min-h-screen relative overflow-hidden'>
-            <div className="fixed h-[10vh] flex items-center justify-center w-full">
-                <Link href="/">
-                    home
-                </Link>
-            </div>
-            <div className="flex flex-row h-[100vh]">
-                <div className="w-[1270px] relative bg-[#C3EFEB] overflow-hidden">
-                    <div className="absolute w-full z-50 p-8 flex h-full items-center">
-                        <div className="flex flex-row items-center justify-between w-full pr-[25%] pl-[10%]">
-                            <div className="flex flex-col">
-                                <p className="text-[#62B6B8] text-[8vw] leading-tight">
-                                    HELLO
-                                </p>
-                                <h1 className="text-[3vw]">
-                                    Welcome to <span className="text-[#62B6B8]">BSDOC</span>
-                                </h1>
-                                <p className="text-[1.5rem]">
-                                    Your Personal Guide to Self-Care for Common Ailments
-                                </p>
-                            </div>
-                            <div>
+            <Header title="Doctor Registration" background='#EEFFFE' />
+            <div className="flex flex-col md:flex-row min-h-screen py-16">
+                {/* Hero section - takes full width on mobile */}
+                <div className="w-full md:w-[60%] lg:w-[70%] relative bg-[#C3EFEB] pt-[15vh] pb-8">
+                    <div className="z-50 p-4 md:p-8 flex flex-col items-center md:items-start">
+                        <div className="flex flex-col items-center md:items-start text-center md:text-left px-4">
+                            <p className="text-[#62B6B8] text-6xl md:text-7xl lg:text-[8vw] font-bold leading-tight">
+                                HELLO
+                            </p>
+                            <h1 className="text-2xl md:text-3xl lg:text-[3vw] mt-2">
+                                Welcome to <span className="text-[#62B6B8]">BSDOC</span>
+                            </h1>
+                            <p className="text-base md:text-lg lg:text-xl mt-2 max-w-sm">
+                                Your Personal Guide to Self-Care for Common Ailments
+                            </p>
+                            
+                            {/* Image shown on mobile */}
+                            <div className="mt-6 mb-8">
                                 <Image
                                     src="graphics/floating-medicine.svg"
-                                    alt="svg"
-                                    className="object-contain w-[15vw] h-[15vw]"
+                                    alt="Floating medicine illustration"
+                                    className="object-contain w-48 h-48"
                                     width={200}
                                     height={200}
                                 />
                             </div>
                         </div>
                     </div>
-                    <Image
-                        src="graphics/doc-register.svg"
-                        alt="svg"
-                        className="absolute left-0 top-0 object-contain w-[100%] h-[122vh]"
-                        width={1200}
-                        height={1200}
-                        priority
-                    />
+                    
+                    {/* Background SVG - hidden on smaller screens */}
+                    <div className="hidden md:block">
+                        <Image
+                            src="graphics/doc-register.svg"
+                            alt="Doctor registration background"
+                            className="absolute left-0 top-0 object-contain w-full h-full"
+                            width={1200}
+                            height={1200}
+                            priority
+                        />
+                    </div>
                 </div>
-                <div className="min-w-[600px] pt-[5%] flex items-center">
-                    <RegistrationCard />
+                
+                {/* Registration card - takes full width on mobile */}
+                <div className="w-full md:w-[40%] lg:w-[30%] flex justify-center items-center px-4 py-8">
+                    <MobileRegistrationCard />
                 </div>
             </div>
+            <Footer />
         </div>
     );
 };
 
-export default DoctorRegistration;
+// Mobile-optimized registration card component
+const MobileRegistrationCard = () => {
+    // For mobile, we'll use the same component but wrap it with styles for mobile
+    return (
+        <div className="w-full max-w-[500px]">
+            <RegistrationCard />
+        </div>
+    );
+};
+
+export default DoctorRegistration;  

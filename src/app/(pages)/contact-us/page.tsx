@@ -1,43 +1,43 @@
-
 'use client'
-import Image from 'next/image';
 import Header from "@/app/layout/header";
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import InputField from '@/app/components/input-box';
-import TextareaField from '@/app/components/text-area';
+import ContactForm from './components/ContactForm';
+import ContactBackground from './components/Background';
+import ContactGraphic from './components/Graphics';
+import Footer from "@/app/layout/footer";
 
 const ContactUs = () => {
-    const [category, setCategory] = useState('');
-    const [severity, setSeverity] = useState('');
-    const [email, setEmail] = useState('');
-    const [subject, setSubject] = useState('');
-    const [message, setMessage] = useState('');
-    const [submissionStatus, setSubmissionStatus] = useState<string | null>(null); // 'success', 'error', null
+    const [submissionStatus, setSubmissionStatus] = useState<string | null>(null);
+    const [userEmail, setUserEmail] = useState('');
 
     useEffect(() => {
         const getSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user?.email) {
-                setEmail(session.user.email);
+                setUserEmail(session.user.email);
             }
         };
 
         getSession();
     }, []);
 
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
-
+    const handleSubmission = async (formData: {
+        category: string,
+        severity: string | null,
+        email: string,
+        subject: string,
+        message: string
+    }) => {
         const { data: { session } } = await supabase.auth.getSession();
         const authToken = session?.access_token;
 
         const reportData = {
-            category,
-            severity: category === 'Bug Report' ? severity : null,
-            email,
-            description: message,
-            title: subject,//category === 'Bug Report' ? `Bug Report: ${message.substring(0, 50)}...` : `Feedback: ${message.substring(0, 50)}...`, // Create a basic title
+            category: formData.category,
+            severity: formData.category === 'Bug Report' ? formData.severity : null,
+            email: formData.email,
+            description: formData.message,
+            title: formData.subject,
         };
 
         const headers: { 'Content-Type': string; Authorization?: string } = {
@@ -48,22 +48,25 @@ const ContactUs = () => {
             headers['Authorization'] = `Bearer ${authToken}`;
         }
 
-        const response = await fetch('/api/admin/bugs', {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(reportData),
-        });
+        try {
+            const response = await fetch('/api/admin/bugs', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(reportData),
+            });
 
-        if (response.ok) {
-            setSubmissionStatus('success');
-            setCategory('');
-            setSeverity('');
-            setMessage('');
-            setSubject('');
-            setMessage('');
-        } else {
+            if (response.ok) {
+                setSubmissionStatus('success');
+                return true;
+            } else {
+                setSubmissionStatus('error');
+                console.error('Error submitting report:', await response.json());
+                return false;
+            }
+        } catch (error) {
             setSubmissionStatus('error');
-            console.error('Error submitting report:', await response.json());
+            console.error('Error submitting report:', error);
+            return false;
         }
     };
 
@@ -71,102 +74,28 @@ const ContactUs = () => {
         <div className="bg-[#C3EFEB] min-h-screen relative overflow-hidden">
             <Header background="white" title="Contact Us" />
 
-            {/* Background Image */}
-            <div className="absolute inset-0 -left-[360px] top-0 z-0 h-full w-full">
-                <Image
-                    src="/graphics/doc-register.svg"
-                    alt="background"
-                    layout="fill"
-                    objectFit="fill"
-                />
-            </div>
+            {/* Background Component */}
+            <ContactBackground />
 
-
-            <div className="relative z-10 flex justify-center items-center min-h-screen">
-                <div className="flex flex-row items-center max-w-[1850px] w-full">
-
-                    {/* Contact Image */}
-                    <div className="flex-shrink-0 mr-[230px]">
-                        <Image
-                            src="/graphics/contactus.svg"
-                            alt="contact graphics"
-                            width={900}
-                            height={900}
-                            className="max-w-full"
-                        />
+            <div className="relative z-10 flex justify-center items-center min-h-screen py-8 sm:py-12 md:py-16 lg:py-20">
+                <div className="flex flex-col md:flex-row items-center justify-center max-w-[1850px] w-full px-4 md:px-6 lg:px-8">
+                    
+                    {/* Contact Image Component - Hidden on small screens, visible with responsive sizes on larger screens */}
+                    <div className="hidden md:block flex-shrink-0 md:mr-6 lg:mr-12 xl:mr-[230px] mb-6 md:mb-0 md:w-2/5 lg:w-1/2">
+                        <ContactGraphic />
                     </div>
 
-                    {/* Contact Form */}
-                    <div className="bg-white p-6 rounded-2xl mt-[90px] shadow-lg w-full max-w-[600px]">
-                        <form className="flex flex-col items-center gap-4" onSubmit={handleSubmit}>
-                            <div className="flex items-center gap-3">
-                                <h1 className="text-4xl font-bold">Contact Us</h1>
-                                <Image
-                                    src="/graphics/logingraphic.svg"  // Replace with your image
-                                    alt="mail icon"
-                                    width={80}
-                                    height={80}
-                                />
-                            </div>
-
-                            <select
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className="py-[15px] px-5 w-full border-[2px] focus:border-[#216b70] rounded-xl font-light"
-                                required
-                            >
-                                <option value="">Select Category</option>
-                                <option value="Bug Report">Bug Report</option>
-                                <option value="Feature Request/Feedback">Feature Request/Feedback</option>
-                                <option value="General Inquiry">General Inquiry</option>
-                            </select>
-
-                            {category === 'Bug Report' && (
-                                <select
-                                    value={severity}
-                                    onChange={(e) => setSeverity(e.target.value)}
-                                    className="py-3 px-5 w-full border-[2px] rounded-xl font-light focus:border-[#216b70] rounded-xl font-light"
-                                    required
-                                >
-                                    <option value="">Select Severity</option>
-                                    <option value="Critical">Critical</option>
-                                    <option value="Major">Major</option>
-                                    <option value="Minor">Minor</option>
-                                    <option value="Trivial">Trivial</option>
-                                </select>
-                            )}
-                            <InputField
-                                label="Email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                            <InputField
-                                label="Subject"
-                                type="subject"
-                                value={subject}
-                                onChange={(e) => setSubject(e.target.value)}
-                            />
-                            <TextareaField
-                                label="Message"
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                rows={3}
-                            />
-                            <button type="submit" className="py-3 mt-5 px-6 w-full border-[1px] rounded-full font-bold bg-[#78DDD3] text-white cursor-pointer hover:bg-[#62B6B8]">
-                                Send
-                            </button>
-
-                            {submissionStatus === 'success' && (
-                                <p className="text-green-500">Report submitted successfully!</p>
-                            )}
-                            {submissionStatus === 'error' && (
-                                <p className="text-red-500">Failed to submit report. Please try again.</p>
-                            )}
-                        </form>
+                    {/* Contact Form Component */}
+                    <div className="w-full sm:w-11/12 md:w-3/5 lg:w-1/2 max-w-[600px] px-2 sm:px-0">
+                        <ContactForm 
+                            initialEmail={userEmail} 
+                            onSubmit={handleSubmission}
+                            submissionStatus={submissionStatus}
+                        />
                     </div>
                 </div>
             </div>
+            <Footer />
         </div>
     )
 }

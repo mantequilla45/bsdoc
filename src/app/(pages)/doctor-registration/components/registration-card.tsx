@@ -76,12 +76,13 @@ const RegistrationCard = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-[600px]">
-      <form onSubmit={handleSubmit} className="flex bg-white m-5 rounded-2xl gap-2 py-10 px-8 flex-col">
-        <p className="text-3xl mb-8 text-center text-gray-800 font-semibold">Register as Doctor</p>
+    <div className="bg-white p-4 md:p-8 rounded-2xl shadow-lg w-full">
+      <form onSubmit={handleSubmit} className="flex bg-white rounded-2xl gap-2 py-6 md:py-10 px-4 md:px-8 flex-col">
+        <p className="text-2xl md:text-3xl mb-6 md:mb-8 text-center text-gray-800 font-semibold">Register as Doctor</p>
         
-        <div className="flex gap-5">
-          <div className="w-1/2">
+        {/* Responsive name fields - stack on mobile */}
+        <div className="flex flex-col md:flex-row gap-3 md:gap-5">
+          <div className="w-full md:w-1/2">
             <InputField
               label="First Name"
               type="text"
@@ -89,7 +90,7 @@ const RegistrationCard = () => {
               onChange={(e) => setForm(prev => ({ ...prev, firstName: e.target.value }))}
             />
           </div>
-          <div className="w-1/2">
+          <div className="w-full md:w-1/2">
             <InputField
               label="Last Name"
               type="text"
@@ -113,7 +114,7 @@ const RegistrationCard = () => {
           onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
         />
         
-        {/* Custom file input that maintains your design system */}
+        {/* Custom file input with responsive styling */}
         <div className="relative w-full input-container mt-[25px] mb-6">
           <div className="absolute left-[20px] top-1/2 transform -translate-y-1/2">
             <Upload className="w-5 h-5 text-gray-500" />
@@ -124,12 +125,12 @@ const RegistrationCard = () => {
             name="file"
             accept="image/*"
             onChange={handleChange}
-            className="pl-12 pr-4 w-full py-3 cursor-pointer"
+            className="pl-12 pr-4 w-full py-3 cursor-pointer text-sm md:text-base"
             required
           />
-          <label htmlFor="Upload File (PRC ID)">Upload File (PRC ID)</label>
+          <label htmlFor="Upload File (PRC ID)" className="text-sm md:text-base">Upload File (PRC ID)</label>
           {form.file && (
-            <p className="text-sm text-gray-600 mt-1 ml-12">
+            <p className="text-xs md:text-sm text-gray-600 mt-1 ml-12 truncate">
               Selected: {form.file.name}
             </p>
           )}
@@ -143,7 +144,7 @@ const RegistrationCard = () => {
         </button>
         
         {formError && (
-          <p className="text-red-500 mt-4 text-center">
+          <p className="text-red-500 mt-4 text-center text-sm md:text-base">
             {formError}
           </p>
         )}
