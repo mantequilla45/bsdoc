@@ -51,7 +51,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     // Fetch the specific bug report
     const { data, error } = await supabaseAdmin
         .from('bugs')
-        .select('*, profiles(email)')
+        .select(`
+            *, 
+            reporter:profiles!bugs_user_id_fkey(email),
+            updater:profiles!bugs_updated_by_admin_id_fkey(first_name, last_name, email)
+        `)
         .eq('id', bugId)
         .single();
 
@@ -78,34 +82,63 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if ('error' in validation) {
         return NextResponse.json({ error: validation.error }, { status: validation.status });
     }
+    const adminUserId = validation.user.id;
 
     let reqBody;
     try {
         reqBody = await req.json();
     } catch {
-        return NextResponse.json({ error: 'Invalid request body'}, { status: 400 });
+        return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
     const { title, category, severity, status } = reqBody;
 
-    const { data: updatedStatus, error: updateError } = await supabaseAdmin
+    const updateData: Record<string, any> = {} //eslint-disable-line
+    if (title !== undefined) updateData.title = title;
+    if (category !== undefined) updateData.category = category;
+    if (severity !== undefined) updateData.severity = severity;
+    if (status !== undefined) updateData.status = status;
+
+    // Add updated_at timestamp IF any other field is being updated
+    if (Object.keys(updateData).length > 0) {
+        updateData.updated_at = new Date().toISOString();
+        updateData.updated_by_admin_id = adminUserId;
+    } else {
+        // If no fields were sent to update, return bad request or no-op
+        return NextResponse.json({ error: 'No valid fields provided for update.' }, { status: 400 });
+    }
+
+    const { data: updatedBug, error: updateError } = await supabaseAdmin
         .from('bugs')
-        .update({ title, category, severity, status })
+        .update(updateData)
         .eq('id', bugId)
-        .select()
+         // --- Select updated data including reporter and NEW updater profile ---
+        .select(`
+            *,
+            reporter:profiles!bugs_user_id_fkey(email),
+            updater:profiles!bugs_updated_by_admin_id_fkey(first_name, last_name, email)
+        `)
+         // ---------------------------------------------------------------------
         .single();
+
+    // const { data: updatedStatus, error: updateError } = await supabaseAdmin
+    //     .from('bugs')
+    //     .update({ title, category, severity, status })
+    //     .eq('id', bugId)
+    //     .select()
+    //     .single();
 
     if (updateError) {
         console.error('Error updating bug status: ', updateError);
-        return NextResponse.json({ error: 'Error updating status'}, { status: 500 });
+        return NextResponse.json({ error: 'Error updating status' }, { status: 500 });
     }
 
-    return NextResponse.json({ data: updatedStatus }, { status: 200 });
+    return NextResponse.json({ data: updatedBug }, { status: 200 });
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const bugId = (await params).id;
-    
+
     console.log(`API Request: DELETE api/admin/bugs/${bugId}`);
 
     const validation = await validateAdminAccess(req);

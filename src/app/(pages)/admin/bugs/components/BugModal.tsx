@@ -36,6 +36,20 @@ const BugDetailModal: React.FC<BugDetailModalProps> = ({ isOpen, onClose, bug })
         }
     };
 
+    const getUpdaterDisplayName = (updater: BugReport['updater']): string => {
+        if (!updater) {
+            // If no updater profile info, check if there's at least an ID
+            return bug?.updated_by_admin_id ? 'Admin (Info Unavailable)' : 'N/A';
+        }
+        const firstName = updater.first_name?.trim() ?? '';
+        const lastName = updater.last_name?.trim() ?? '';
+
+        if (firstName && lastName) {
+            return `${firstName} ${lastName}`; // Combine first and last name
+        }
+        // Fallback if full name isn't available
+        return firstName ?? lastName ?? updater.email ?? '';
+    };
 
     return (
         // Backdrop
@@ -84,9 +98,9 @@ const BugDetailModal: React.FC<BugDetailModalProps> = ({ isOpen, onClose, bug })
                                 {bug.status}
                             </span>
                         </div>
-                         <div>
+                        <div>
                             <span className="font-semibold text-gray-700">Severity:</span>
-                             <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(bug.severity)}`}>
+                            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(bug.severity)}`}>
                                 {bug.severity ?? 'N/A'}
                             </span>
                         </div>
@@ -96,16 +110,16 @@ const BugDetailModal: React.FC<BugDetailModalProps> = ({ isOpen, onClose, bug })
                         </div>
                         <div>
                             <span className="font-semibold text-gray-700">Last Updated:</span>
-                            <span className="ml-2 text-gray-600">{bug.updated_at ? new Date(bug.updated_at).toLocaleString() : 'N/A'}</span>
+                            <span className="ml-2 text-gray-600">{bug.updated_at ? new Date(bug.updated_at).toLocaleString() : 'N/A'} <span className="font-semibold text-gray-700">by </span> {getUpdaterDisplayName(bug.updater)}</span>
                         </div>
                         <div>
-                             <span className="font-semibold text-gray-700">Submitter User ID:</span>
-                             <span className="ml-2 text-gray-600">{bug.user_id ?? 'N/A'}</span>
-                         </div>
-                         <div>
-                             <span className="font-semibold text-gray-700">Submitter Email:</span>
-                             <span className="ml-2 text-gray-600">{bug.profiles?.email ?? bug.email + ' (Visitor)'}</span>
-                         </div>
+                            <span className="font-semibold text-gray-700">Submitter User ID:</span>
+                            <span className="ml-2 text-gray-600">{bug.user_id ?? 'N/A'}</span>
+                        </div>
+                        <div>
+                            <span className="font-semibold text-gray-700">Submitter Email:</span>
+                            <span className="ml-2 text-gray-600">{bug.reporter?.email ?? bug.email + ' (Visitor)'}</span>
+                        </div>
                     </div>
                 </div>
 

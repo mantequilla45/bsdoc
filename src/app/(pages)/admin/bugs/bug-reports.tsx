@@ -23,8 +23,14 @@ export interface BugReport {
     created_at: string;
     updated_at: string | null;
     email: string | null;
-    profiles: {
-      email: string | null;
+    updated_by_admin_id: string | null; // <-- ADD: ID of admin who last updated
+    reporter: {                         // <-- RENAME: Original submitter's profile
+        email: string | null;
+    } | null;
+    updater: {                          // <-- ADD: Profile of admin who last updated
+        first_name: string | null;
+        last_name: string | null;
+        email: string | null;
     } | null;
 }
 
@@ -74,7 +80,11 @@ const BugManagement = () => {
             try {
                 const { data, error: fetchDbError } = await supabase
                     .from('bugs')
-                    .select('*, profiles(email)')
+                    .select(`
+                        *, 
+                        reporter:profiles!bugs_user_id_fkey(email),
+                        updater:profiles!bugs_updated_by_admin_id_fkey(first_name, last_name, email)
+                    `)
                     .order('created_at', { ascending: false });
 
                 if (fetchDbError) {
@@ -113,7 +123,7 @@ const BugManagement = () => {
                 (bug?.description ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
                 (bug?.category ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
                 (bug?.status ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
-                (bug?.profiles?.email ?? '').toLowerCase().includes(lowerCaseSearchTerm)
+                (bug?.reporter?.email ?? '').toLowerCase().includes(lowerCaseSearchTerm)
             );
             setFilteredBugs(filtered);
         }
