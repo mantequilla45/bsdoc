@@ -28,69 +28,112 @@ async function validateAdminAccess(req: NextRequest): Promise<{ user?: any; erro
 }
 
 export async function GET(req: NextRequest) {
-    // Validate Admin Access
     const validation = await validateAdminAccess(req);
-    if (validation.error) {
-        return NextResponse.json({ error: validation.error }, { status: validation.status });
+    if (validation.error || !validation.user) { // Check if user exists
+        return NextResponse.json({ error: validation.error || 'User not found' }, { status: validation.status || 401 });
     }
+    const adminUserId = validation.user.id; // ID of the admin making the request
 
     const { searchParams } = new URL(req.url);
-    const filter = searchParams.get('filter') ?? 'all'; // 'all', 'unread'
-    const countOnly = searchParams.get('countOnly') === 'true'; // To get only the count
-
-    const notificationTypeFilter = searchParams.get('notificationType') ?? 'all'; // e.g., 'all', 'VERIFICATION_SUBMITTED', 'REPORT_SUBMITTED'
+    const countOnly = searchParams.get('countOnly') === 'true';
 
     try {
-        // Base query using admin client
-        let query = supabaseAdmin
-            .from('notifications')
-            // Select necessary fields, potentially join with profiles if sender info needed
-            .select('*', { count: 'exact', head: countOnly }); // Use head:true for countOnly
+        // --- Query using RPC function for better performance and logic encapsulation ---
+        // You would create this function in your Supabase SQL editor.
+        // It handles the join and read status calculation.
 
-        // Filter for admin-relevant notifications
-        // Option 1: Filter by specific types admins care about
-        const adminNotificationTypes = ['VERIFICATION_SUBMITTED', 'REPORT_SUBMITTED']; // Add other types as needed
-        if (notificationTypeFilter === 'all') {
-            // If 'all', filter by the list of relevant admin types
-            query = query.in('type', adminNotificationTypes);
-       } else if (adminNotificationTypes.includes(notificationTypeFilter)) {
-            // If a specific valid type is provided, filter by that type
-           query = query.eq('type', notificationTypeFilter);
-       } else {
-            // Optional: Handle invalid type filter - maybe return empty or error?
-            // For now, let's assume it falls back to fetching none if type is invalid
-            console.warn(`Invalid notificationType filter received: ${notificationTypeFilter}`);
-             query = query.in('type', []); // Return nothing for invalid types
-       }
-
-        // Option 2: Filter by notifications sent TO any admin user_id (if you have admin IDs)
-        // const { data: admins } = await supabaseAdmin.from('profiles').select('id').eq('role', 'admin');
-        // const adminIds = admins?.map(a => a.id) || [];
-        // query = query.in('user_id', adminIds); // *Choose Option 1 OR Option 2 based on your notification design*
-
-        // Apply 'unread' filter if requested
-        if (filter === 'unread') {
-            query = query.eq('is_read', false);
+        const rpcParams: { requesting_user_id: string; count_only?: boolean } = {
+             requesting_user_id: adminUserId
+        };
+        if (countOnly) {
+            rpcParams.count_only = true;
         }
 
-        query = query.order('created_at', { ascending: false });
-
-        // Execute query
-        const { data, error, count } = await query;
+        const { data, error } = await supabaseAdmin.rpc('get_admin_notifications', rpcParams);
 
         if (error) {
-            console.error("API GET /admin/notifications: Error:", error);
-            return NextResponse.json({ error: 'Failed to fetch admin notifications' }, { status: 500 });
+            console.error("API GET /admin/notifications: Error calling RPC:", error);
+            return NextResponse.json({ error: 'Failed to fetch admin notifications via RPC' }, { status: 500 });
         }
 
         if (countOnly) {
-            return NextResponse.json({ count: count ?? 0 }, { status: 200 });
+            // Assuming the RPC returns { count: number } when count_only is true
+            return NextResponse.json({ count: data ?? 0 }, { status: 200 });
         }
 
-        return NextResponse.json({ data: data || [], count: count ?? 0 }, { status: 200 });
+        // Assuming RPC returns array of notifications with is_read specific to the requesting admin
+        return NextResponse.json({ data: data || [], count: data?.length ?? 0 }, { status: 200 }); // Adjust count logic if RPC provides total
 
     } catch (error: unknown) {
         console.error("API GET /admin/notifications: Unexpected error:", error);
         return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
     }
 }
+
+// export async function GET(req: NextRequest) {
+//     // Validate Admin Access
+//     const validation = await validateAdminAccess(req);
+//     if (validation.error) {
+//         return NextResponse.json({ error: validation.error }, { status: validation.status });
+//     }
+
+//     const { searchParams } = new URL(req.url);
+//     const filter = searchParams.get('filter') ?? 'all'; // 'all', 'unread'
+//     const countOnly = searchParams.get('countOnly') === 'true'; // To get only the count
+
+//     const notificationTypeFilter = searchParams.get('notificationType') ?? 'all'; // e.g., 'all', 'VERIFICATION_SUBMITTED', 'REPORT_SUBMITTED'
+
+//     try {
+//         // Base query using admin client
+//         let query = supabaseAdmin
+//             .from('notifications')
+//             // Select necessary fields, potentially join with profiles if sender info needed
+//             .select('*', { count: 'exact', head: countOnly }); // Use head:true for countOnly
+
+//         // Filter for admin-relevant notifications
+//         // Option 1: Filter by specific types admins care about
+//         const adminNotificationTypes = ['VERIFICATION_SUBMITTED', 'REPORT_SUBMITTED']; // Add other types as needed
+//         if (notificationTypeFilter === 'all') {
+//             // If 'all', filter by the list of relevant admin types
+//             query = query.in('type', adminNotificationTypes);
+//        } else if (adminNotificationTypes.includes(notificationTypeFilter)) {
+//             // If a specific valid type is provided, filter by that type
+//            query = query.eq('type', notificationTypeFilter);
+//        } else {
+//             // Optional: Handle invalid type filter - maybe return empty or error?
+//             // For now, let's assume it falls back to fetching none if type is invalid
+//             console.warn(`Invalid notificationType filter received: ${notificationTypeFilter}`);
+//              query = query.in('type', []); // Return nothing for invalid types
+//        }
+
+//         // Option 2: Filter by notifications sent TO any admin user_id (if you have admin IDs)
+//         // const { data: admins } = await supabaseAdmin.from('profiles').select('id').eq('role', 'admin');
+//         // const adminIds = admins?.map(a => a.id) || [];
+//         // query = query.in('user_id', adminIds); // *Choose Option 1 OR Option 2 based on your notification design*
+
+//         // Apply 'unread' filter if requested
+//         if (filter === 'unread') {
+//             query = query.eq('is_read', false);
+//         }
+
+//         query = query.order('created_at', { ascending: false });
+
+//         // Execute query
+//         const { data, error, count } = await query;
+
+//         if (error) {
+//             console.error("API GET /admin/notifications: Error:", error);
+//             return NextResponse.json({ error: 'Failed to fetch admin notifications' }, { status: 500 });
+//         }
+
+//         if (countOnly) {
+//             return NextResponse.json({ count: count ?? 0 }, { status: 200 });
+//         }
+
+//         return NextResponse.json({ data: data || [], count: count ?? 0 }, { status: 200 });
+
+//     } catch (error: unknown) {
+//         console.error("API GET /admin/notifications: Unexpected error:", error);
+//         return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
+//     }
+// }
