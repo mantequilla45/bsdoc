@@ -9,7 +9,7 @@ const PrivacyPolicy = () => {
       <Header background="white" title="Privacy Policy" />
 
       {/* Full-width background section, moved below the header */}
-      <div className="bg-gradient-to-r from-[#018487] to-[#016668] py-16 flex flex-col justify-center items-center text-center mt-[100px]">
+      <div className="bg-gradient-to-r from-[#018487] to-[#016668] py-16 flex flex-col justify-center items-center text-center mt-[80px]">
         <h2 className="text-gray-700 sm:text-4xl md:text-5xl font-bold text-white leading-tight text-2xl mb-2">
           Privacy Policy
         </h2>
