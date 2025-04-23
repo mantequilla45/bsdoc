@@ -22,6 +22,7 @@ export interface BugReport {
     user_id: string | null;
     created_at: string;
     updated_at: string | null;
+    email: string | null;
     profiles: {
       email: string | null;
     } | null;
@@ -145,8 +146,8 @@ const BugManagement = () => {
                  showToast('Bug status updated successfully', 'success');
              } else {
                  console.error("Error updating bug:", result.error);
-                 setError(result.error || "Failed to update bug status");
-                 showToast(result.error || "Failed to update bug status", 'error');
+                 setError(result.error ?? "Failed to update bug status");
+                 showToast(result.error ?? "Failed to update bug status", 'error');
              }
 
         } catch (error) {
@@ -172,11 +173,11 @@ const BugManagement = () => {
 
              if (response.ok) {
                  setBugs(prevBugs => prevBugs.filter(bug => bug.id !== id));
-                 showToast(result.message || 'Bug deleted successfully', 'success');
+                 showToast(result.message ?? 'Bug deleted successfully', 'success');
              } else {
                   console.error("Error deleting bug:", result.error);
-                  setError(result.error || "Failed to delete bug");
-                  showToast(result.error || "Failed to delete bug", 'error');
+                  setError(result.error ?? "Failed to delete bug");
+                  showToast(result.error ?? "Failed to delete bug", 'error');
              }
         } catch (error) {
              console.error("Error deleting bug:", error);

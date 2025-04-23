@@ -87,7 +87,7 @@ const BugDetailModal: React.FC<BugDetailModalProps> = ({ isOpen, onClose, bug })
                          <div>
                             <span className="font-semibold text-gray-700">Severity:</span>
                              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(bug.severity)}`}>
-                                {bug.severity || 'N/A'}
+                                {bug.severity ?? 'N/A'}
                             </span>
                         </div>
                         <div>
@@ -100,11 +100,11 @@ const BugDetailModal: React.FC<BugDetailModalProps> = ({ isOpen, onClose, bug })
                         </div>
                         <div>
                              <span className="font-semibold text-gray-700">Submitter User ID:</span>
-                             <span className="ml-2 text-gray-600">{bug.user_id || 'N/A'}</span>
+                             <span className="ml-2 text-gray-600">{bug.user_id ?? 'N/A'}</span>
                          </div>
                          <div>
                              <span className="font-semibold text-gray-700">Submitter Email:</span>
-                             <span className="ml-2 text-gray-600">{bug.profiles?.email || 'N/A'}</span>
+                             <span className="ml-2 text-gray-600">{bug.profiles?.email ?? bug.email + ' (Visitor)'}</span>
                          </div>
                     </div>
                 </div>
