@@ -17,7 +17,13 @@ interface BugReport {
     created_at: string;
     updated_at: string | null;
     email: string | null;
-    profiles: {
+    updated_by_admin_id: string | null; // <-- ADD: ID of admin who last updated
+    reporter: {                         // <-- RENAME: Original submitter's profile
+        email: string | null;
+    } | null;
+    updater: {                          // <-- ADD: Profile of admin who last updated
+        first_name: string | null;
+        last_name: string | null;
         email: string | null;
     } | null;
 }
@@ -64,9 +70,9 @@ const BugTable: React.FC<BugTableProps> = ({
             let valueB: any;
 
             // Handle nested fields like profiles.email
-            if (sortField === 'profiles') {
-                valueA = a.profiles?.email ?? '';
-                valueB = b.profiles?.email ?? '';
+            if (sortField === 'reporter') {
+                valueA = a.reporter?.email ?? '';
+                valueB = b.reporter?.email ?? '';
             } else {
                 valueA = a[sortField] ?? '';
                 valueB = b[sortField] ?? '';
@@ -278,7 +284,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                 </select>
                                             </div>
                                             <div className="text-xs text-gray-500">
-                                                Reporter: {bug.profiles?.email ?? bug.email + ' (Visitor)'}
+                                                Reporter: {bug.reporter?.email ?? bug.email + ' (Visitor)'}
                                             </div>
                                             <div className="flex justify-end space-x-2 mt-2">
                                                 <Button
@@ -327,7 +333,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                 </span>
                                             </div>
                                             <div className="text-xs text-gray-500 mb-3">
-                                                Reporter: {bug.profiles?.email ?? bug.email + ' (Visitor)'}
+                                                Reporter: {bug.reporter?.email ?? bug.email + ' (Visitor)'}
                                             </div>
 
                                             {confirmDelete === bug.id ? (
@@ -528,7 +534,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                     {formatDate(bug.created_at)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {bug.profiles?.email ?? bug.email + ' (Visitor)'}
+                                                    {bug.reporter?.email ?? bug.email + ' (Visitor)'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <div className="flex space-x-2">
@@ -577,7 +583,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                     {formatDate(bug.created_at)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {bug.profiles?.email ?? bug.email + ' (Visitor)'}
+                                                    {bug.reporter?.email ?? bug.email + ' (Visitor)'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     {confirmDelete === bug.id ? (
