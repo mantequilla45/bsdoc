@@ -16,6 +16,7 @@ interface BugReport {
     user_id: string | null;
     created_at: string;
     updated_at: string | null;
+    email: string | null;
     profiles: {
         email: string | null;
     } | null;
@@ -64,11 +65,11 @@ const BugTable: React.FC<BugTableProps> = ({
 
             // Handle nested fields like profiles.email
             if (sortField === 'profiles') {
-                valueA = a.profiles?.email || '';
-                valueB = b.profiles?.email || '';
+                valueA = a.profiles?.email ?? '';
+                valueB = b.profiles?.email ?? '';
             } else {
-                valueA = a[sortField] || '';
-                valueB = b[sortField] || '';
+                valueA = a[sortField] ?? '';
+                valueB = b[sortField] ?? '';
             }
 
             // Convert to lowercase if string
@@ -228,7 +229,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                 <input
                                                     type="text"
                                                     name="title"
-                                                    value={editFormData.title || ''}
+                                                    value={editFormData.title ?? ''}
                                                     onChange={handleInputChange}
                                                     className="w-full px-2 py-1 border border-gray-300 rounded-sm text-xs"
                                                 />
@@ -238,7 +239,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                     <label className="block text-xs text-gray-500 mb-1">Category</label>
                                                     <select
                                                         name="category"
-                                                        value={editFormData.category || ''}
+                                                        value={editFormData.category ?? ''}
                                                         onChange={handleInputChange}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-sm text-xs"
                                                     >
@@ -251,7 +252,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                     <label className="block text-xs text-gray-500 mb-1">Severity</label>
                                                     <select
                                                         name="severity"
-                                                        value={editFormData.severity || ''}
+                                                        value={editFormData.severity ?? ''}
                                                         onChange={handleInputChange}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-sm text-xs"
                                                     >
@@ -266,7 +267,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                 <label className="block text-xs text-gray-500 mb-1">Status</label>
                                                 <select
                                                     name="status"
-                                                    value={editFormData.status || ''}
+                                                    value={editFormData.status ?? ''}
                                                     onChange={handleInputChange}
                                                     className="w-full px-2 py-1 border border-gray-300 rounded-sm text-xs"
                                                 >
@@ -277,7 +278,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                 </select>
                                             </div>
                                             <div className="text-xs text-gray-500">
-                                                Reporter: {bug.profiles?.email || 'Visitor'}
+                                                Reporter: {bug.profiles?.email ?? bug.email + ' (Visitor)'}
                                             </div>
                                             <div className="flex justify-end space-x-2 mt-2">
                                                 <Button
@@ -319,14 +320,14 @@ const BugTable: React.FC<BugTableProps> = ({
                                                     {bug.category}
                                                 </span>
                                                 <span className={`px-2 py-1 text-xs font-semibold rounded-md ${getSeverityStyles(bug.severity)}`}>
-                                                    {bug.severity || 'Low'}
+                                                    {bug.severity ?? 'Low'}
                                                 </span>
                                                 <span className={`px-2 py-1 text-xs font-semibold rounded-md ${getStatusStyles(bug.status)}`}>
                                                     {bug.status}
                                                 </span>
                                             </div>
                                             <div className="text-xs text-gray-500 mb-3">
-                                                Reporter: {bug.profiles?.email || 'Visitor'}
+                                                Reporter: {bug.profiles?.email ?? bug.email + ' (Visitor)'}
                                             </div>
 
                                             {confirmDelete === bug.id ? (
@@ -479,7 +480,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                     <input
                                                         type="text"
                                                         name="title"
-                                                        value={editFormData.title || ''}
+                                                        value={editFormData.title ?? ''}
                                                         onChange={handleInputChange}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-sm text-sm"
                                                     />
@@ -487,7 +488,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                 <td className="px-6 py-4 whitespace-nowrap w-[200px]">
                                                     <select
                                                         name="category"
-                                                        value={editFormData.category || ''}
+                                                        value={editFormData.category ?? ''}
                                                         onChange={handleInputChange}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-sm text-sm"
                                                     >
@@ -500,7 +501,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                 <td className="px-6 py-4 whitespace-nowrap w-[120px]">
                                                     <select
                                                         name="severity"
-                                                        value={editFormData.severity || ''}
+                                                        value={editFormData.severity ?? ''}
                                                         onChange={handleInputChange}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-sm text-sm"
                                                     >
@@ -513,7 +514,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                 <td className="px-6 py-4 whitespace-nowrap w-[120px]">
                                                     <select
                                                         name="status"
-                                                        value={editFormData.status || ''}
+                                                        value={editFormData.status ?? ''}
                                                         onChange={handleInputChange}
                                                         className="w-full px-2 py-1 border border-gray-300 rounded-sm text-sm"
                                                     >
@@ -527,7 +528,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                     {formatDate(bug.created_at)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {bug.profiles?.email || 'Visitor'}
+                                                    {bug.profiles?.email ?? bug.email + ' (Visitor)'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <div className="flex space-x-2">
@@ -564,7 +565,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-[120px]">
                                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getSeverityStyles(bug.severity)}`}>
-                                                        {bug.severity || 'Low'}
+                                                        {bug.severity ?? 'Low'}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-[120px]">
@@ -576,7 +577,7 @@ const BugTable: React.FC<BugTableProps> = ({
                                                     {formatDate(bug.created_at)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {bug.profiles?.email || 'Visitor'}
+                                                    {bug.profiles?.email ?? bug.email + ' (Visitor)'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     {confirmDelete === bug.id ? (
