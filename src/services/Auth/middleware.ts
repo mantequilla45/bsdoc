@@ -8,7 +8,18 @@ const adminPages = [{
 }];
 const doctorPages = [
   { path: '/doctors/doctor-schedule', roles: ['doctor'] },
-  { path: '/doctors/profile', roles: ['doctor']}
+  { path: '/doctors/profile', roles: ['doctor'] }
+];
+
+const protectedPaths = ['/account', '/booking', '/appointments'];
+const adminPaths = ['/admin']; // Just the base path needed due to startsWith
+const doctorPaths = ['/doctors/doctor-schedule', '/doctors/profile'];
+
+// Combine all paths that require authentication
+const allAuthRequiredPaths = [
+  ...protectedPaths,
+  ...adminPaths,
+  ...doctorPaths
 ];
 
 export async function updateSession(request: NextRequest) {
@@ -26,7 +37,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
@@ -65,17 +76,26 @@ export async function updateSession(request: NextRequest) {
   // Get the current path
   const path = request.nextUrl.pathname
 
+  const requiresAuth = allAuthRequiredPaths.some(p => path.startsWith(p));
+  if (!user && requiresAuth) {
+    // If user is not logged in AND the path requires authentication, redirect to home
+    console.log(`Middleware: No user, redirecting from protected path: ${path}`);
+    const url = request.nextUrl.clone();
+    url.pathname = '/'; // Redirect to home page (or login page)
+    return NextResponse.redirect(url);
+  }
+
   // Check if the path is a protected route and the user is not authenticated
   const isProtectedRoute = protectedPages.some(route => path.startsWith(route))
   //const adminOnly = adminPages.some(route => path.startsWith(route));
-  
+
   // Allow public routes
   //const isPublicRoute = path === '/' || path.startsWith('/auth')
 
   if (user) {
     // Find if this route has role restrictions
     const adminOnly = adminPages.find(route => path.startsWith(route.path))
-    
+
     if (adminOnly) {
       console.log("Middleware - Checking admin route:", adminOnly.path);
       // Get user role from profiles table
@@ -84,7 +104,7 @@ export async function updateSession(request: NextRequest) {
         .select('role')
         .eq('id', user.id)
         .single()
-      
+
       // If we have a profile and the role isn't in the allowed roles, redirect
       if (!profile || !adminOnly.roles.includes(profile.role)) {
         // Redirect to unauthorized page or homepage
@@ -104,7 +124,7 @@ export async function updateSession(request: NextRequest) {
         .select('role')
         .eq('id', user.id)
         .single()
-      
+
       // If we have a profile and the role isn't in the allowed roles, redirect
       if (!profile || !doctorOnly.roles.includes(profile.role)) {
         // Redirect to unauthorized page or homepage
