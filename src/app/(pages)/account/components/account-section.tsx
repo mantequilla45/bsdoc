@@ -26,6 +26,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
     const [passwordError, setPasswordError] = useState<string | null>(null);
     const [isUpdatingPassword, setIsUpdatingPassword] = useState<boolean>(false);
     const [currentPassword, setCurrentPassword] = useState<string>('');
+    const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -281,6 +282,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                 {fields.some(f => f.name === 'newPassword') && isEditing && (
                     <div className="mt-4 pt-2">
                         {passwordError && <p className="text-red-500 text-sm text-center mb-2">{passwordError}</p>}
+                        {passwordSuccess && <p className="text-green-500 text-sm text-center">{passwordSuccess}</p>}
                         <div className="flex justify-end">
                             <button
                                 onClick={handleChangePassword}
@@ -308,12 +310,13 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
 
     const handleChangePassword = async () => {
         setPasswordError(null);
-        setIsUpdatingPassword(true); // Set loading state at the beginning
+        setPasswordSuccess(null); // Clear previous success message
+        setIsUpdatingPassword(true);
 
-        // 1. Basic Validation (moved before loading state if preferred, but okay here too)
+        // 1. Basic Validations
         if (!currentPassword || !newPassword || !confirmPassword) {
             setPasswordError("Please fill in all password fields.");
-            setIsUpdatingPassword(false); // Turn off loading before returning
+            setIsUpdatingPassword(false);
             return;
         }
         if (newPassword.length < 6) {
@@ -331,85 +334,65 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
             setIsUpdatingPassword(false);
             return;
         }
+        // Ensure profile email is available
+        if (!profile?.email) {
+            setPasswordError("Could not verify current password. User email not found.");
+            setIsUpdatingPassword(false);
+            return;
+        }
 
-        let isPasswordVerified = false; // Flag to track verification success
 
         try {
-            // 2. Verify Current Password
-            console.log("Attempting re-authentication...");
-            const { error: reauthError } = await supabase.auth.reauthenticate();
+            // 2. Verify Current Password by attempting sign-in
+            console.log("Verifying current password...");
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: profile.email,
+                password: currentPassword // Use the password typed by the user
+            });
 
-            if (reauthError) {
-                console.warn("Re-authentication failed (this might be expected), trying signIn to verify current password.", reauthError);
-
-                if (!profile?.email) {
-                    setPasswordError("Could not verify current password. User email not found.");
-                    throw new Error("User email not found for password verification."); // Throw to exit try block
-                }
-
-                // Try verifying by signing in with the current password
-                const { error: signInError } = await supabase.auth.signInWithPassword({
-                    email: profile.email,
-                    password: currentPassword
-                });
-
-                if (signInError) {
-                    // If signIn fails, the entered current password was WRONG.
-                    console.error('Current password verification failed:', signInError);
-                    setPasswordError("Incorrect current password.");
-                    // No need to set flag, will be caught by finally or check below
-                    throw signInError; // Throw to exit try block
-                } else {
-                    // If signIn succeeds, the current password is CORRECT.
-                    console.log("Current password verified via signIn.");
-                    isPasswordVerified = true;
-                }
-            } else {
-                // If reauthenticate() itself succeeds, consider password verified for this session.
-                console.log("Re-authentication successful.");
-                isPasswordVerified = true;
+            // If signIn fails, the entered current password was wrong.
+            if (signInError) {
+                console.error('Current password verification failed:', signInError);
+                setPasswordError("Incorrect current password.");
+                // Throw error to be caught by the outer catch block
+                throw new Error("Incorrect current password.");
             }
 
-
-            // 3. Proceed ONLY if password was verified
-            if (!isPasswordVerified) {
-                // This case should ideally not be reached if errors are thrown above, but acts as a safeguard
-                console.error("Password verification flag not set, aborting update.");
-                setPasswordError("Could not verify current credentials. Please try again.");
-                throw new Error("Password verification failed unexpectedly."); // Exit try block
-            }
-
-            // 4. Update to New Password
-            console.log("Updating user password...");
-            const { data: updateData, error: updateError } = await supabase.auth.updateUser({ // Capture data too
+            // 3. If Current Password is Verified (signInError is null), Update to New Password
+            console.log("Current password verified. Updating user password...");
+            const { data: updateData, error: updateError } = await supabase.auth.updateUser({
                 password: newPassword
             });
 
             if (updateError) {
                 console.error('Error updating password:', updateError);
                 setPasswordError(`Update failed: ${updateError.message}`);
-                throw updateError; // Exit try block
+                // Throw error to be caught by the outer catch block
+                throw updateError;
             }
 
-            // If update successful:
+            // --- Success ---
             console.log("Password update successful:", updateData);
-            toast.success("Password updated successfully!");
+            toast.success("Password updated successfully!"); // Use toast for success
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
-            setIsEditing(false);
+            setIsEditing(false); // Exit edit mode on success
 
         } catch (error: unknown) {
             // Catch errors thrown from verification or update steps
             console.error('Password update process error caught:', error);
-            // Ensure a user-facing error is set if not already done
+            // Ensure a user-facing error message is set if not already done by specific checks
             if (!passwordError) {
                 const message = error instanceof Error ? error.message : 'An unknown error occurred';
-                // Avoid setting generic message if a specific one was already set
-                if (message !== "Incorrect current password.") { // Example check
+                // Avoid overwriting specific messages like "Incorrect current password."
+                if (message !== "Incorrect current password.") {
                     setPasswordError(`Update failed: ${message}`);
                 }
             }
+            // Optionally, show a generic error toast as well
+            // toast.error(passwordError || "An unexpected error occurred.");
+
         } finally {
             // Always turn off loading state
             setIsUpdatingPassword(false);
