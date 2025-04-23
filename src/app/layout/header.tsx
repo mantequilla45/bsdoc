@@ -289,7 +289,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                             ref={containerRef}
                                         >
                                             <ul className="text-gray-700 text-sm"> {/* Adjusted font size */}
-                                                {["/account", "Settings", "Logout"].map((item, index) => (
+                                                {["/account", "Logout"].map((item, index) => (
                                                     <motion.li
                                                         key={item}
                                                         initial={{ opacity: 0, y: -10 }}
@@ -309,9 +309,9 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                                         onClick={item === 'Logout' ? openLogoutModal : () => setMenuOpen(false)}
                                                     >
                                                         {item === "/account" ? (
-                                                            <Link href="/account" className="block w-full h-full">Account</Link>
-                                                        ) : item === "Settings" ? (
-                                                            <Link href="/settings" className="block w-full h-full">Settings</Link> // Assuming /settings route
+                                                            <Link href="/account" className="block w-full h-full">Account Settings</Link>
+                                                        // ) : item === "Settings" ? (
+                                                        //     <Link href="/settings" className="block w-full h-full">Settings</Link> // Assuming /settings route
                                                         ) : (
                                                             item // Just display "Logout" text
                                                         )}
@@ -400,11 +400,11 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                                 {loggedIn ? (
                                     <>
                                         <li className="px-4 py-3 hover:bg-gray-100 w-full text-center border-t mt-2 pt-3"> {/* Separator */}
-                                            <Link href="/account" onClick={() => setMobileMenuOpen(false)} className="block">Account</Link>
+                                            <Link href="/account" onClick={() => setMobileMenuOpen(false)} className="block">Account Settings</Link>
                                         </li>
-                                        <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
+                                        {/* <li className="px-4 py-3 hover:bg-gray-100 w-full text-center">
                                             <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="block">Settings</Link>
-                                        </li>
+                                        </li> */}
                                         <li
                                             //onClick={handleLogout} // Logout closes menu automatically
                                             onClick={openLogoutModal}
