@@ -38,5 +38,7 @@ export interface Profile {
     updated_at: string;
     role: string;
     profile_image_url?: string;
-    address?: string; // Make it optional if it's not always required
+    address?: string | null; // Make it optional if it's not always required
+    city?: string | null;
+    zip_code?: string | null;
 }
