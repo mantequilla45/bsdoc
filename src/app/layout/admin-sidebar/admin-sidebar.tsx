@@ -16,6 +16,9 @@ import NavItem from './components/NavItem';
 import { FaCheckDouble } from 'react-icons/fa6';
 import { supabase } from '@/lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
+import { signOut } from '@/services/Auth/auth';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 interface SideBarProps {
   onContentChange?: (contentId: string) => void;
@@ -26,6 +29,7 @@ interface SideBarProps {
 const SideBar: React.FC<SideBarProps> = ({ onContentChange, activeContentId, unreadNotificationsCount }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState(activeContentId || 'dashboard');
+  const router = useRouter();
   //const notificationCount = 3;
 
   // const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -109,6 +113,23 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange, activeContentId, unr
     setActiveItem(contentId);
     if (onContentChange) {
       onContentChange(contentId);
+    }
+  };
+
+  const handleLogout = async () => {
+    console.log('Logout initiated...');
+    try {
+      await signOut(); // Call the signOut function from your auth service
+      console.log('Sign out successful.');
+      toast.success('Sign out successful.');
+      // Redirect to homepage after logout
+      router.push('/');
+      // Optionally, refresh the page to ensure all state is cleared, though Next.js routing should handle much of this.
+      router.refresh(); // Helps ensure layout components might refetch user state
+    } catch (error) {
+      console.error("Error logging out:", error);
+      // Optionally show an error message to the user
+      toast.error("Logout failed. Please try again.");
     }
   };
 
@@ -225,20 +246,20 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange, activeContentId, unr
 
       {/* Footer */}
       <div className="mt-auto border-t border-gray-700 pt-2 pb-4 md:px-3 space-y-1">
-        <NavItem
+        {/* <NavItem
           href="/admin/help"
           icon={<HelpCircle size={20} />}
           title="Help & Support"
           active={activeItem === 'help'}
           onClick={handleNavClick}
           collapsed={collapsed}
-        />
+        /> */}
 
         <NavItem
           href="/logout"
           icon={<LogOut size={20} />}
           title="Logout"
-          onClick={() => console.log('Logout clicked')}
+          onClick={handleLogout}
           collapsed={collapsed}
         />
       </div>
