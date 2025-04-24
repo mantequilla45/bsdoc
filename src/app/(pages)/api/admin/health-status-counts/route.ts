@@ -22,9 +22,10 @@ import { NextResponse, NextRequest } from 'next/server';
         }
 
         try {
-            const { data, error } = await supabaseAdmin.rpc('get_health_status_counts');
+            const { data, error } = await supabaseAdmin.rpc('get_health_status_counts_v3'); // <-- Use v3 now
 
             if (error) {
+                console.log('error: ', error);
                 console.error('Error fetching health status counts:', error);
                 return NextResponse.json({ error: 'Failed to fetch health status counts' }, { status: 500 });
             }
