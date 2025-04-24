@@ -3,6 +3,7 @@ import { Edit, Trash2, Check, X } from 'lucide-react';
 import { ProfileUser } from './ProfileUser';
 import { Badge } from './Badge';
 import { Button } from './Button';
+import Image from 'next/image';
 
 interface UserTableProps {
     users: ProfileUser[];
@@ -95,10 +96,21 @@ const UserTable: React.FC<UserTableProps> = ({
                                 {editingUserId === user.id ? (
                                     <div className="space-y-3">
                                         <div className="flex items-center space-x-2">
-                                            <div className="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                                <span className="text-gray-600 text-xs font-medium">
-                                                    {editFormData.first_name?.charAt(0) ?? ''}{editFormData.last_name?.charAt(0) ?? ''}
-                                                </span>
+                                            <div className="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                                {user?.profile_image_url ? (
+                                                    <Image
+                                                        src={user.profile_image_url}
+                                                        alt="User profile picture"
+                                                        width={32}
+                                                        height={32}
+                                                        className="object-cover w-full h-full" // Ensure image covers the area
+                                                    />
+                                                ) : (
+                                                    <span className="text-xs font-medium text-gray-600">
+                                                        {editFormData.first_name?.charAt(0)?.toUpperCase() ?? user.first_name?.charAt(0)?.toUpperCase() ?? 'N/A'}
+                                                        {editFormData.last_name?.charAt(0)?.toUpperCase() ?? user.last_name?.charAt(0)?.toUpperCase() ?? ''}
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="grid grid-cols-2 gap-2 w-full">
                                                 <input
@@ -167,10 +179,21 @@ const UserTable: React.FC<UserTableProps> = ({
                                     <>
                                         <div className="flex justify-between items-start">
                                             <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                                    <span className="text-gray-600 text-xs font-medium">
-                                                        {user?.first_name?.charAt(0) ?? ''}{user?.last_name?.charAt(0) ?? ''}
-                                                    </span>
+                                                <div className="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                                    {user?.profile_image_url ? (
+                                                        <Image
+                                                            src={user.profile_image_url}
+                                                            alt="User profile picture"
+                                                            width={32}
+                                                            height={32}
+                                                            className="object-cover w-full h-full" // Ensure image covers the area
+                                                        />
+                                                    ) : (
+                                                        <span className="text-xs font-medium text-gray-600">
+                                                            {editFormData.first_name?.charAt(0)?.toUpperCase() ?? user.first_name?.charAt(0)?.toUpperCase() ?? 'N/A'}
+                                                            {editFormData.last_name?.charAt(0)?.toUpperCase() ?? user.last_name?.charAt(0)?.toUpperCase() ?? ''}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div className="ml-2">
                                                     <div className="text-sm font-medium text-gray-900">
@@ -267,10 +290,21 @@ const UserTable: React.FC<UserTableProps> = ({
                                     <td className="px-6 py-4 whitespace-nowrap w-[500px]">
                                         {editingUserId === user.id ? (
                                             <div className="flex items-center space-x-2">
-                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                                    <span className="text-gray-600 font-medium">
-                                                        {editFormData.first_name?.charAt(0) ?? ''}{editFormData.last_name?.charAt(0) ?? ''}
-                                                    </span>
+                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                                    {user?.profile_image_url ? (
+                                                        <Image
+                                                            src={user.profile_image_url}
+                                                            alt="User profile picture"
+                                                            width={32}
+                                                            height={32}
+                                                            className="object-cover w-full h-full" // Ensure image covers the area
+                                                        />
+                                                    ) : (
+                                                        <span className="text-xs font-medium text-gray-600">
+                                                            {editFormData.first_name?.charAt(0)?.toUpperCase() ?? user.first_name?.charAt(0)?.toUpperCase() ?? 'N/A'}
+                                                            {editFormData.last_name?.charAt(0)?.toUpperCase() ?? user.last_name?.charAt(0)?.toUpperCase() ?? ''}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div className="space-x-2">
                                                     <input
@@ -291,10 +325,21 @@ const UserTable: React.FC<UserTableProps> = ({
                                             </div>
                                         ) : (
                                             <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                                    <span className="text-gray-600 font-medium">
-                                                        {user?.first_name?.charAt(0) ?? ''}{user?.last_name?.charAt(0) ?? ''}
-                                                    </span>
+                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                                    {user?.profile_image_url ? (
+                                                        <Image
+                                                            src={user.profile_image_url}
+                                                            alt="User profile picture"
+                                                            width={32}
+                                                            height={32}
+                                                            className="object-cover w-full h-full" // Ensure image covers the area
+                                                        />
+                                                    ) : (
+                                                        <span className="text-xs font-medium text-gray-600">
+                                                            {editFormData.first_name?.charAt(0)?.toUpperCase() ?? user.first_name?.charAt(0)?.toUpperCase() ?? 'N/A'}
+                                                            {editFormData.last_name?.charAt(0)?.toUpperCase() ?? user.last_name?.charAt(0)?.toUpperCase() ?? ''}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div className="ml-4">
                                                     <div className="text-sm font-medium text-gray-900">

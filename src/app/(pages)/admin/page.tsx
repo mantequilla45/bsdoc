@@ -48,6 +48,8 @@ function AdminPageContent() {
     const [adminProfile, setAdminProfile] = useState<Profile | null>(null);
     const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
 
+    const [isInitialAuthLoading, setIsInitialAuthLoading] = useState<boolean>(true);
+
     const handleContentChange = useCallback((contentId: string) => {
         setactiveContentId(contentId);
         const currentUrl = new URL(window.location.href);
@@ -58,6 +60,7 @@ function AdminPageContent() {
     useEffect(() => {
         const fetchUserAndData = async () => {
             setIsLoadingProfile(true);
+            setIsInitialAuthLoading(true);
             try {
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                 if (sessionError) throw sessionError; // Throw if session fetch fails
@@ -65,9 +68,15 @@ function AdminPageContent() {
                 const currentUser = session?.user;
                 const currentToken = session?.access_token ?? null;
                 setAuthToken(currentToken);
-                if (currentUser) {
+                if (currentUser && currentToken) {
                     // Fetch Profile if user exists
                     console.log(`[AdminPageContent] User ${currentUser.id} found. Fetching profile...`);
+                    setAdminProfile(prevProfile => {
+                        // Avoid unnecessary profile state updates if user ID hasn't changed
+                        if (prevProfile?.id === currentUser.id) return prevProfile;
+                        setIsLoadingNotifications(true); // Reset notification loading when user changes
+                        return null; // Clear old profile while fetching new one
+                    });
                     const { data: profileData, error: profileError } = await supabase
                         .from('profiles')
                         .select('id, first_name, last_name, role, email, profile_image_url') // Select fields needed for sidebar
@@ -108,7 +117,7 @@ function AdminPageContent() {
             async (_event, session) => {
                 const currentToken = session?.access_token ?? null;
                 setAuthToken(currentToken);
-                if (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED' || _event === 'USER_UPDATED') {
+                if (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED' || _event === 'USER_UPDATED' || _event === 'INITIAL_SESSION') {
                     if (session?.user && currentToken) {
                         setIsLoadingProfile(true);
                         const { data: profileData, error: profileError } = await supabase
@@ -119,6 +128,7 @@ function AdminPageContent() {
                         if (!profileError) setAdminProfile(profileData as Profile ?? null);
                         else console.error("Error refetching profile on auth change:", profileError);
                         setIsLoadingProfile(false);
+                        setIsInitialAuthLoading(false);
                         fetchNotifications(currentToken); // Refetch notifications
                     }
                 }
@@ -270,6 +280,15 @@ function AdminPageContent() {
 
     if (isLoadingProfile && isLoadingNotifications && !adminProfile && !notifications.length) {
         // Show initial full page loading only if both profile and notifications haven't loaded
+        return;
+    }
+
+    if (isInitialAuthLoading) return;
+
+    if (!authToken || !adminProfile) {
+        // Potentially redirect or show a logged-out message
+        // This might flash briefly if auth state changes, consider redirecting in middleware instead
+        console.log("[AdminPageContent] No auth token or profile after initial load, rendering login prompt.");
         return;
     }
 
