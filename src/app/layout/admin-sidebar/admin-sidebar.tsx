@@ -19,14 +19,24 @@ import { User } from '@supabase/supabase-js';
 import { signOut } from '@/services/Auth/auth';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
+interface Profile {
+  id?: string; // Optional ID
+  role?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null; // Add other fields if needed
+  profile_image_url?: string | null;
+}
 interface SideBarProps {
   onContentChange?: (contentId: string) => void;
   activeContentId: string;
   unreadNotificationsCount: number;
+  adminProfile: Profile | null;
 }
 
-const SideBar: React.FC<SideBarProps> = ({ onContentChange, activeContentId, unreadNotificationsCount }) => {
+const SideBar: React.FC<SideBarProps> = ({ onContentChange, activeContentId, unreadNotificationsCount, adminProfile }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState(activeContentId || 'dashboard');
   const router = useRouter();
@@ -133,6 +143,23 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange, activeContentId, unr
     }
   };
 
+  const getDisplayName = () => {
+    if (!adminProfile) return "Admin"; // Loading or error state
+    return `${adminProfile.first_name ?? ''} ${adminProfile.last_name ?? ''}`.trim() ?? adminProfile.email;
+  };
+
+  // Helper to get display role, provide fallback
+  const getDisplayRole = () => {
+    if (!adminProfile || !adminProfile.role) return "Administrator";
+    // Capitalize first letter
+    if (adminProfile.role === 'admin') {
+      return 'Administrator';
+    }
+    else {
+      return adminProfile.role.charAt(0).toUpperCase() + adminProfile.role.slice(1);
+    }
+  };
+
   return (
     <aside
       className={`
@@ -161,11 +188,30 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange, activeContentId, unr
       {/* User profile */}
       {!collapsed && (
         <div className="flex items-center p-4 border-b border-gray-700">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md shrink-0 overflow-hidden"> {/* Added overflow-hidden */}
+            {adminProfile?.profile_image_url ? (
+              <Image
+                src={adminProfile.profile_image_url}
+                alt="Admin profile picture"
+                width={40} // Same as container dimensions
+                height={40} // Same as container dimensions
+                className="object-cover w-full h-full" // Ensure image covers the area
+                priority // Prioritize loading the profile picture
+              />
+            ) : (
+              // Fallback initials
+              <span className="text-lg">
+                {adminProfile?.first_name?.[0]?.toUpperCase() ?? 'A'}
+              </span>
+            )}
           </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-white truncate">Admin User</p>
-            <p className="text-xs text-white opacity-75 truncate">Administrator</p>
+          <div className="ml-3 overflow-hidden"> {/* Added overflow-hidden */}
+            <p className="text-sm font-medium text-white truncate" title={getDisplayName()}>
+              {getDisplayName()} {/* Display fetched name */}
+            </p>
+            <p className="text-xs text-white opacity-75 truncate" title={getDisplayRole()}>
+              {getDisplayRole()} {/* Display fetched role */}
+            </p>
           </div>
         </div>
       )}
