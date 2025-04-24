@@ -84,12 +84,12 @@ const OurServicesSection: React.FC = () => {
                   </p>
                   
                   <div className="mt-6 pt-4 border-t border-gray-100">
-                    <button className="text-blue-600 font-medium flex items-center group-hover:text-blue-800 transition-colors">
+                    <a href="/search-symptoms"className="text-blue-600 font-medium flex items-center group-hover:text-blue-800 transition-colors">
                       Learn more
                       <svg className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                       </svg>
-                    </button>
+                    </a>
                   </div>
                 </div>
               </div>
