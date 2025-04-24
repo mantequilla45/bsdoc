@@ -55,18 +55,20 @@ export const TextBox = ({
   value,
   onChange,
   readOnly = false,
+  placeholder = 'Your Answer', // ✅ Add placeholder with default value
 }: {
   title: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   readOnly?: boolean;
+  placeholder?: string; // ✅ Add this line
 }) => {
   return (
     <div className="flex flex-col gap-3 w-full">
       <p className="md:text-2xl text-lg">{title}</p>
       <input
         type="text"
-        placeholder="Your Answer"
+        placeholder={placeholder} // ✅ Use placeholder here
         value={value}
         onChange={onChange}
         readOnly={readOnly}

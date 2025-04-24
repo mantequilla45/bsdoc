@@ -58,11 +58,15 @@ const AdvancedSearchForm: React.FC<{
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [weight, setWeight] = useState('');
+  const [underlyingConditions, setUnderlyingConditions] = useState('');
 
-  const [hasFetched, setHasFetched] = useState(false); // 👈 prevent refetch loop
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
-    if (!user || hasFetched) return;
+    if (!user || hasFetched) {
+      setIsLoadingProfile(false);
+      return;
+    }
 
     const fetchProfile = async () => {
       setIsLoadingProfile(true);
@@ -103,7 +107,7 @@ const AdvancedSearchForm: React.FC<{
       return;
     }
 
-    const categoryCount = updated.filter(s => symptomCategoryMap[s] === category).length;
+    const categoryCount = updated.filter((s) => symptomCategoryMap[s] === category).length;
     if (checked && categoryCount > MAX_PER_CATEGORY) {
       setWarning(`⚠️ Limit of ${MAX_PER_CATEGORY} symptoms from "${category}" category reached.`);
       return;
@@ -126,12 +130,21 @@ const AdvancedSearchForm: React.FC<{
       setSelectedSymptoms([]);
 
       if (user && addRecord) {
-        await supabase.from('symptom_results').insert({
+        const record = {
           user_id: user.id,
           input_symptoms: selectedSymptoms,
           likely_conditions: data.likely_common_conditions,
           other_conditions: data.other_possible_conditions,
-        });
+          age,
+          weight,
+          name,
+        };
+
+        if (underlyingConditions.trim()) {
+          Object.assign(record, { underlying_conditions: underlyingConditions });
+        }
+
+        await supabase.from('symptom_results').insert(record);
         console.log('[Symptom Result Stored] ✔️');
       }
     } catch (err) {
@@ -155,9 +168,9 @@ const AdvancedSearchForm: React.FC<{
         <Spinner />
       ) : (
         <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-4 mb-10">
-          <TextBox title="Name" value={name} onChange={(e) => setName(e.target.value)} readOnly={!!user} />
-          <TextBox title="Age" value={age} onChange={(e) => setAge(e.target.value)} readOnly={!!user} />
-          <TextBox title="Weight" value={weight} onChange={(e) => setWeight(e.target.value)} readOnly={!!user} />
+          <TextBox title="Name" value={name} onChange={(e) => setName(e.target.value)} />
+          <TextBox title="Age" value={age} onChange={(e) => setAge(e.target.value)} />
+          <TextBox title="Weight" value={weight} onChange={(e) => setWeight(e.target.value)} />
         </div>
       )}
 
@@ -186,6 +199,15 @@ const AdvancedSearchForm: React.FC<{
             </div>
           </div>
         )}
+
+        <div className="mt-6">
+          <TextBox
+            title="Underlying Health Conditions (Optional)"
+            value={underlyingConditions}
+            onChange={(e) => setUnderlyingConditions(e.target.value)}
+            placeholder="E.g. diabetes, hypertension, asthma (separate with commas)"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end items-center gap-6 mt-10">
