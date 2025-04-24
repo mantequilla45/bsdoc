@@ -1,4 +1,5 @@
 'use client';
+
 import Header from "@/app/layout/header";
 import React, { useState } from 'react';
 import { IoSearch } from "react-icons/io5";
@@ -7,8 +8,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import AdvancedSearchForm from "@/app/(pages)/search-symptoms/components/adv-search-form";
 import ImageContainer from "@/app/(pages)/search-symptoms/components/background";
 import { getSymptomInfo } from "@/services/symptom-search/symptomService";
+import { symptomGroups } from '../../(pages)/search-symptoms/components/symptomGroup';
+import stringSimilarity from 'string-similarity';
 
-// Type Definitions
 interface Condition {
   disease: string;
   commonality: string;
@@ -25,6 +27,14 @@ interface SymptomResponse {
   note: string;
 }
 
+// Converts "back_pain" → "Back Pain"
+const formatSymptomLabel = (symptom: string) =>
+  symptom.replace(/_/g, ' ').toLowerCase();
+
+// Converts "Back Pain" → "back_pain"
+const normalizeSymptom = (symptom: string) =>
+  symptom.trim().toLowerCase().replace(/\s+/g, '_');
+
 const SearchSymptomsPage = () => {
   const [isAdvancedSearchEnabled, setIsAdvancedSearchEnabled] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -32,16 +42,56 @@ const SearchSymptomsPage = () => {
   const [advancedResult, setAdvancedResult] = useState<SymptomResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [suggestions, setSuggestions] = useState<{ original: string; suggested: string }[]>([]);
+
+  const allSymptoms = Object.values(symptomGroups).flat();
+
+  const handleSuggestionClick = (original: string, suggested: string) => {
+    const updated = inputValue
+      .split(',')
+      .map(item => normalizeSymptom(item) === original ? formatSymptomLabel(suggested) : item.trim())
+      .join(', ');
+    setInputValue(updated);
+    setSuggestions([]);
+  };
 
   const handleSearch = async () => {
     if (!inputValue.trim()) return;
+
     setLoading(true);
     setError("");
     setManualResult(null);
+    setSuggestions([]);
+
+    const rawSymptoms = inputValue.split(",").map(s => s.trim());
+    const normalizedSymptoms = rawSymptoms.map(normalizeSymptom);
+
+    const valid: string[] = [];
+    const invalid: string[] = [];
+
+    for (const sym of normalizedSymptoms) {
+      if (allSymptoms.includes(sym)) {
+        valid.push(sym);
+      } else {
+        invalid.push(sym);
+      }
+    }
+
+    if (invalid.length > 0) {
+      const suggestionList = invalid.map((sym) => {
+        const { bestMatch } = stringSimilarity.findBestMatch(sym, allSymptoms);
+        return {
+          original: sym,
+          suggested: bestMatch.rating > 0.5 ? bestMatch.target : ''
+        };
+      });
+      setSuggestions(suggestionList);
+      setLoading(false);
+      return;
+    }
 
     try {
-      const symptoms = inputValue.split(",").map((s) => s.trim().toLowerCase());
-      const data: SymptomResponse = await getSymptomInfo(symptoms);
+      const data: SymptomResponse = await getSymptomInfo(valid);
       setManualResult(data);
     } catch (err) {
       console.error(err);
@@ -53,21 +103,16 @@ const SearchSymptomsPage = () => {
 
   const handleToggleSearch = () => {
     setIsAdvancedSearchEnabled((prev) => {
-      if (prev) {
-        setAdvancedResult(null);
-      } else {
-        setManualResult(null);
-      }
+      if (prev) setAdvancedResult(null);
+      else setManualResult(null);
       return !prev;
     });
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#EEFFFE]">
-      {/* ✅ REMOVED height animation here to fix scroll issue */}
       <motion.div className="bg-[#EEFFFE] flex-grow relative">
-        <Header background='#EEFFFE' title="Search Symptoms" />
-
+        <Header background="#EEFFFE" title="Search Symptoms" />
         <div className="absolute inset-0">
           <div className="sticky top-0 h-screen">
             <ImageContainer />
@@ -87,8 +132,7 @@ const SearchSymptomsPage = () => {
                 className={`w-12 h-6 rounded-full transition duration-300 border-[1px] ${isAdvancedSearchEnabled ? 'bg-blue-500 border-blue-800' : 'bg-gray-300 border-[#777777]'} relative`}
               >
                 <span
-                  className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full transform transition-transform duration-300 ease-in-out
-                  ${isAdvancedSearchEnabled ? 'translate-x-1 bg-white' : '-translate-x-5 bg-[#777777]'}`}
+                  className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full transform transition-transform duration-300 ease-in-out ${isAdvancedSearchEnabled ? 'translate-x-1 bg-white' : '-translate-x-5 bg-[#777777]'}`}
                 />
               </button>
             </div>
@@ -137,22 +181,34 @@ const SearchSymptomsPage = () => {
             {loading && <p className="text-blue-500 mt-4">Analyzing symptoms...</p>}
             {error && <p className="text-red-500 mt-4">{error}</p>}
 
-            {/* Manual Search Results */}
-            {!isAdvancedSearchEnabled && manualResult && (
-              <ResultDisplay result={manualResult} />
+            {suggestions.length > 0 && (
+              <div className="bg-yellow-100 text-yellow-900 p-4 rounded-md border mt-4">
+                <p className="font-semibold mb-2">Invalid symptoms detected:</p>
+                <ul className="list-disc ml-5 space-y-1">
+                  {suggestions.map(({ original, suggested }) => (
+                    <li key={original}>
+                      {formatSymptomLabel(original)} &rarr; {suggested ? (
+                        <button
+                          onClick={() => handleSuggestionClick(original, suggested)}
+                          className="text-blue-700 underline hover:text-blue-900"
+                        >
+                          Did you mean: {formatSymptomLabel(suggested)}?
+                        </button>
+                      ) : (
+                        <span className="text-red-600">Invalid input</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
 
-            {/* Advanced Search Results */}
-            {isAdvancedSearchEnabled && advancedResult && (
-              <ResultDisplay result={advancedResult} />
-            )}
+            {!isAdvancedSearchEnabled && manualResult && <ResultDisplay result={manualResult} />}
+            {isAdvancedSearchEnabled && advancedResult && <ResultDisplay result={advancedResult} />}
           </main>
         </div>
       </motion.div>
-
-      <div className="z-20">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };
@@ -161,29 +217,22 @@ const ResultDisplay = ({ result }: { result: SymptomResponse }) => (
   <div className="bg-white shadow-lg p-8 mt-8 rounded-xl border space-y-6">
     <h2 className="text-2xl font-bold text-gray-800">Search Results</h2>
     <p className="text-gray-600">{result.recommendation_note}</p>
-
     <div>
-      <h3 className="text-xl font-semibold text-green-700 border-b-2 pb-2">
-        🏥 Most Likely Conditions
-      </h3>
+      <h3 className="text-xl font-semibold text-green-700 border-b-2 pb-2">🏥 Most Likely Conditions</h3>
       <div className="grid md:grid-cols-2 gap-4 mt-4">
-        {result.likely_common_conditions.map((condition, index) => (
-          <ConditionCard key={index} condition={condition} highlight="blue" />
+        {result.likely_common_conditions.map((condition) => (
+          <ConditionCard key={condition.disease} condition={condition} highlight="blue" />
         ))}
       </div>
     </div>
-
     <div>
-      <h3 className="text-xl font-semibold text-yellow-700 border-b-2 pb-2">
-        🤔 Other Possible Conditions
-      </h3>
+      <h3 className="text-xl font-semibold text-yellow-700 border-b-2 pb-2">🤔 Other Possible Conditions</h3>
       <div className="grid md:grid-cols-2 gap-4 mt-4">
-        {result.other_possible_conditions.map((condition, index) => (
-          <ConditionCard key={index} condition={condition} highlight="orange" />
+        {result.other_possible_conditions.map((condition) => (
+          <ConditionCard key={condition.disease} condition={condition} highlight="orange" />
         ))}
       </div>
     </div>
-
     <p className="text-gray-500 text-sm mt-6 italic">{result.note}</p>
   </div>
 );
@@ -196,16 +245,14 @@ const ConditionCard = ({
   highlight: "blue" | "orange";
 }) => (
   <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-    <h4 className={`text-lg font-bold text-${highlight}-700`}>
-      {condition.disease}
-    </h4>
+    <h4 className={`text-lg font-bold text-${highlight}-700`}>{condition.disease}</h4>
     <p className="text-sm text-gray-600">Commonality: {condition.commonality}</p>
     <p className="text-sm font-semibold mt-2">💊 Medications:</p>
     <p className="text-sm text-gray-700">{condition.informational_medications}</p>
     <p className="text-sm font-semibold mt-2">🛑 Precautions:</p>
     <ul className="list-disc list-inside text-sm text-gray-700">
-      {condition.precautions.map((precaution, i) => (
-        <li key={i}>{precaution}</li>
+      {condition.precautions.map((precaution) => (
+        <li key={precaution}>{precaution}</li>
       ))}
     </ul>
   </div>

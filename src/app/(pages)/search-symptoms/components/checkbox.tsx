@@ -4,20 +4,26 @@ import React from 'react';
 interface CheckBoxProps {
   item: string;
   checked?: boolean;
-  onChange?: () => void;
+  onChange?: (checked: boolean) => void;
+  disabled?: boolean;
 }
 
-const CheckBox = ({ item, checked, onChange }: CheckBoxProps) => {
+const CheckBox = ({ item, checked = false, onChange, disabled = false }: CheckBoxProps) => {
+  const labelProps = disabled ? {} : { onMouseDown: (e: React.MouseEvent) => e.preventDefault() };
+
   return (
     <label
-      className="inline-flex items-center gap-2 cursor-pointer select-none"
-      onMouseDown={(e) => e.preventDefault()} // ✅ Prevent scroll-to-top
+      {...labelProps}
+      className={`inline-flex items-center gap-2 select-none ${
+        disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+      }`}
     >
       <input
         type="checkbox"
         className="form-checkbox accent-[#519496] w-4 h-4"
         checked={checked}
-        onChange={onChange}
+        onChange={(e) => onChange?.(e.target.checked)}
+        disabled={disabled}
       />
       <span className="capitalize text-sm text-gray-700">{item}</span>
     </label>
