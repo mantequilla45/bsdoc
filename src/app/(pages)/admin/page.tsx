@@ -9,7 +9,7 @@ import AdminDoctorVerificationPage from './doctor-verifications/doctor-verificat
 import AdminDashboard from './components/AdminDashboard'; // Import the dashboard
 import AdminNotificationsPage from './notifications/notifications';
 import { supabase } from '@/lib/supabaseClient';
-
+import toast from 'react-hot-toast';
 interface Notification {
     id: string;
     user_id: string;
@@ -19,6 +19,15 @@ interface Notification {
     metadata?: Record<string, any> | null; //eslint-disable-line
     created_at: string;
     is_read: boolean;
+}
+
+interface Profile {
+    id: string;
+    role: string;
+    first_name?: string | null;
+    last_name?: string | null;
+    email?: string | null;
+    profile_image_url?: string | null;
 }
 
 type NotificationTypeFilter = 'all' | 'VERIFICATION_SUBMITTED' | 'REPORT_SUBMITTED';
@@ -36,6 +45,8 @@ function AdminPageContent() {
     const [selectedType, setSelectedType] = useState<NotificationTypeFilter>('all');
     const [showRead, setShowRead] = useState<boolean>(true);
     // --- End Lifted State ---
+    const [adminProfile, setAdminProfile] = useState<Profile | null>(null);
+    const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
 
     const handleContentChange = useCallback((contentId: string) => {
         setactiveContentId(contentId);
@@ -45,18 +56,73 @@ function AdminPageContent() {
     }, []);
 
     useEffect(() => {
-        const fetchSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setAuthToken(session?.access_token ?? null);
-            if (!session?.access_token) {
-                setIsLoadingNotifications(false); // Stop loading if logged out initially
+        const fetchUserAndData = async () => {
+            setIsLoadingProfile(true);
+            try {
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                if (sessionError) throw sessionError; // Throw if session fetch fails
+
+                const currentUser = session?.user;
+                const currentToken = session?.access_token ?? null;
+                setAuthToken(currentToken);
+                if (currentUser) {
+                    // Fetch Profile if user exists
+                    console.log(`[AdminPageContent] User ${currentUser.id} found. Fetching profile...`);
+                    const { data: profileData, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('id, first_name, last_name, role, email, profile_image_url') // Select fields needed for sidebar
+                        .eq('id', currentUser.id)
+                        .single();
+
+                    if (profileError && profileError.code !== 'PGRST116') { // Ignore "not found"
+                        console.error("Error fetching admin profile:", profileError);
+                        setAdminProfile(null); // Clear profile on error
+                        // Optionally show toast error for profile fetch
+                        // toast.error("Could not load admin profile details.");
+                    } else {
+                        setAdminProfile(profileData as Profile ?? null);
+                        console.log("[AdminPageContent] Admin profile fetched:", profileData);
+                    }
+                    setIsLoadingProfile(false);
+                }
+                else {
+                    console.log("[AdminPageContent] No user session found.");
+                    setAuthToken(null);
+                    setAdminProfile(null);
+                    setIsLoadingProfile(false);
+                    setIsLoadingNotifications(false); // Stop loading if logged out initially
+                }
+            }
+            catch (error) {
+                console.error("Error fetching session or initial data:", error);
+                toast.error("Failed to initialize admin session.");
+                setAuthToken(null);
+                setAdminProfile(null);
+                setIsLoadingProfile(false);
+                setIsLoadingNotifications(false);
             }
         };
-        fetchSession();
+        fetchUserAndData();
+
         const { data: authListener } = supabase.auth.onAuthStateChange(
-            (_event, session) => {
-                setAuthToken(session?.access_token ?? null);
-                if (_event === 'SIGNED_OUT') {
+            async (_event, session) => {
+                const currentToken = session?.access_token ?? null;
+                setAuthToken(currentToken);
+                if (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED' || _event === 'USER_UPDATED') {
+                    if (session?.user && currentToken) {
+                        setIsLoadingProfile(true);
+                        const { data: profileData, error: profileError } = await supabase
+                            .from('profiles')
+                            .select('id, first_name, last_name, role, email, profile_image_url')
+                            .eq('id', session.user.id)
+                            .single();
+                        if (!profileError) setAdminProfile(profileData as Profile ?? null);
+                        else console.error("Error refetching profile on auth change:", profileError);
+                        setIsLoadingProfile(false);
+                        fetchNotifications(currentToken); // Refetch notifications
+                    }
+                }
+                else if (_event === 'SIGNED_OUT') {
                     setNotifications([]);
                     setNotificationError(null);
                     setIsLoadingNotifications(false);
@@ -195,11 +261,17 @@ function AdminPageContent() {
         }
     };
 
+
     useEffect(() => {
         console.log("[AdminPageContent State Change] Active content changed to:", activeContentId);
     }, [activeContentId]);
 
     console.log(`[AdminPageContent Pre-Render] Final activeContentId: ${activeContentId}`);
+
+    if (isLoadingProfile && isLoadingNotifications && !adminProfile && !notifications.length) {
+        // Show initial full page loading only if both profile and notifications haven't loaded
+        return;
+    }
 
     return (
         <AdminPanelProvider switchContent={handleContentChange}>
@@ -208,6 +280,7 @@ function AdminPageContent() {
                     onContentChange={handleContentChange}
                     activeContentId={activeContentId}
                     unreadNotificationsCount={unreadCount}
+                    adminProfile={adminProfile}
                 />
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-white p-6">
                     <h1 className="text-2xl font-semibold text-gray-900 mb-6">
