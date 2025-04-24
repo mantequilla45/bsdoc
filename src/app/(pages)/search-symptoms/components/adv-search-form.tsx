@@ -6,6 +6,7 @@ import { getSymptomInfo } from '@/services/symptom-search/symptomService';
 import SymptomCheckboxGroups from './SymptomCheckboxGroups';
 import { useUser } from '@supabase/auth-helpers-react';
 import { supabase } from '@/lib/supabase';
+import { symptomGroups } from './symptomGroup';
 
 interface Condition {
   disease: string;
@@ -23,19 +24,29 @@ interface SymptomResponse {
   note: string;
 }
 
-const Spinner = () => (
+const MAX_SYMPTOM_SELECTION = 10;
+const MAX_PER_CATEGORY = 4;
+
+const Spinner: React.FC = () => (
   <div className="flex justify-center items-center h-32">
     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" />
   </div>
 );
 
-const AdvancedSearchForm = ({
-  setResult,
-}: {
-  setResult: React.Dispatch<React.SetStateAction<SymptomResponse | null>>;
-}) => {
-  const user = useUser();
+const symptomCategoryMap: Record<string, string> = Object.entries(symptomGroups).reduce(
+  (acc: Record<string, string>, [category, symptoms]) => {
+    symptoms.forEach((symptom) => {
+      acc[symptom] = category;
+    });
+    return acc;
+  },
+  {}
+);
 
+const AdvancedSearchForm: React.FC<{
+  setResult: React.Dispatch<React.SetStateAction<SymptomResponse | null>>;
+}> = ({ setResult }) => {
+  const user = useUser();
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [submittedSymptoms, setSubmittedSymptoms] = useState<string[]>([]);
@@ -43,6 +54,7 @@ const AdvancedSearchForm = ({
   const [error, setError] = useState('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [addRecord, setAddRecord] = useState(false);
+  const [warning, setWarning] = useState('');
 
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
@@ -50,10 +62,7 @@ const AdvancedSearchForm = ({
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user) {
-        setIsLoadingProfile(false);
-        return;
-      }
+      if (!user) return setIsLoadingProfile(false);
 
       setIsLoadingProfile(true);
 
@@ -81,6 +90,27 @@ const AdvancedSearchForm = ({
     fetchProfile();
   }, [user]);
 
+  const handleCheckboxChange = (symptom: string, checked: boolean) => {
+    const category = symptomCategoryMap[symptom] || 'Uncategorized';
+    const updated = checked
+      ? [...selectedSymptoms, symptom]
+      : selectedSymptoms.filter((s) => s !== symptom);
+
+    if (checked && updated.length > MAX_SYMPTOM_SELECTION) {
+      setWarning(`⚠️ You can only select up to ${MAX_SYMPTOM_SELECTION} symptoms.`);
+      return;
+    }
+
+    const categoryCount = updated.filter(s => symptomCategoryMap[s] === category).length;
+    if (checked && categoryCount > MAX_PER_CATEGORY) {
+      setWarning(`⚠️ Limit of ${MAX_PER_CATEGORY} symptoms from "${category}" category reached.`);
+      return;
+    }
+
+    setSelectedSymptoms(updated);
+    setWarning('');
+  };
+
   const handleAssess = async () => {
     const allSelected = [...selectedSymptoms, ...selectedConditions];
     if (allSelected.length === 0) return;
@@ -95,7 +125,6 @@ const AdvancedSearchForm = ({
       setSelectedSymptoms([]);
       setSelectedConditions([]);
 
-      // Save only if user is signed in and wants to add record
       if (user && addRecord) {
         await supabase.from('symptom_results').insert({
           user_id: user.id,
@@ -113,33 +142,23 @@ const AdvancedSearchForm = ({
     }
   };
 
-  enum Category {
-    Cardiovascular = 'Cardiovascular',
-    EndocrineMetabolic = 'Endocrine and Metabolic',
-    Autoimmune = 'Autoimmune',
-    KidneyRenal = 'Kidney and Renal',
-    Cancer = 'Cancer',
-  }
+  const ConditionSection: React.FC = () => {
+    const conditions = [
+      { name: 'Hypertension', category: 'Cardiovascular' },
+      { name: 'Stroke', category: 'Cardiovascular' },
+      { name: 'Diabetes Mellitus (Type 1 and Type 2)', category: 'Endocrine and Metabolic' },
+      { name: 'Polycystic Ovary Syndrome (PCOS)', category: 'Endocrine and Metabolic' },
+      { name: 'Systemic Lupus Erythematosus (SLE)', category: 'Autoimmune' },
+      { name: 'End-Stage Renal Disease', category: 'Kidney and Renal' },
+      { name: 'Lung Cancer', category: 'Cancer' },
+    ];
 
-  const conditions = [
-    { name: 'Hypertension', category: Category.Cardiovascular },
-    { name: 'Stroke', category: Category.Cardiovascular },
-    { name: 'Diabetes Mellitus (Type 1 and Type 2)', category: Category.EndocrineMetabolic },
-    { name: 'Polycystic Ovary Syndrome (PCOS)', category: Category.EndocrineMetabolic },
-    { name: 'Systemic Lupus Erythematosus (SLE)', category: Category.Autoimmune },
-    { name: 'End-Stage Renal Disease', category: Category.KidneyRenal },
-    { name: 'Lung Cancer', category: Category.Cancer },
-  ];
-
-  const groupConditionsByCategory = () =>
-    conditions.reduce((acc: Record<string, string[]>, { name, category }) => {
+    const grouped = conditions.reduce((acc: Record<string, string[]>, { name, category }) => {
       if (!acc[category]) acc[category] = [];
       acc[category].push(name);
       return acc;
     }, {});
 
-  const ConditionSection = () => {
-    const grouped = groupConditionsByCategory();
     return (
       <div className="w-full border-t border-gray-300 py-6 space-y-6">
         <h2 className="text-2xl font-semibold">Underlying Health Conditions</h2>
@@ -173,9 +192,7 @@ const AdvancedSearchForm = ({
   return (
     <div className="w-full h-full p-6 md:p-12 bg-white rounded-xl shadow">
       <div className="mb-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-[#2D383D]">
-          BSDOC Advanced Symptoms Search
-        </h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-[#2D383D]">BSDOC Advanced Symptoms Search</h1>
         <p className="text-sm md:text-base text-gray-600 mt-1">
           Please fill the following form with the symptoms you are feeling.
         </p>
@@ -194,8 +211,13 @@ const AdvancedSearchForm = ({
       <div className="space-y-10">
         <SymptomCheckboxGroups
           selectedSymptoms={selectedSymptoms}
-          setSelectedSymptoms={setSelectedSymptoms}
+          onCheckboxChange={handleCheckboxChange}
         />
+
+        {warning && (
+          <div className="text-red-600 text-sm font-semibold -mt-6">{warning}</div>
+        )}
+
         <ConditionSection />
 
         {submittedSymptoms.length > 0 && (
