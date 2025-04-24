@@ -9,9 +9,10 @@ import toast from 'react-hot-toast';
 
 interface AccountSectionProps {
     userId: string;
+    onProfileUpdate: () => void;
 }
 
-const AccountSection = ({ userId }: AccountSectionProps) => {
+const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -99,6 +100,22 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
     const handleSave = async () => {
         if (!formData) return;
 
+        const firstName = formData.first_name?.trim();
+        const lastName = formData.last_name?.trim();
+
+        if (!firstName) {
+            toast.error("First Name is required.");
+            // Optionally focus the input field
+            document.querySelector<HTMLInputElement>('input[name="first_name"]')?.focus();
+            return; // Stop the save process
+        }
+        if (!lastName) {
+            toast.error("Last Name is required.");
+            // Optionally focus the input field
+            document.querySelector<HTMLInputElement>('input[name="last_name"]')?.focus();
+            return; // Stop the save process
+        }
+
         setIsSaving(true);
 
         try {
@@ -112,21 +129,33 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
 
             const updateData = {
                 ...formData,
+                first_name: firstName,
+                last_name: lastName,
                 ...(imageUrl && { profile_image_url: imageUrl })
             };
 
-            const { error } = await supabase
+            const { data: updatedProfileData, error } = await supabase
                 .from('profiles')
                 .update(updateData)
-                .eq('id', userId);
+                .eq('id', userId)
+                .select()
+                .single();
+
+            toast.dismiss();
 
             if (error) {
                 console.error('Error updating profile:', error);
                 alert('Failed to update profile. Please try again.');
-            } else {
-                setProfile(updateData as Profile);
+            } else if (updatedProfileData) {
+                setProfile(updatedProfileData as Profile);
+                setFormData(updatedProfileData); // Sync internal form state
                 setIsEditing(false);
                 setProfileImage(null);
+                if (imageUrl !== undefined) { setImagePreview(imageUrl); }
+                toast.success('Profile updated successfully!');
+
+                // --- !!! Call the callback to notify the parent !!! ---
+                onProfileUpdate();
             }
         } catch (error) {
             console.error('Save error:', error);
@@ -153,13 +182,15 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
             label: 'First Name',
             name: 'first_name',
             icon: <MdPerson className="text-teal-500" />,
-            type: 'text'
+            type: 'text',
+            required: true,
         },
         {
             label: 'Last Name',
             name: 'last_name',
             icon: <MdPerson className="text-teal-500" />,
-            type: 'text'
+            type: 'text',
+            required: true,
         },
         {
             label: 'Email',
@@ -222,11 +253,14 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
     const renderFieldSection = (fields: any[]) => {
         return (
             <div className="space-y-4">
-                {fields.map(({ label, name, icon, type, placeholder }) => (
+                {fields.map(({ label, name, icon, type, placeholder, required }) => (
                     <div key={name} className="flex items-start space-x-4">
                         <div className="w-10 flex justify-center pt-2">{icon}</div>
                         <div className="flex-grow min-w-0">
-                            <label className="text-xs text-gray-500 block mb-1">{label}</label>
+                            <label className="text-xs text-gray-500 block mb-1">
+                                {label}
+                                {required && isEditing && <span className="text-red-500 ml-1">*</span>} {/* Show asterisk when editing */}
+                            </label>
                             {loading ? (
                                 <LoadingPlaceholder />
                             ) : name === 'newPassword' || name === 'confirmPassword' || name === 'currentPassword' ? ( // Add currentPassword here
@@ -262,6 +296,7 @@ const AccountSection = ({ userId }: AccountSectionProps) => {
                                     name={name}
                                     value={formData?.[name as keyof Partial<Profile>] ?? ''}
                                     onChange={handleInputChange}
+                                    required={required}
                                     placeholder={placeholder}
                                     className="w-full border-b border-gray-300 focus:border-teal-500 outline-none transition-colors truncate"
                                     disabled={isSaving || isUpdatingPassword} // Also disable if password is being updated
