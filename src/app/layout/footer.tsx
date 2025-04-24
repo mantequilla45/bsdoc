@@ -94,11 +94,6 @@ const Footer = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="/health-tips" className="text-white/80 disabled hover:text-white hover:pl-2 transition-all duration-300 block">
-                    Health Tips
-                  </a>
-                </li>
-                <li>
                   <a href="/doctors" className="text-white/80 hover:text-white hover:pl-2 transition-all duration-300 block"> 
                     Find Doctors
                   </a>
