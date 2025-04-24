@@ -149,6 +149,25 @@ function AdminPageContent() {
         return notifications.filter(n => !n.is_read).length; // Count all unread fetched
     }, [notifications]);
 
+    const pageTitle = (contentId: string): string => {
+        switch (contentId) {
+            case 'user-management':
+                return 'User Management';
+            case 'bug-reports':
+                return 'User Feedback';
+            case 'dashbord':
+                return 'Dashboard';
+            case 'doctor-verification':
+                return 'Doctor Verification';
+            case 'notifications':
+                return 'Admin Notifications';
+            default:
+                return contentId
+                    .replace(/-/g, ' ')
+                    .replace(/\b\w/g, (char) => char.toUpperCase());
+        }
+    }
+
     const renderContent = () => {
         switch (activeContentId) {
             case 'user-management':
@@ -192,9 +211,7 @@ function AdminPageContent() {
                 />
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-white p-6">
                     <h1 className="text-2xl font-semibold text-gray-900 mb-6">
-                        {activeContentId
-                            .replace(/-/g, ' ')
-                            .replace(/\b\w/g, (char) => char.toUpperCase())}
+                        {pageTitle(activeContentId)}
                     </h1>
                     {renderContent()}
                 </main>

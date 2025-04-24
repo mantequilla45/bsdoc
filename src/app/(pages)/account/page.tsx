@@ -15,6 +15,8 @@ interface Profile {
     id: string;
     role: string;
     is_profile_complete: boolean;
+    first_name?: string | null;
+    last_name?: string | null;
 }
 
 const LoadingOverlay: React.FC<{ message?: string }> = ({ message = "Saving..." }) => (
@@ -115,12 +117,24 @@ const AccountPage = () => {
     //     }
     // };
 
+    const handleProfileUpdated = useCallback(() => {
+        console.log("[AccountPage] Profile updated in child, refetching data...");
+        fetchUserData(false); // Refetch data without showing main loading overlay
+    }, [fetchUserData]);
+
     const handleMarkProfileComplete = async () => {
         // Optional: Add basic checks if essential fields are filled using the 'profile' state
         // if (!profile?.first_name || !profile?.last_name /* || medical fields if required */) {
         //    toast.error("Please fill in your first and last name first.");
         //    return;
         // }
+
+        if (!profile?.first_name?.trim() || !profile?.last_name?.trim()) {
+            toast.error("Please enter and save your name before finishing setup.");
+            // You might want to visually indicate the AccountSection needs attention
+            return; // Stop the process
+        }
+
         setIsFinalizing(true);
         setIsCompletingProfile(true);
         const toastId = toast.loading("Finalizing profile setup...");
@@ -166,10 +180,10 @@ const AccountPage = () => {
         return () => window.removeEventListener('resize', updateCssVariable);
     }, []);
 
-    if (loading) { return <LoadingOverlay message='Loading Account'/> /* Better loading UI */ }
+    if (loading) { return <LoadingOverlay message='Loading Account' /> /* Better loading UI */ }
     if (!userId || !profile) { return <div>Please log in.</div>; /* Better no-user UI */ }
     if (isFinalizing) {
-        return <LoadingOverlay message='Finalizing Profile Setup...'/>
+        return <LoadingOverlay message='Finalizing Profile Setup...' />
     }
 
     return (
@@ -187,7 +201,7 @@ const AccountPage = () => {
                     <div className="flex md:flex-row flex-col bg-white min-h-[70vh]">
                         {userId && (
                             <>
-                                <AccountSection userId={userId} />
+                                <AccountSection userId={userId} onProfileUpdate={handleProfileUpdated} />
                                 <MedicalDetails userId={userId} />
                                 {profile?.role === 'doctor' && (
                                     <div className="w-full p-4 md:p-6 border-t md:border-t-0 md:border-l border-gray-200">
