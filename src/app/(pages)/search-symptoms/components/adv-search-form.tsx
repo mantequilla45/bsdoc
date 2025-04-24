@@ -59,9 +59,12 @@ const AdvancedSearchForm: React.FC<{
   const [age, setAge] = useState('');
   const [weight, setWeight] = useState('');
 
+  const [hasFetched, setHasFetched] = useState(false); // 👈 prevent refetch loop
+
   useEffect(() => {
+    if (!user || hasFetched) return;
+
     const fetchProfile = async () => {
-      if (!user) return setIsLoadingProfile(false);
       setIsLoadingProfile(true);
 
       const { data: profile } = await supabase
@@ -83,10 +86,11 @@ const AdvancedSearchForm: React.FC<{
       }
 
       setIsLoadingProfile(false);
+      setHasFetched(true);
     };
 
     fetchProfile();
-  }, [user]);
+  }, [user, hasFetched]);
 
   const handleCheckboxChange = (symptom: string, checked: boolean) => {
     const category = symptomCategoryMap[symptom] || 'Uncategorized';
@@ -205,5 +209,3 @@ const AdvancedSearchForm: React.FC<{
 };
 
 export default AdvancedSearchForm;
-
-//small fix adv search

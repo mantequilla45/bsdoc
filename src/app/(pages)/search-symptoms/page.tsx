@@ -27,6 +27,14 @@ interface SymptomResponse {
   note: string;
 }
 
+// Converts "back_pain" → "Back Pain"
+const formatSymptomLabel = (symptom: string) =>
+  symptom.replace(/_/g, ' ').toLowerCase();
+
+// Converts "Back Pain" → "back_pain"
+const normalizeSymptom = (symptom: string) =>
+  symptom.trim().toLowerCase().replace(/\s+/g, '_');
+
 const SearchSymptomsPage = () => {
   const [isAdvancedSearchEnabled, setIsAdvancedSearchEnabled] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -41,7 +49,7 @@ const SearchSymptomsPage = () => {
   const handleSuggestionClick = (original: string, suggested: string) => {
     const updated = inputValue
       .split(',')
-      .map((item) => item.trim().toLowerCase() === original ? suggested : item.trim())
+      .map(item => normalizeSymptom(item) === original ? formatSymptomLabel(suggested) : item.trim())
       .join(', ');
     setInputValue(updated);
     setSuggestions([]);
@@ -55,11 +63,13 @@ const SearchSymptomsPage = () => {
     setManualResult(null);
     setSuggestions([]);
 
-    const rawSymptoms = inputValue.split(",").map((s) => s.trim().toLowerCase());
+    const rawSymptoms = inputValue.split(",").map(s => s.trim());
+    const normalizedSymptoms = rawSymptoms.map(normalizeSymptom);
+
     const valid: string[] = [];
     const invalid: string[] = [];
 
-    for (const sym of rawSymptoms) {
+    for (const sym of normalizedSymptoms) {
       if (allSymptoms.includes(sym)) {
         valid.push(sym);
       } else {
@@ -70,7 +80,10 @@ const SearchSymptomsPage = () => {
     if (invalid.length > 0) {
       const suggestionList = invalid.map((sym) => {
         const { bestMatch } = stringSimilarity.findBestMatch(sym, allSymptoms);
-        return { original: sym, suggested: bestMatch.rating > 0.5 ? bestMatch.target : '' };
+        return {
+          original: sym,
+          suggested: bestMatch.rating > 0.5 ? bestMatch.target : ''
+        };
       });
       setSuggestions(suggestionList);
       setLoading(false);
@@ -174,12 +187,12 @@ const SearchSymptomsPage = () => {
                 <ul className="list-disc ml-5 space-y-1">
                   {suggestions.map(({ original, suggested }) => (
                     <li key={original}>
-                      {original} &rarr; {suggested ? (
+                      {formatSymptomLabel(original)} &rarr; {suggested ? (
                         <button
                           onClick={() => handleSuggestionClick(original, suggested)}
                           className="text-blue-700 underline hover:text-blue-900"
                         >
-                          Did you mean: {suggested}?
+                          Did you mean: {formatSymptomLabel(suggested)}?
                         </button>
                       ) : (
                         <span className="text-red-600">Invalid input</span>
@@ -195,9 +208,7 @@ const SearchSymptomsPage = () => {
           </main>
         </div>
       </motion.div>
-      <div className="z-20">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };
@@ -207,9 +218,7 @@ const ResultDisplay = ({ result }: { result: SymptomResponse }) => (
     <h2 className="text-2xl font-bold text-gray-800">Search Results</h2>
     <p className="text-gray-600">{result.recommendation_note}</p>
     <div>
-      <h3 className="text-xl font-semibold text-green-700 border-b-2 pb-2">
-        🏥 Most Likely Conditions
-      </h3>
+      <h3 className="text-xl font-semibold text-green-700 border-b-2 pb-2">🏥 Most Likely Conditions</h3>
       <div className="grid md:grid-cols-2 gap-4 mt-4">
         {result.likely_common_conditions.map((condition) => (
           <ConditionCard key={condition.disease} condition={condition} highlight="blue" />
@@ -217,9 +226,7 @@ const ResultDisplay = ({ result }: { result: SymptomResponse }) => (
       </div>
     </div>
     <div>
-      <h3 className="text-xl font-semibold text-yellow-700 border-b-2 pb-2">
-        🤔 Other Possible Conditions
-      </h3>
+      <h3 className="text-xl font-semibold text-yellow-700 border-b-2 pb-2">🤔 Other Possible Conditions</h3>
       <div className="grid md:grid-cols-2 gap-4 mt-4">
         {result.other_possible_conditions.map((condition) => (
           <ConditionCard key={condition.disease} condition={condition} highlight="orange" />
