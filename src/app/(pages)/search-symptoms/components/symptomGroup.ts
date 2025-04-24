@@ -23,7 +23,7 @@ export const symptomGroups: Record<string, string[]> = {
     "fatigue", "dizziness", "lethargy", "malaise", "loss_of_balance", "loss_of_smell", "visual_disturbances", "weakness_in_limbs"
   ],
   "Urinary & Reproductive": [
-    "burning_micturition", "continuous_feel_of_urine", "polyuria", "spotting_ urination", "yellow_urine",
+    "burning_micturition", "continuous_feel_of_urine", "polyuria", "spotting_urination", "yellow_urine",
     "bladder_discomfort", "irritation_in_anus", "abnormal_menstruation"
   ],
   "Skin Related": [

@@ -11,7 +11,6 @@ import { getSymptomInfo } from "@/services/symptom-search/symptomService";
 import { symptomGroups } from '../../(pages)/search-symptoms/components/symptomGroup';
 import stringSimilarity from 'string-similarity';
 
-// Type Definitions
 interface Condition {
   disease: string;
   commonality: string;
@@ -173,8 +172,8 @@ const SearchSymptomsPage = () => {
               <div className="bg-yellow-100 text-yellow-900 p-4 rounded-md border mt-4">
                 <p className="font-semibold mb-2">Invalid symptoms detected:</p>
                 <ul className="list-disc ml-5 space-y-1">
-                  {suggestions.map(({ original, suggested }, i) => (
-                    <li key={i}>
+                  {suggestions.map(({ original, suggested }) => (
+                    <li key={original}>
                       {original} &rarr; {suggested ? (
                         <button
                           onClick={() => handleSuggestionClick(original, suggested)}
@@ -212,8 +211,8 @@ const ResultDisplay = ({ result }: { result: SymptomResponse }) => (
         🏥 Most Likely Conditions
       </h3>
       <div className="grid md:grid-cols-2 gap-4 mt-4">
-        {result.likely_common_conditions.map((condition, index) => (
-          <ConditionCard key={index} condition={condition} highlight="blue" />
+        {result.likely_common_conditions.map((condition) => (
+          <ConditionCard key={condition.disease} condition={condition} highlight="blue" />
         ))}
       </div>
     </div>
@@ -222,8 +221,8 @@ const ResultDisplay = ({ result }: { result: SymptomResponse }) => (
         🤔 Other Possible Conditions
       </h3>
       <div className="grid md:grid-cols-2 gap-4 mt-4">
-        {result.other_possible_conditions.map((condition, index) => (
-          <ConditionCard key={index} condition={condition} highlight="orange" />
+        {result.other_possible_conditions.map((condition) => (
+          <ConditionCard key={condition.disease} condition={condition} highlight="orange" />
         ))}
       </div>
     </div>
@@ -245,8 +244,8 @@ const ConditionCard = ({
     <p className="text-sm text-gray-700">{condition.informational_medications}</p>
     <p className="text-sm font-semibold mt-2">🛑 Precautions:</p>
     <ul className="list-disc list-inside text-sm text-gray-700">
-      {condition.precautions.map((precaution, i) => (
-        <li key={i}>{precaution}</li>
+      {condition.precautions.map((precaution) => (
+        <li key={precaution}>{precaution}</li>
       ))}
     </ul>
   </div>

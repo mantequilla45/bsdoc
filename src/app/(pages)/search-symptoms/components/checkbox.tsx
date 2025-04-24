@@ -5,16 +5,18 @@ interface CheckBoxProps {
   item: string;
   checked?: boolean;
   onChange?: (checked: boolean) => void;
-  disabled?: boolean; // ✅ Added to support disabling
+  disabled?: boolean;
 }
 
 const CheckBox = ({ item, checked = false, onChange, disabled = false }: CheckBoxProps) => {
+  const labelProps = disabled ? {} : { onMouseDown: (e: React.MouseEvent) => e.preventDefault() };
+
   return (
     <label
-      className={`inline-flex items-center gap-2 cursor-pointer select-none ${
-        disabled ? 'opacity-50 cursor-not-allowed' : ''
+      {...labelProps}
+      className={`inline-flex items-center gap-2 select-none ${
+        disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
       }`}
-      onMouseDown={(e) => e.preventDefault()}
     >
       <input
         type="checkbox"

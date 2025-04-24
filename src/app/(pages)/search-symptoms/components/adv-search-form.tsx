@@ -48,7 +48,6 @@ const AdvancedSearchForm: React.FC<{
 }> = ({ setResult }) => {
   const user = useUser();
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [submittedSymptoms, setSubmittedSymptoms] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -63,7 +62,6 @@ const AdvancedSearchForm: React.FC<{
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return setIsLoadingProfile(false);
-
       setIsLoadingProfile(true);
 
       const { data: profile } = await supabase
@@ -80,8 +78,8 @@ const AdvancedSearchForm: React.FC<{
 
       if (profile) setName(`${profile.first_name} ${profile.last_name}`);
       if (medical) {
-        setAge(medical.age?.toString() || '');
-        setWeight(medical.weight?.toString() || '');
+        setAge(medical.age?.toString() ?? '');
+        setWeight(medical.weight?.toString() ?? '');
       }
 
       setIsLoadingProfile(false);
@@ -112,23 +110,21 @@ const AdvancedSearchForm: React.FC<{
   };
 
   const handleAssess = async () => {
-    const allSelected = [...selectedSymptoms, ...selectedConditions];
-    if (allSelected.length === 0) return;
+    if (selectedSymptoms.length === 0) return;
 
     try {
       setLoading(true);
       setError('');
-      const data = await getSymptomInfo(allSelected);
+      const data = await getSymptomInfo(selectedSymptoms);
 
       setSubmittedSymptoms(selectedSymptoms);
       setResult(data);
       setSelectedSymptoms([]);
-      setSelectedConditions([]);
 
       if (user && addRecord) {
         await supabase.from('symptom_results').insert({
           user_id: user.id,
-          input_symptoms: allSelected,
+          input_symptoms: selectedSymptoms,
           likely_conditions: data.likely_common_conditions,
           other_conditions: data.other_possible_conditions,
         });
@@ -140,53 +136,6 @@ const AdvancedSearchForm: React.FC<{
     } finally {
       setLoading(false);
     }
-  };
-
-  const ConditionSection: React.FC = () => {
-    const conditions = [
-      { name: 'Hypertension', category: 'Cardiovascular' },
-      { name: 'Stroke', category: 'Cardiovascular' },
-      { name: 'Diabetes Mellitus (Type 1 and Type 2)', category: 'Endocrine and Metabolic' },
-      { name: 'Polycystic Ovary Syndrome (PCOS)', category: 'Endocrine and Metabolic' },
-      { name: 'Systemic Lupus Erythematosus (SLE)', category: 'Autoimmune' },
-      { name: 'End-Stage Renal Disease', category: 'Kidney and Renal' },
-      { name: 'Lung Cancer', category: 'Cancer' },
-    ];
-
-    const grouped = conditions.reduce((acc: Record<string, string[]>, { name, category }) => {
-      if (!acc[category]) acc[category] = [];
-      acc[category].push(name);
-      return acc;
-    }, {});
-
-    return (
-      <div className="w-full border-t border-gray-300 py-6 space-y-6">
-        <h2 className="text-2xl font-semibold">Underlying Health Conditions</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          {Object.entries(grouped).map(([category, items]) => (
-            <div key={category}>
-              <h3 className="text-lg font-medium text-[#333] mb-3">{category}</h3>
-              <div className="grid sm:grid-cols-2 gap-2 text-sm text-gray-700">
-                {items.map((item) => (
-                  <CheckBox
-                    key={item}
-                    item={item}
-                    checked={selectedConditions.includes(item)}
-                    onChange={() =>
-                      setSelectedConditions((prev) =>
-                        prev.includes(item)
-                          ? prev.filter((c) => c !== item)
-                          : [...prev, item]
-                      )
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -217,8 +166,6 @@ const AdvancedSearchForm: React.FC<{
         {warning && (
           <div className="text-red-600 text-sm font-semibold -mt-6">{warning}</div>
         )}
-
-        <ConditionSection />
 
         {submittedSymptoms.length > 0 && (
           <div className="border-t pt-6">
