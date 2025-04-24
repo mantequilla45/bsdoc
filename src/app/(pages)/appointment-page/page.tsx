@@ -227,26 +227,26 @@ const AppointmentPage = () => {
         {/* Flex container for layout - stacks on mobile, row on large screens */}
         <div className='flex flex-col lg:flex-row items-center lg:items-start lg:justify-between gap-8 md:gap-12'>
 
-          <div className='w-full lg:w-1/2 h-full'>
+          <div className='w-full lg:w-[60%] h-full'>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-regular leading-tight">
               Find A <span className="text-[#64B5B7]">Doctor</span> And Book an Appointment
             </h1>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-full w-full z-20 -mt-10 -mb-5"
-              viewBox="0 0 300 50"
+              viewBox="-110 -8 400 50"
               fill="none"
               preserveAspectRatio="none"
             >
               <path
-                d="M5 30 C 70 70, 230 -10, 295 30"
+                d="M28 20 C 70 70, 230 -15, 295 30"
                 stroke="#E97A73"
                 strokeWidth="4"
                 fill="transparent"
               />
             </svg>
 
-            <div className="border-2 border-[#64B5B7] rounded-lg p-4 sm:p-6 w-full bg-white shadow-lg">
+            <div className="border-2 border-[#64B5B7] rounded-lg mt-[26px] p-4 sm:p-6 w-full bg-white shadow-lg">
               <DoctorAvailabilityOverview/>
             </div>
 
