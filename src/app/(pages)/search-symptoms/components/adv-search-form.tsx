@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import CheckBox from './checkbox';
-import { TextBox } from './elements';
+import TextBox from './TextBox';
 import { getSymptomInfo } from '@/services/symptom-search/symptomService';
 import SymptomCheckboxGroups from './SymptomCheckboxGroups';
 import { useUser } from '@supabase/auth-helpers-react';
@@ -54,17 +54,18 @@ const AdvancedSearchForm: React.FC<{
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [addRecord, setAddRecord] = useState(false);
   const [warning, setWarning] = useState('');
-
+  const [underlyingConditions, setUnderlyingConditions] = useState('');
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [weight, setWeight] = useState('');
 
-  const [hasFetched, setHasFetched] = useState(false); // 👈 prevent refetch loop
-
   useEffect(() => {
-    if (!user || hasFetched) return;
-
     const fetchProfile = async () => {
+      if (!user) {
+        setIsLoadingProfile(false);
+        return;
+      }
+
       setIsLoadingProfile(true);
 
       const { data: profile } = await supabase
@@ -86,11 +87,10 @@ const AdvancedSearchForm: React.FC<{
       }
 
       setIsLoadingProfile(false);
-      setHasFetched(true);
     };
 
     fetchProfile();
-  }, [user, hasFetched]);
+  }, [user]);
 
   const handleCheckboxChange = (symptom: string, checked: boolean) => {
     const category = symptomCategoryMap[symptom] || 'Uncategorized';
@@ -103,7 +103,7 @@ const AdvancedSearchForm: React.FC<{
       return;
     }
 
-    const categoryCount = updated.filter(s => symptomCategoryMap[s] === category).length;
+    const categoryCount = updated.filter((s) => symptomCategoryMap[s] === category).length;
     if (checked && categoryCount > MAX_PER_CATEGORY) {
       setWarning(`⚠️ Limit of ${MAX_PER_CATEGORY} symptoms from "${category}" category reached.`);
       return;
@@ -119,24 +119,71 @@ const AdvancedSearchForm: React.FC<{
     try {
       setLoading(true);
       setError('');
-      const data = await getSymptomInfo(selectedSymptoms);
 
-      setSubmittedSymptoms(selectedSymptoms);
+      const symptomsToSave = [...selectedSymptoms];
+      const data = await getSymptomInfo(symptomsToSave);
+
+      setSubmittedSymptoms(symptomsToSave);
       setResult(data);
       setSelectedSymptoms([]);
 
       if (user && addRecord) {
-        await supabase.from('symptom_results').insert({
+        const cleanLikely = data.likely_common_conditions.map((cond: Condition) => ({
+          disease: cond.disease,
+          commonality: cond.commonality,
+          final_score: cond.final_score,
+          precautions: cond.precautions,
+          informational_medications: cond.informational_medications,
+        }));
+
+        const cleanOther = data.other_possible_conditions.map((cond: Condition) => ({
+          disease: cond.disease,
+          commonality: cond.commonality,
+          final_score: cond.final_score,
+          precautions: cond.precautions,
+          informational_medications: cond.informational_medications,
+        }));
+
+        const payload: {
+          user_id: string;
+          input_symptoms: string[];
+          likely_conditions: object[];
+          other_conditions: object[];
+          underlying_conditions?: Record<string, boolean>;
+        } = {
           user_id: user.id,
-          input_symptoms: selectedSymptoms,
-          likely_conditions: data.likely_common_conditions,
-          other_conditions: data.other_possible_conditions,
-        });
-        console.log('[Symptom Result Stored] ✔️');
+          input_symptoms: symptomsToSave,
+          likely_conditions: cleanLikely,
+          other_conditions: cleanOther,
+        };
+
+        if (underlyingConditions.trim()) {
+          const parsed = underlyingConditions
+            .split(',')
+            .map((s) => s.trim().toLowerCase().replace(/\s+/g, '_'))
+            .filter((s) => s.length > 0)
+            .reduce((acc: Record<string, boolean>, item) => {
+              acc[item] = true;
+              return acc;
+            }, {});
+          payload.underlying_conditions = parsed;
+        }
+
+        const { error: insertError } = await supabase
+          .from('symptom_results')
+          .insert([payload]);
+
+        if (insertError) {
+          console.error("[🔥 Insert Error]", insertError.message);
+          setError('❌ Failed to save to database. See console for more info.');
+          return;
+        }
+
+        console.log("✅ Successfully inserted to Supabase.");
       }
     } catch (err) {
       console.error(err);
-      setError('An error occurred while fetching predictions.');
+      setError('❌ An error occurred while analyzing or saving.');
     } finally {
       setLoading(false);
     }
@@ -151,13 +198,28 @@ const AdvancedSearchForm: React.FC<{
         </p>
       </div>
 
-      {isLoadingProfile ? (
+      {user && isLoadingProfile ? (
         <Spinner />
       ) : (
         <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-4 mb-10">
-          <TextBox title="Name" value={name} onChange={(e) => setName(e.target.value)} readOnly={!!user} />
-          <TextBox title="Age" value={age} onChange={(e) => setAge(e.target.value)} readOnly={!!user} />
-          <TextBox title="Weight" value={weight} onChange={(e) => setWeight(e.target.value)} readOnly={!!user} />
+          <TextBox
+            title="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={!!user}
+          />
+          <TextBox
+            title="Age"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            disabled={!!user}
+          />
+          <TextBox
+            title="Weight"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            disabled={!!user}
+          />
         </div>
       )}
 
@@ -186,6 +248,15 @@ const AdvancedSearchForm: React.FC<{
             </div>
           </div>
         )}
+
+        <div className="mt-6">
+          <TextBox
+            title="Underlying Health Conditions (Optional)"
+            value={underlyingConditions}
+            onChange={(e) => setUnderlyingConditions(e.target.value)}
+            placeholder="E.g. diabetes, hypertension, asthma (comma separated)"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end items-center gap-6 mt-10">

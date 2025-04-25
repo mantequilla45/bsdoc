@@ -9,7 +9,10 @@ import AdvancedSearchForm from "@/app/(pages)/search-symptoms/components/adv-sea
 import ImageContainer from "@/app/(pages)/search-symptoms/components/background";
 import { getSymptomInfo } from "@/services/symptom-search/symptomService";
 import { symptomGroups } from '../../(pages)/search-symptoms/components/symptomGroup';
+import rawSynonyms from '../search-symptoms/data/symptom_synonyms.json';
 import stringSimilarity from 'string-similarity';
+
+const symptomSynonyms = rawSynonyms as Record<string, string>;
 
 interface Condition {
   disease: string;
@@ -27,13 +30,37 @@ interface SymptomResponse {
   note: string;
 }
 
-// Converts "back_pain" → "Back Pain"
 const formatSymptomLabel = (symptom: string) =>
   symptom.replace(/_/g, ' ').toLowerCase();
 
-// Converts "Back Pain" → "back_pain"
 const normalizeSymptom = (symptom: string) =>
   symptom.trim().toLowerCase().replace(/\s+/g, '_');
+
+const expandSymptom = (symptom: string): { resolved: string; match?: string } => {
+  const norm = normalizeSymptom(symptom);
+
+  // Direct match from synonym map
+  if (symptomSynonyms[norm]) {
+    return { resolved: symptomSynonyms[norm], match: norm };
+  }
+
+  // Fuzzy match from synonym keys
+  const synonymKeys = Object.keys(symptomSynonyms);
+  const fuzzySynonymMatch = stringSimilarity.findBestMatch(norm, synonymKeys).bestMatch;
+  if (fuzzySynonymMatch.rating > 0.8) {
+    const mapped = symptomSynonyms[fuzzySynonymMatch.target];
+    return { resolved: mapped, match: fuzzySynonymMatch.target };
+  }
+
+  // Fuzzy match from all valid symptoms
+  const allSymptoms = Object.values(symptomGroups).flat();
+  const fuzzySymptomMatch = stringSimilarity.findBestMatch(norm, allSymptoms).bestMatch;
+  if (fuzzySymptomMatch.rating > 0.8) {
+    return { resolved: fuzzySymptomMatch.target, match: norm };
+  }
+
+  return { resolved: norm };
+};
 
 const SearchSymptomsPage = () => {
   const [isAdvancedSearchEnabled, setIsAdvancedSearchEnabled] = useState(false);
@@ -42,7 +69,7 @@ const SearchSymptomsPage = () => {
   const [advancedResult, setAdvancedResult] = useState<SymptomResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [suggestions, setSuggestions] = useState<{ original: string; suggested: string }[]>([]);
+  const [suggestions, setSuggestions] = useState<{ original: string; suggested: string; match?: string }[]>([]);
 
   const allSymptoms = Object.values(symptomGroups).flat();
 
@@ -64,27 +91,28 @@ const SearchSymptomsPage = () => {
     setSuggestions([]);
 
     const rawSymptoms = inputValue.split(",").map(s => s.trim());
-    const normalizedSymptoms = rawSymptoms.map(normalizeSymptom);
-
     const valid: string[] = [];
-    const invalid: string[] = [];
+    const suggestionList: { original: string; suggested: string; match?: string }[] = [];
 
-    for (const sym of normalizedSymptoms) {
-      if (allSymptoms.includes(sym)) {
-        valid.push(sym);
+    for (const rawSym of rawSymptoms) {
+      const norm = normalizeSymptom(rawSym);
+      const { resolved } = expandSymptom(rawSym);
+
+      if (allSymptoms.includes(resolved)) {
+        valid.push(resolved);
       } else {
-        invalid.push(sym);
+        const keysToCheck = [...Object.keys(symptomSynonyms), ...allSymptoms];
+        const { bestMatch } = stringSimilarity.findBestMatch(norm, keysToCheck);
+        if (bestMatch.rating > 0.5) {
+          const mapped = symptomSynonyms[bestMatch.target] ?? bestMatch.target;
+          suggestionList.push({ original: norm, suggested: mapped, match: bestMatch.target });
+        } else {
+          suggestionList.push({ original: norm, suggested: '' });
+        }
       }
     }
 
-    if (invalid.length > 0) {
-      const suggestionList = invalid.map((sym) => {
-        const { bestMatch } = stringSimilarity.findBestMatch(sym, allSymptoms);
-        return {
-          original: sym,
-          suggested: bestMatch.rating > 0.5 ? bestMatch.target : ''
-        };
-      });
+    if (suggestionList.length > 0) {
       setSuggestions(suggestionList);
       setLoading(false);
       return;
@@ -185,14 +213,14 @@ const SearchSymptomsPage = () => {
               <div className="bg-yellow-100 text-yellow-900 p-4 rounded-md border mt-4">
                 <p className="font-semibold mb-2">Invalid symptoms detected:</p>
                 <ul className="list-disc ml-5 space-y-1">
-                  {suggestions.map(({ original, suggested }) => (
+                  {suggestions.map(({ original, suggested, match }) => (
                     <li key={original}>
                       {formatSymptomLabel(original)} &rarr; {suggested ? (
                         <button
                           onClick={() => handleSuggestionClick(original, suggested)}
                           className="text-blue-700 underline hover:text-blue-900"
                         >
-                          Did you mean: {formatSymptomLabel(suggested)}?
+                          Did you mean: {match && match !== suggested ? `"${formatSymptomLabel(match)}" → ` : ''}{formatSymptomLabel(suggested)}?
                         </button>
                       ) : (
                         <span className="text-red-600">Invalid input</span>
