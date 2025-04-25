@@ -61,7 +61,10 @@ const AdvancedSearchForm: React.FC<{
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user) return;
+      if (!user) {
+        setIsLoadingProfile(false);
+        return;
+      }
 
       setIsLoadingProfile(true);
 
@@ -199,9 +202,24 @@ const AdvancedSearchForm: React.FC<{
         <Spinner />
       ) : (
         <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-4 mb-10">
-          <TextBox title="Name" value={name} onChange={() => {}} disabled />
-          <TextBox title="Age" value={age} onChange={() => {}} disabled />
-          <TextBox title="Weight" value={weight} onChange={() => {}} disabled />
+          <TextBox
+            title="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={!!user}
+          />
+          <TextBox
+            title="Age"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            disabled={!!user}
+          />
+          <TextBox
+            title="Weight"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            disabled={!!user}
+          />
         </div>
       )}
 
