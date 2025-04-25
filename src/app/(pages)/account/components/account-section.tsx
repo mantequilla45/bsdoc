@@ -105,15 +105,13 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
 
         if (!firstName) {
             toast.error("First Name is required.");
-            // Optionally focus the input field
             document.querySelector<HTMLInputElement>('input[name="first_name"]')?.focus();
-            return; // Stop the save process
+            return;
         }
         if (!lastName) {
             toast.error("Last Name is required.");
-            // Optionally focus the input field
             document.querySelector<HTMLInputElement>('input[name="last_name"]')?.focus();
-            return; // Stop the save process
+            return;
         }
 
         setIsSaving(true);
@@ -148,13 +146,11 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
                 alert('Failed to update profile. Please try again.');
             } else if (updatedProfileData) {
                 setProfile(updatedProfileData as Profile);
-                setFormData(updatedProfileData); // Sync internal form state
+                setFormData(updatedProfileData);
                 setIsEditing(false);
                 setProfileImage(null);
                 if (imageUrl !== undefined) { setImagePreview(imageUrl); }
                 toast.success('Profile updated successfully!');
-
-                // --- !!! Call the callback to notify the parent !!! ---
                 onProfileUpdate();
             }
         } catch (error) {
@@ -227,22 +223,22 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
             type: 'text'
         },
         {
-            label: 'Current Password', // Add this field
+            label: 'Current Password',
             name: 'currentPassword',
-            icon: <MdVpnKey className="text-gray-500" />, // Maybe different color for current?
+            icon: <MdVpnKey className="text-gray-500" />,
             type: 'password',
             placeholder: 'Enter your current password'
         },
         {
             label: 'New Password',
-            name: 'newPassword', // Unique name for state handling
+            name: 'newPassword',
             icon: <MdVpnKey className="text-teal-500" />,
             type: 'password',
             placeholder: 'Enter new password'
         },
         {
             label: 'Confirm Password',
-            name: 'confirmPassword', // Unique name for state handling
+            name: 'confirmPassword',
             icon: <MdVpnKey className="text-teal-500" />,
             type: 'password',
             placeholder: 'Confirm new password'
@@ -252,45 +248,40 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const renderFieldSection = (fields: any[]) => {
         return (
-            <div className="space-y-4">
+            <div className="space-y-4 md:w-[300px] transition-all duration-300">
                 {fields.map(({ label, name, icon, type, placeholder, required }) => (
                     <div key={name} className="flex items-start space-x-4">
                         <div className="w-10 flex justify-center pt-2">{icon}</div>
                         <div className="flex-grow min-w-0">
                             <label className="text-xs text-gray-500 block mb-1">
                                 {label}
-                                {required && isEditing && <span className="text-red-500 ml-1">*</span>} {/* Show asterisk when editing */}
+                                {required && isEditing && <span className="text-red-500 ml-1">*</span>}
                             </label>
                             {loading ? (
                                 <LoadingPlaceholder />
-                            ) : name === 'newPassword' || name === 'confirmPassword' || name === 'currentPassword' ? ( // Add currentPassword here
-                                // --- Password Field Specific Logic ---
+                            ) : name === 'newPassword' || name === 'confirmPassword' || name === 'currentPassword' ? (
                                 isEditing ? (
                                     <input
                                         type={type}
                                         name={name}
-                                        // Bind value based on name
                                         value={
                                             name === 'currentPassword' ? currentPassword :
                                                 name === 'newPassword' ? newPassword :
                                                     confirmPassword
                                         }
-                                        // Update state based on name
                                         onChange={(e) => {
                                             if (name === 'currentPassword') setCurrentPassword(e.target.value);
                                             if (name === 'newPassword') setNewPassword(e.target.value);
                                             if (name === 'confirmPassword') setConfirmPassword(e.target.value);
                                         }}
                                         placeholder={placeholder}
-                                        className="w-full border-b border-gray-300 focus:border-teal-500 outline-none transition-colors"
+                                        className="w-full border-b border-gray-300 focus:border-teal-500 outline-none transition-colors font-light"
                                         disabled={isSaving || isUpdatingPassword}
                                     />
                                 ) : (
                                     <p className="text-gray-800">••••••••</p>
                                 )
-                                // --- End Password Field Specific Logic ---
                             ) : isEditing ? (
-                                // --- Regular Field Logic (Editable) ---
                                 <input
                                     type={type}
                                     name={name}
@@ -299,12 +290,10 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
                                     required={required}
                                     placeholder={placeholder}
                                     className="w-full border-b border-gray-300 focus:border-teal-500 outline-none transition-colors truncate"
-                                    disabled={isSaving || isUpdatingPassword} // Also disable if password is being updated
+                                    disabled={isSaving || isUpdatingPassword}
                                 />
                             ) : (
-                                // --- Regular Field Logic (Display) ---
                                 <p className="text-gray-800 break-words overflow-hidden">
-                                    {/* No need for password check here anymore */}
                                     {profile?.[name as keyof Profile] ?? '-'}
                                 </p>
                             )}
@@ -312,8 +301,6 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
                     </div>
                 ))}
 
-                {/* --- Add Password Feedback & Button INSIDE the secondaryFields section --- */}
-                {/* Check if this section contains password fields - a bit rudimentary check */}
                 {fields.some(f => f.name === 'newPassword') && isEditing && (
                     <div className="mt-4 pt-2">
                         {passwordError && <p className="text-red-500 text-sm text-center mb-2">{passwordError}</p>}
@@ -324,10 +311,10 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
                                 disabled={
                                     isSaving ||
                                     isUpdatingPassword ||
-                                    !currentPassword || // Add check for current password
+                                    !currentPassword ||
                                     !newPassword ||
                                     !confirmPassword ||
-                                    newPassword !== confirmPassword // Keep match check for immediate feedback
+                                    newPassword !== confirmPassword
                                 }
                                 className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
                             >
@@ -336,19 +323,15 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
                         </div>
                     </div>
                 )}
-                {/* --- End Password Feedback & Button --- */}
             </div>
         );
     };
 
-    // Add this function inside the AccountSection component
-
     const handleChangePassword = async () => {
         setPasswordError(null);
-        setPasswordSuccess(null); // Clear previous success message
+        setPasswordSuccess(null);
         setIsUpdatingPassword(true);
 
-        // 1. Basic Validations
         if (!currentPassword || !newPassword || !confirmPassword) {
             setPasswordError("Please fill in all password fields.");
             setIsUpdatingPassword(false);
@@ -369,31 +352,25 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
             setIsUpdatingPassword(false);
             return;
         }
-        // Ensure profile email is available
         if (!profile?.email) {
             setPasswordError("Could not verify current password. User email not found.");
             setIsUpdatingPassword(false);
             return;
         }
 
-
         try {
-            // 2. Verify Current Password by attempting sign-in
             console.log("Verifying current password...");
             const { error: signInError } = await supabase.auth.signInWithPassword({
                 email: profile.email,
-                password: currentPassword // Use the password typed by the user
+                password: currentPassword
             });
 
-            // If signIn fails, the entered current password was wrong.
             if (signInError) {
                 console.error('Current password verification failed:', signInError);
                 setPasswordError("Incorrect current password.");
-                // Throw error to be caught by the outer catch block
                 throw new Error("Incorrect current password.");
             }
 
-            // 3. If Current Password is Verified (signInError is null), Update to New Password
             console.log("Current password verified. Updating user password...");
             const { data: updateData, error: updateError } = await supabase.auth.updateUser({
                 password: newPassword
@@ -402,40 +379,37 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
             if (updateError) {
                 console.error('Error updating password:', updateError);
                 setPasswordError(`Update failed: ${updateError.message}`);
-                // Throw error to be caught by the outer catch block
                 throw updateError;
             }
 
-            // --- Success ---
             console.log("Password update successful:", updateData);
-            toast.success("Password updated successfully!"); // Use toast for success
+            toast.success("Password updated successfully!");
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
-            setIsEditing(false); // Exit edit mode on success
+            setIsEditing(false);
 
         } catch (error: unknown) {
-            // Catch errors thrown from verification or update steps
             console.error('Password update process error caught:', error);
-            // Ensure a user-facing error message is set if not already done by specific checks
             if (!passwordError) {
                 const message = error instanceof Error ? error.message : 'An unknown error occurred';
-                // Avoid overwriting specific messages like "Incorrect current password."
                 if (message !== "Incorrect current password.") {
                     setPasswordError(`Update failed: ${message}`);
                 }
             }
-            // Optionally, show a generic error toast as well
-            // toast.error(passwordError || "An unexpected error occurred.");
-
         } finally {
-            // Always turn off loading state
             setIsUpdatingPassword(false);
         }
     };
 
     return (
-        <div className={`bg-white shadow-lg w-${isExpanded ? 'full' : '1/2'} transition-all duration-300 ease-in-out`}>
+        <div
+            className="bg-white shadow-lg transition-all duration-500 ease-in-out relative"
+            style={{
+                width: isExpanded ? '100%' : (window.innerWidth < 768 ? '100%' : '350px'),
+                transition: 'width 600ms'
+            }}
+        >
             <div className="bg-gradient-to-r from-teal-400 to-teal-500 text-white py-4 px-4 flex items-center justify-between">
                 <h2 className="md:text-lg pl-4 text-md font-semibold">Account Details</h2>
                 {isEditing ? (
@@ -455,7 +429,7 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
                 )}
             </div>
 
-            <div className="p-6">
+            <div className="p-6 transition-all duration-500 ease-in-out max-w-4xl mx-auto">
                 <div className="flex flex-col items-center mb-6">
                     <ProfileImageUpload
                         imagePreview={imagePreview}
@@ -472,18 +446,21 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
                     )}
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col md:flex-row gap-6 transition-all duration-500 ease-in-out">
                     {/* Left Column - Always visible */}
-                    <div className={`${isExpanded ? 'md:w-1/2' : 'w-full'}`}>
+                    <div className={`flex-grow transition-all duration-500 ease-in-out ${isExpanded ? 'md:w-1/2 md:flex-grow-0' : 'w-full'
+                        }`}>
                         {renderFieldSection(primaryFields)}
                     </div>
 
-                    {/* Right Column - Only visible when expanded */}
-                    {isExpanded && (
-                        <div className="md:w-1/2 w-full border-l pl-6">
-                            {renderFieldSection(secondaryFields)}
-                        </div>
-                    )}
+                    {/* Right Column - Improved transition */}
+                    <div className={`md:border-l md:pl-2 transition-all duration-500 ease-in-out font-regular text-sm ${isExpanded
+                        ? 'md:w-1/2 opacity-100 max-h-screen flex-shrink-0'
+                        : 'w-0 opacity-0 max-h-0 md:pl-0 overflow-hidden flex-shrink'
+                        }`}
+                    >
+                        {renderFieldSection(secondaryFields)}
+                    </div>
                 </div>
 
                 {isEditing && (
@@ -509,20 +486,22 @@ const AccountSection = ({ userId, onProfileUpdate }: AccountSectionProps) => {
                     </div>
                 )}
 
-                <button
-                    onClick={toggleExpand}
-                    className="mt-6 w-full flex items-center justify-center py-2 text-teal-500 hover:text-teal-600 transition-colors font-medium"
-                >
-                    {isExpanded ? (
-                        <>
-                            <MdChevronLeft className="mr-1 text-xl" /> Show Less
-                        </>
-                    ) : (
-                        <>
-                            <MdChevronRight className="mr-1 text-xl" /> Show More Details
-                        </>
-                    )}
-                </button>
+                <div className="mt-10 pb-8"> {/* Added padding to ensure the button doesn't overlap content */}
+                    <button
+                        onClick={toggleExpand}
+                        className="w-full flex items-center justify-center py-2 text-teal-500 hover:text-teal-600 transition-colors font-medium absolute bottom-5 right-0"
+                    >
+                        {isExpanded ? (
+                            <>
+                                <MdChevronLeft className="mr-1 text-xl md:rotate-0 rotate-90" /> Show Less
+                            </>
+                        ) : (
+                            <>
+                                <MdChevronRight className="mr-1 text-xl md:rotate-0 rotate-90" /> Show More Details
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
         </div>
     );

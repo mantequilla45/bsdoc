@@ -198,7 +198,7 @@ const AccountPage = () => {
                     </div>
                 )}
                 <main className="rounded-md w-full overflow-hidden ">
-                    <div className="flex md:flex-row flex-col bg-white min-h-[70vh]">
+                    <div className="flex md:flex-row flex-col bg-white min-h-[70vh] transition-all duration-300">
                         {userId && (
                             <>
                                 <AccountSection userId={userId} onProfileUpdate={handleProfileUpdated} />

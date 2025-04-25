@@ -224,7 +224,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
                     <div
                         className={`transform header-transition relative w-[70px] transition-all duration-300 md:block hidden
-                                ${scrolled ? "scale-[1.8] translate-y-0 hover:scale-[2]" : "scale-[1.5] hover:scale-[1.3]"}`}
+                                ${scrolled ? "scale-[1.5] translate-y-0 hover:scale-[2]" : "scale-[2] hover:scale-[1.3]"}`}
                     >
                         <Link href="/">
                             <Image
