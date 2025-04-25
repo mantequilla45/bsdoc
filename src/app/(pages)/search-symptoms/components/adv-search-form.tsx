@@ -198,7 +198,7 @@ const AdvancedSearchForm: React.FC<{
         </p>
       </div>
 
-      {isLoadingProfile ? (
+      {user && isLoadingProfile ? (
         <Spinner />
       ) : (
         <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-4 mb-10">
