@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import LoadingPlaceholder from './loading'; // Assuming this component exists
+import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 // Import Heroicons
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/20/solid'; // Using 20px solid icons
 
 interface RecordsProps {
   userId: string;
