@@ -9,6 +9,7 @@ import AvailabilityManagement from './components/AvailabilityManagement';
 import Footer from '@/app/layout/footer';
 import { useRouter } from 'next/navigation';
 import CancelAppointmentModal from './components/CancelAppointmentModal';
+import Header from '@/app/layout/header';
 
 export default function DoctorSchedulePage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -360,7 +361,8 @@ export default function DoctorSchedulePage() {
 
   return (
     <div className="flex flex-col">
-      <div className="w-full min-h-screen">
+      <Header background="white" title="Doctor Schedule" />
+      <div className="w-full min-h-screen mt-[10vh]">
         <main className="flex-grow overflow-hidden bg-white flex lg:flex-row flex-col">
           <Calendar
             appointments={appointments}
