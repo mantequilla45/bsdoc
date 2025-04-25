@@ -270,14 +270,14 @@ const SideBar: React.FC<SideBarProps> = ({ onContentChange, activeContentId, unr
           </div>
         )}
 
-        <NavItem
+        {/* <NavItem
           href="/admin/database"
           icon={<Database size={20} />}
           title="Database"
           active={activeItem === 'database'}
           onClick={handleNavClick}
           collapsed={collapsed}
-        />
+        /> */}
 
         <NavItem
           href="/admin/notifications"
