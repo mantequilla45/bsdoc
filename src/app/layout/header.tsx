@@ -224,7 +224,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
                     <div
                         className={`transform header-transition relative w-[70px] transition-all duration-300 md:block hidden
-                                ${scrolled ? "scale-[1.5] translate-y-0 hover:scale-[2]" : "scale-[2] hover:scale-[1.3]"}`}
+                                ${scrolled ? "scale-[1.5] translate-y-0 hover:scale-[1.4]" : "scale-[2] hover:scale-[1.9]"}`}
                     >
                         <Link href="/">
                             <Image
@@ -253,8 +253,6 @@ const Header = ({ background, title }: { background: string; title: string }) =>
                             Schedule an Appointment
                         </Link>
 
-                        {/* --> Add NotificationBell here <-- */}
-                        {/* It will only render if loggedIn is true (handled internally by NotificationBell) */}
                         <NotificationBell color={background === "#EEFFFE" || background === "white" ? "light" : "dark"} />
 
                         {loggedIn ? (
@@ -339,7 +337,7 @@ const Header = ({ background, title }: { background: string; title: string }) =>
 
 
                 {/* Mobile Menu */}
-                <div className="md:hidden flex items-center gap-3 sm:gap-4"> {/* Wrapper for mobile right icons */}
+                <div className="md:hidden flex items-center gap-3 sm:gap-4 z-50"> {/* Wrapper for mobile right icons */}
                     {loggedIn && (
                         <NotificationBell />
                     )}

@@ -141,6 +141,7 @@ function AdminPageContent() {
             }
         );
         return () => authListener?.subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchNotifications = useCallback(async (token: string) => {

@@ -92,7 +92,7 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
 
             </div>
             {!forcedImagePreview ? (
-                <label className="absolute bottom-0 right-0 hover:bg-teal-600 duration-300 cursor-pointer bg-teal-500 text-white rounded-full p-2 shadow-md z-50">
+                <label className="absolute bottom-0 right-0 hover:bg-teal-600 duration-300 cursor-pointer bg-teal-500 text-white rounded-full p-2 shadow-md z-45">
                     <input
                         ref={fileInputRef}
                         type="file"

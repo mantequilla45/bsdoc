@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Loader } from 'lucide-react'; // Added Loader for consistency
 import DoctorAvailabilityOverview from './components/DoctorAvailabilityOverview';
+import Footer from '@/app/layout/footer';
 
 // Define proper types (keep as is)
 interface Doctor {
@@ -223,7 +224,7 @@ const AppointmentPage = () => {
 
       {/* Responsive Content Area */}
       {/* Added padding-top to account for fixed header height */}
-      <main className="relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-28 pb-16">
+      <main className="relative z-10 max-w-screen-xl mx-auto sm:px-6 lg:px-8 pt-24 md:pt-28 pb-16 px-[25px] md:px-6">
         {/* Flex container for layout - stacks on mobile, row on large screens */}
         <div className='flex flex-col lg:flex-row items-center lg:items-start lg:justify-between gap-8 md:gap-12'>
 
@@ -376,6 +377,7 @@ const AppointmentPage = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

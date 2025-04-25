@@ -2,6 +2,7 @@
 import React from 'react';
 import DoctorList from './components/DoctorList'; // Assuming this path is correct
 import Header from '@/app/layout/header'; // Make sure path is correct
+import Footer from '@/app/layout/footer';
 
 const DoctorsPage: React.FC = () => {
     return (
@@ -12,7 +13,7 @@ const DoctorsPage: React.FC = () => {
 
             {/* Main content area with responsive padding and max-width */}
             {/* Added padding-top (pt-24 or similar) to clear the fixed header */}
-            <main className="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24 md:pt-28">
+            <main className="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24 md:pt-28 h-screen">
                 {/* Styled heading */}
                 <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 md:mb-10 text-gray-800">
                     Our Doctors
@@ -25,9 +26,7 @@ const DoctorsPage: React.FC = () => {
                      <DoctorList />
                 </div>
             </main>
-
-             {/* Optional: Add a Footer component here */}
-             {/* <Footer /> */}
+            <Footer />
         </div>
     );
 };
