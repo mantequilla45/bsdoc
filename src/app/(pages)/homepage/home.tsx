@@ -20,7 +20,7 @@ const HomePage = () => {
   }, []);
 
   return (
-    <main className="relative min-h-screen">
+    <main className="relative min-h-screen md:px-0 px-[25px]">
       {/* Background wrapper with full coverage */}
       <div className="fixed inset-0 w-full h-screen overflow-hidden z-0">
         {/* Important: This ensures the background is tall enough even during scroll */}
@@ -50,7 +50,7 @@ const HomePage = () => {
 
       {/* Content Container */}
       <div className="relative z-10 max-w-[1300px] mx-auto md:min-h-screen h-full flex items-center">
-        <div className="flex flex-col md:flex-row md:px-16 px-6 gap-10 justify-center w-full md:pb-[30px] md:mt-0 mt-[150px]">
+        <div className="flex flex-col md:flex-row gap-10 justify-center w-full md:pb-[30px] md:mt-0 mt-[180px]">
           {/* Left Side Content */}
           <div className="flex flex-col md:w-[60%] justify-center w-full gap-8 md:gap-[50px]">
             <div className="space-y-4 md:space-y-6">

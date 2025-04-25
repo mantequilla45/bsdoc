@@ -173,7 +173,7 @@ const AdminNotificationsPage: React.FC<AdminNotificationsPageProps> = ({
 
     // --- Render Logic (Uses props for data and state) ---
     return (
-        <div className="p-4 md:p-6 max-w-4xl mx-auto">
+        <div className="p-4 md:p-6">
             {/* Filter Buttons (uses props) */}
              <div className="mb-4 flex flex-wrap gap-2 items-center border p-2 rounded-md bg-gray-50">
                  <Filter size={18} className="text-gray-500 shrink-0" />
