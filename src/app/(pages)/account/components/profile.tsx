@@ -60,7 +60,7 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
     };
 
     return (
-        <div className="w-24 h-24 relative">
+        <div className="w-32 h-32 relative">
             <div className="w-full h-full rounded-full border border-gray-300 relative overflow-hidden">
                 {/* Loading Overlay */}
                 {isImageLoading && (
@@ -77,6 +77,9 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
                     width={96}
                     height={96}
                     className="w-full h-full object-cover rounded-full"
+                    quality={100}
+                    priority
+                    unoptimized={true} // <-- Add this to disable Next.js optimization
                     onLoadingComplete={handleImageLoadingComplete}
                     onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -86,34 +89,34 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
                 />
 
                 {/* Edit/Upload Button or Save Button */}
-                {!forcedImagePreview ? (
-                    <label className="absolute bottom-0 right-0 hover:bg-teal-600 duration-300 cursor-pointer bg-teal-500 text-white rounded-full p-2 shadow-md z-20">
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="hidden"
-                        />
-                        <MdEdit className="w-4 h-4" />
-                    </label>
-                ) : (
-                    <button
-                        onClick={handleSaveAndReset}
-                        disabled={isSaving}
-                        className="absolute bottom-0 right-0 hover:bg-teal-600 duration-300 bg-teal-500 text-white rounded-full p-2 shadow-md z-20 cursor-pointer disabled:opacity-50"
-                    >
-                        {isSaving ? (
-                            <div className="animate-spin">
-                                <FaCheck className="w-4 h-4 text-white" />
-                            </div>
-                        ) : (
-                            <FaCheck className="w-4 h-4" />
-                        )}
-                    </button>
-                )}
-            </div>
 
+            </div>
+            {!forcedImagePreview ? (
+                <label className="absolute bottom-0 right-0 hover:bg-teal-600 duration-300 cursor-pointer bg-teal-500 text-white rounded-full p-2 shadow-md z-50">
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                    />
+                    <MdEdit className="w-4 h-4" />
+                </label>
+            ) : (
+                <button
+                    onClick={handleSaveAndReset}
+                    disabled={isSaving}
+                    className="absolute bottom-0 right-0 hover:bg-teal-600 duration-300 bg-teal-500 text-white rounded-full p-2 shadow-md z-20 cursor-pointer disabled:opacity-50"
+                >
+                    {isSaving ? (
+                        <div className="animate-spin">
+                            <FaCheck className="w-4 h-4 text-white" />
+                        </div>
+                    ) : (
+                        <FaCheck className="w-4 h-4" />
+                    )}
+                </button>
+            )}
             {/* Cancel Button */}
             {forcedImagePreview && forcedImagePreview !== profile?.profile_image_url && (
                 <button
