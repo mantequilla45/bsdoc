@@ -59,13 +59,13 @@ const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  useEffect(() => {
-    console.log(`[ClientWrapper Redirect Check] Evaluating redirect. Loading: ${loadingCheck}, User: ${!!user}, Complete: ${isProfileComplete}, Path: ${pathname}`);
-    if (!loadingCheck && user && isProfileComplete === false && pathname !== '/account') {
-      console.log('[ClientWrapper] ---> Profile incomplete, REDIRECTING to /account <---');
-      router.replace('/account');
-    }
-  }, [loadingCheck, user, isProfileComplete, pathname, router]);
+  // useEffect(() => {
+  //   console.log(`[ClientWrapper Redirect Check] Evaluating redirect. Loading: ${loadingCheck}, User: ${!!user}, Complete: ${isProfileComplete}, Path: ${pathname}`);
+  //   if (!loadingCheck && user && isProfileComplete === false && pathname !== '/account') {
+  //     console.log('[ClientWrapper] ---> Profile incomplete, REDIRECTING to /account <---');
+  //     router.replace('/account');
+  //   }
+  // }, [loadingCheck, user, isProfileComplete, pathname, router]);
 
   return (
     <SessionContextProvider supabaseClient={supabase}>
