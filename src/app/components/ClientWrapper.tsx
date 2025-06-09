@@ -1,7 +1,6 @@
-//src\app\components\ClientWrapper.tsx
-'use client';
+'use client';More actions
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { User } from '@supabase/supabase-js';
@@ -15,22 +14,12 @@ const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const router = useRouter();
 
-  const checkUserAndProfile = useCallback(async () => {
-    setLoadingCheck(true);
-    console.log('[ClientWrapper] Running checkUserAndProfile...');
+  useEffect(() => {
+    const checkUserAndProfile = async () => {
+      setLoadingCheck(true);
+      console.log('[ClientWrapper] Running checkUserAndProfile...');
 
-    try {
-      // Get current session with automatic token refresh
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('[ClientWrapper] Session error:', sessionError);
-        setUser(null);
-        setIsProfileComplete(null);
-        setLoadingCheck(false);
-        return;
-      }
-
+      const { data: { session } } = await supabase.auth.getSession();
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       console.log(`[ClientWrapper] User state set: ${currentUser?.id ?? 'null'}`);
@@ -44,7 +33,6 @@ const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
 
         if (profileError) {
           console.error('[ClientWrapper] Error fetching profile status:', profileError);
-          setIsProfileComplete(null);
         } else {
           const profileComplete = profileData?.is_profile_complete ?? false;
           setIsProfileComplete(profileComplete);
@@ -54,62 +42,22 @@ const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
         setIsProfileComplete(null);
         console.log('[ClientWrapper] No active user session.');
       }
-    } catch (error) {
-      console.error('[ClientWrapper] Error in checkUserAndProfile:', error);
-      setUser(null);
-      setIsProfileComplete(null);
-    } finally {
+
       setLoadingCheck(false);
       console.log('[ClientWrapper] Check finished.');
-    }
-  }, []);
-
-  useEffect(() => {
-    checkUserAndProfile();
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log(`[ClientWrapper] Auth event: ${event}`);
-      
-      // Handle different auth events
-      switch (event) {
-        case 'SIGNED_IN':
-        case 'TOKEN_REFRESHED':
-        case 'USER_UPDATED':
-          await checkUserAndProfile();
-          break;
-        case 'SIGNED_OUT':
-          setUser(null);
-          setIsProfileComplete(null);
-          setLoadingCheck(false);
-          break;
-        default:
-          // For other events, still check to be safe
-          await checkUserAndProfile();
-      }
-    });
-
-    // Set up automatic token refresh on tab focus
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log('[ClientWrapper] Tab became active, refreshing session...');
-        supabase.auth.getSession().then(({ data: { session }, error }) => {
-          if (error) {
-            console.error('[ClientWrapper] Error refreshing session on focus:', error);
-          } else if (session) {
-            console.log('[ClientWrapper] Session refreshed successfully on focus');
-          }
-        });
-      }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    checkUserAndProfile();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      console.log(`[ClientWrapper] Auth event: ${event}`);
+      checkUserAndProfile();
+    });
 
     return () => {
       authListener.subscription.unsubscribe();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [checkUserAndProfile]);
+  }, []);
 
   useEffect(() => {
     console.log(`[ClientWrapper Redirect Check] Evaluating redirect. Loading: ${loadingCheck}, User: ${!!user}, Complete: ${isProfileComplete}, Path: ${pathname}`);
@@ -120,9 +68,7 @@ const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
   }, [loadingCheck, user, isProfileComplete, pathname, router]);
 
   return (
-    <SessionContextProvider 
-      supabaseClient={supabase}
-    >
+    <SessionContextProvider supabaseClient={supabase}>
       {children}
     </SessionContextProvider>
   );
