@@ -149,30 +149,44 @@ export async function POST(req: NextRequest) {
     // } catch (notifyError) {
     //      console.error("[Registration Route] Error during admin notification process:", notifyError);
     // }
-    console.log(`[Registration Route] Attempting to send SHARED notification to admins for user ID: ${userId}`);
+    console.log(`[Registration Route] Attempting to send notification to admins for user ID: ${userId}`);
     try {
-      const sharedNotificationPayload = {
-          // user_id: NULL, // Set user_id to NULL for admin-wide notifications
+      // Fetch all admin user IDs
+      const { data: admins, error: adminFetchError } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('role', 'admin');
+
+      if (adminFetchError) {
+        console.error("[Registration Route] Failed to fetch admins for notification:", adminFetchError);
+      } else if (admins && admins.length > 0) {
+        console.log(`[Registration Route] Found ${admins.length} admin(s) to notify.`);
+
+        // Create individual notifications for each admin (same as bug reporting)
+        const notifications = admins.map(admin => ({
+          user_id: admin.id,
           type: 'VERIFICATION_SUBMITTED',
-          message: `New doctor verification request from ${firstName} <span class="math-inline">\{lastName\} \(</span>{email}) needs review.`,
-          link_url: 'admin:doctor-verification', // Direct link using query param
+          message: `New doctor verification request from ${firstName} ${lastName} (${email}) needs review.`,
+          link_url: 'admin:doctor-verification',
           metadata: { applicant_user_id: userId }
-      };
-  
-      // Insert a SINGLE notification row with user_id as NULL
-      // Use supabaseAdmin to bypass RLS if necessary for inserting NULL user_id
-      const { error: insertNotifyError } = await supabaseAdmin
+        }));
+
+        console.log(`[Registration Route] Inserting ${notifications.length} notification(s).`);
+        const { error: insertNotifyError } = await supabaseAdmin
           .from('notifications')
-          .insert({ ...sharedNotificationPayload, user_id: null }); // Explicitly set null
-  
-      if (insertNotifyError) {
-          console.error("[Registration Route] Failed to insert shared admin notification:", insertNotifyError);
+          .insert(notifications);
+
+        if (insertNotifyError) {
+          console.error("[Registration Route] Failed to insert admin notifications:", insertNotifyError);
+        } else {
+          console.log(`[Registration Route] Successfully inserted notifications for admins.`);
+        }
       } else {
-          console.log(`[Registration Route] Successfully inserted shared admin notification.`);
+        console.warn("[Registration Route] No admin users found to notify.");
       }
-  } catch (notifyError) {
-       console.error("[Registration Route] Error during shared admin notification process:", notifyError);
-  }
+    } catch (notifyError) {
+      console.error("[Registration Route] Error during admin notification process:", notifyError);
+    }
     // --- End Notification Logic ---
 
     return NextResponse.json(

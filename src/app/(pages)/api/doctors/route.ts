@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
             license_number,
             years_of_experience,
             is_profile_complete,
-            profiles (
+            profiles!inner (
               id,
               first_name,
               last_name,
@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
       // A common pattern is joining 'doctors' with 'profiles' on doctors.id = profiles.id
       // and then ensuring profiles.role = 'doctor'. Let's assume the join works or use a filter:
       .eq('profiles.role', 'doctor'); // Filter based on role in the joined profiles table
+      
 
     // Apply optional specialization filter
     if (specialization) {
