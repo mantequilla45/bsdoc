@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('bugs')
       .insert({ title, description, category, severity, user_id: userId, email: email })
       .select()
