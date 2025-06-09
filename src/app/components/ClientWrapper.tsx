@@ -82,8 +82,6 @@ const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    initializeAuth();
-
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log(`[ClientWrapper] Auth event: ${event}`);
@@ -99,6 +97,8 @@ const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
         }
       }
     });
+
+    initializeAuth();
 
     return () => {
       isMounted = false;
