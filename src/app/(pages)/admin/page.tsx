@@ -170,11 +170,18 @@ function AdminPageContent() {
         let isMounted = true;
 
         const initializeAdminData = async () => {
-            if (isSessionLoading) return;
+            if (isSessionLoading) {
+                console.log("[AdminPageContent] Session still loading, waiting...");
+                return;
+            }
 
             if (!session?.user) {
                 console.log("[AdminPageContent] No session found, redirecting to home");
-                router.push('/');
+                setTimeout(() => {
+                    if (isMounted && !session?.user) {
+                        router.push('/');
+                    }
+                }, 500);
                 return;
             }
 
@@ -306,7 +313,7 @@ function AdminPageContent() {
     };
 
     // Loading state
-    if (isSessionLoading || !isInitialized) {
+    if (isSessionLoading || (!session && !isInitialized)) {
         return (
             <div className="flex h-screen items-center justify-center">
                 <div className="text-center">
