@@ -122,7 +122,6 @@ const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <SessionContextProvider 
       supabaseClient={supabase}
-      initialSession={null}
     >
       {children}
     </SessionContextProvider>
